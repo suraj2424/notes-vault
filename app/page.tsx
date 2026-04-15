@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { LogIn, Shield, Zap, BookOpen, Code2 } from 'lucide-react';
+import { LogIn, Shield, Zap, BookOpen, Code2, ArrowRight } from 'lucide-react';
 
 export default function LandingPage() {
   const { user, loading, signInWithGoogle } = useAuth();
@@ -18,85 +18,115 @@ export default function LandingPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-50">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-neutral-900 border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-50">
-      {/* Hero Section */}
-      <main className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-3xl"
-        >
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-border bg-white px-4 py-1.5 text-sm font-medium text-brand-muted shadow-sm">
-            <Shield className="h-4 w-4 text-brand-primary" />
-            <span>Secure & Private Knowledge Management</span>
-          </div>
-          
-          <h1 className="mb-6 font-sans text-6xl font-bold tracking-tight text-brand-text sm:text-7xl">
-            Your Personal <span className="text-brand-primary">Second Brain</span> for Coding.
-          </h1>
-          
-          <p className="mb-10 text-lg leading-relaxed text-brand-muted sm:text-xl">
-            NoteVault helps you organize DSA problems, topic-wise Q&A, and interview preparation in one premium, high-performance workspace.
-          </p>
-
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <button
-              onClick={signInWithGoogle}
-              className="group flex items-center gap-3 rounded-xl bg-brand-primary px-8 py-4 text-lg font-semibold text-white transition-all hover:bg-blue-700 hover:shadow-xl active:scale-95"
-            >
-              <LogIn className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-              Get Started with Google
-            </button>
-          </div>
-        </motion.div>
-
-        {/* Features Grid */}
-        <div className="mt-32 grid max-w-6xl grid-cols-1 gap-8 sm:grid-cols-3">
-          <FeatureCard 
-            icon={<Code2 className="h-6 w-6 text-brand-primary" />}
-            title="DSA Specialized"
-            description="Structured templates for LeetCode, complexities, and multi-language implementations."
-          />
-          <FeatureCard 
-            icon={<BookOpen className="h-6 w-6 text-brand-primary" />}
-            title="Topic-wise Q&A"
-            description="Master core concepts with dedicated question and answer modules for theory."
-          />
-          <FeatureCard 
-            icon={<Zap className="h-6 w-6 text-amber-500" />}
-            title="Blazing Fast"
-            description="Built for speed with real-time sync, instant search, and a clean, focused UI."
-          />
+    <div className="min-h-screen bg-white text-slate-900 antialiased selection:bg-slate-900 selection:text-white">
+      {/* Navigation */}
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-8">
+        <div className="flex items-center gap-2 font-bold tracking-tighter text-xl">
+          <div className="h-5 w-5 bg-slate-900" />
+          NoteVault
         </div>
+        <button 
+          onClick={signInWithGoogle}
+          className="text-sm font-medium hover:underline underline-offset-4"
+        >
+          Sign In
+        </button>
+      </nav>
+
+      <main className="mx-auto max-w-6xl px-6">
+        {/* Hero Section */}
+        <section className="py-20 lg:py-32">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h1 className="max-w-4xl text-5xl font-bold leading-[1.1] tracking-tighter sm:text-7xl lg:text-8xl">
+              Your technical memory, <br />
+              <span className="text-slate-400 font-medium">systematically organized.</span>
+            </h1>
+            
+            <p className="mt-10 max-w-xl text-lg leading-relaxed text-slate-500 sm:text-xl">
+              A high-performance workspace for DSA mastery and interview preparation. Minimalist by design, powerful by default.
+            </p>
+
+            <div className="mt-12 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <button
+                onClick={signInWithGoogle}
+                className="group flex items-center gap-3 bg-slate-900 px-8 py-4 font-bold text-white transition-all hover:bg-slate-800 active:scale-[0.98]"
+              >
+                Start Your Vault
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </button>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400 sm:ml-6">
+                <Shield className="h-4 w-4" />
+                Private & Encrypted
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
+        {/* Minimal Feature Grid */}
+        <section className="grid grid-cols-1 gap-12 border-t border-slate-100 py-20 sm:grid-cols-3">
+          <FeatureItem 
+            icon={<Code2 className="h-5 w-5" />}
+            title="DSA Optimized"
+            description="Templates for LeetCode logic and complexity analysis."
+          />
+          <FeatureItem 
+            icon={<BookOpen className="h-5 w-5" />}
+            title="Topic Modules"
+            description="Structured modules for System Design and CS theory."
+          />
+          <FeatureItem 
+            icon={<Zap className="h-5 w-5" />}
+            title="Instant Search"
+            description="Retrieve any code snippet in less than 50 milliseconds."
+          />
+        </section>
+
+        {/* Minimal Preview Card */}
+        <section className="pb-32">
+          <div className="group relative overflow-hidden rounded-2xl bg-slate-50 border border-slate-200 p-8 lg:p-12">
+            <div className="flex items-center gap-4 border-b border-slate-200 pb-8 mb-8">
+              <div className="h-3 w-3 rounded-full bg-slate-300" />
+              <div className="h-2 w-32 rounded bg-slate-200" />
+            </div>
+            <div className="space-y-4">
+              <div className="h-4 w-1/2 rounded bg-slate-200" />
+              <div className="h-4 w-3/4 rounded bg-slate-200" />
+              <div className="mt-12 h-40 w-full rounded-lg bg-white border border-slate-200 shadow-sm transition-transform duration-500 group-hover:scale-[1.01]" />
+            </div>
+          </div>
+        </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-neutral-200 py-12 text-center text-sm text-neutral-500">
-        <p>© {new Date().getFullYear()} NoteVault. Built for serious developers.</p>
+      <footer className="border-t border-slate-100 py-12 px-6">
+        <div className="mx-auto max-w-6xl flex justify-between items-center text-xs font-bold uppercase tracking-widest text-slate-400">
+          <p>© {new Date().getFullYear()} NoteVault</p>
+          <div className="flex gap-8">
+            <a href="#" className="hover:text-slate-900 transition-colors">Privacy</a>
+            <a href="#" className="hover:text-slate-900 transition-colors">Terms</a>
+          </div>
+        </div>
       </footer>
     </div>
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+function FeatureItem({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <motion.div 
-      whileHover={{ y: -5 }}
-      className="flex flex-col items-center rounded-2xl border border-neutral-200 bg-white p-8 text-center shadow-sm transition-shadow hover:shadow-md"
-    >
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-50">
-        {icon}
-      </div>
-      <h3 className="mb-2 font-sans text-xl font-bold text-neutral-900">{title}</h3>
-      <p className="text-neutral-600">{description}</p>
-    </motion.div>
+    <div className="space-y-4">
+      <div className="text-slate-900">{icon}</div>
+      <h3 className="text-lg font-bold tracking-tight">{title}</h3>
+      <p className="text-sm leading-relaxed text-slate-500">{description}</p>
+    </div>
   );
 }
