@@ -1,0 +1,74 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Note": {
+      "title": "Note",
+      "description": "A knowledge note (DSA, Q&A, or General)",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["dsa", "qa", "general"] },
+        "title": { "type": "string" },
+        "isFavorite": { "type": "boolean" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "content": { "type": "string" },
+        "dsa": {
+          "type": "object",
+          "properties": {
+            "platform": { "type": "string" },
+            "difficulty": { "type": "string", "enum": ["Easy", "Medium", "Hard"] },
+            "pattern": { "type": "string" },
+            "problemStatement": { "type": "string" },
+            "implementations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "language": { "type": "string" },
+                  "code": { "type": "string" }
+                }
+              }
+            },
+            "timeComplexity": { "type": "string" },
+            "spaceComplexity": { "type": "string" },
+            "notes": { "type": "string" }
+          }
+        },
+        "qa": {
+          "type": "object",
+          "properties": {
+            "topic": { "type": "string" },
+            "question": { "type": "string" },
+            "answer": { "type": "string" },
+            "importantPoints": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "required": ["userId", "type", "title"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/notes/{noteId}": {
+      "schema": "Note",
+      "description": "User notes"
+    }
+  }
+}

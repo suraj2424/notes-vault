@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  
+  --color-brand-primary: #2563EB;
+  --color-brand-bg: #F3F4F6;
+  --color-brand-sidebar: #FFFFFF;
+  --color-brand-text: #111827;
+  --color-brand-muted: #6B7280;
+  --color-brand-border: #E5E7EB;
+  --color-brand-card: #FFFFFF;
+}
+
+@layer base {
+  * {
+    @apply border-brand-border;
+  }
+  body {
+    @apply bg-brand-bg text-brand-text;
+  }
+}
+
+@layer components {
+  .prose {
+    @apply max-w-none;
+  }
+  .prose h1, .prose h2, .prose h3 {
+    @apply font-sans font-bold tracking-tight text-brand-text;
+  }
+  .prose p {
+    @apply leading-relaxed text-brand-muted;
+  }
+  .prose code {
+    @apply rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-sm font-medium text-brand-primary before:content-none after:content-none;
+  }
+  .prose pre {
+    @apply rounded-2xl bg-neutral-900 p-6 font-mono text-sm text-emerald-400;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-neutral-200 hover:bg-neutral-300;
+}
