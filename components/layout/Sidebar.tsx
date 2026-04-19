@@ -72,16 +72,16 @@ export function Sidebar() {
           <Link
             href={item.href}
             className={cn(
-              'flex items-center gap-2.5 px-2.5 py-[7px] rounded-[7px] text-[13px] font-normal transition-colors',
+              'flex items-center gap-2.5 px-2.5 py-[7px] rounded-[7px] text-[14px] font-normal transition-colors',
               isActive
                 ? 'bg-neutral-800 text-white font-medium dark:bg-neutral-700 dark:text-neutral-100'
                 : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
             )}
           >
-            <item.icon className="h-[15px] w-[15px] flex-shrink-0 opacity-70" />
+            <item.icon className="h-[17px] w-[17px] flex-shrink-0 opacity-70" />
             <span className="flex-1">{item.name}</span>
             {item.badge && (
-              <span className="ml-auto text-[10px] font-medium bg-neutral-100 text-neutral-500 px-1.5 py-0.5 rounded-full dark:bg-neutral-700 dark:text-neutral-300">
+              <span className="ml-auto text-[11px] font-medium bg-neutral-100 text-neutral-500 px-1.5 py-0.5 rounded-full dark:bg-neutral-700 dark:text-neutral-300">
                 {item.badge}
               </span>
             )}
@@ -90,23 +90,29 @@ export function Sidebar() {
       };
 
    return (
-      <aside className="sticky top-0 hidden h-screen w-[220px] flex-col lg:flex border-r border-neutral-200 bg-white dark:bg-neutral-900 dark:border-neutral-800">
-       <div className={cn('relative flex flex-col h-full py-5 px-3', dmSans.className)}>
+       <aside className="sticky top-0 hidden h-screen w-[220px] flex-col lg:flex border-r border-neutral-200 bg-white dark:bg-neutral-900 dark:border-neutral-800">
+        <div className={cn('relative flex flex-col h-full py-5 px-3', dmSans.className)}>
 
-          {/* Logo */}
-          <div className="flex items-center gap-2.5 px-2 pb-5">
-            <div className="w-[26px] h-[26px] rounded-[7px] bg-neutral-800 flex items-center justify-center flex-shrink-0 dark:bg-white dark:text-neutral-900">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <rect x="2" y="2" width="4" height="4" rx="1" fill="white" />
-                <rect x="8" y="2" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" />
-                <rect x="2" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" />
-                <rect x="8" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.3" />
-              </svg>
-            </div>
-             <span className={cn('text-[16px] tracking-tight text-neutral-900 dark:text-neutral-100', dmSerif.className)}>
-               NoteVault
-             </span>
-          </div>
+            {/* Logo */}
+            <div className="flex items-center gap-2.5 px-2 pb-5">
+              <div className="w-[26px] h-[26px] rounded-[7px] bg-neutral-800 flex items-center justify-center flex-shrink-0 dark:bg-white dark:text-neutral-900">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="dark:hidden">
+                  <rect x="2" y="2" width="4" height="4" rx="1" fill="white" />
+                  <rect x="8" y="2" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" />
+                  <rect x="2" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" />
+                  <rect x="8" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.3" />
+                </svg>
+                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="hidden dark:block">
+                  <rect x="2" y="2" width="4" height="4" rx="1" fill="#18181b" />
+                  <rect x="8" y="2" width="4" height="4" rx="1" fill="#18181b" fillOpacity="0.5" />
+                  <rect x="2" y="8" width="4" height="4" rx="1" fill="#18181b" fillOpacity="0.5" />
+                  <rect x="8" y="8" width="4" height="4" rx="1" fill="#18181b" fillOpacity="0.3" />
+                </svg>
+              </div>
+              <span className={cn('text-[18px] tracking-tight text-neutral-900 dark:text-neutral-100', dmSerif.className)}>
+                NoteVault
+              </span>
+           </div>
 
          {/* Main nav */}
          <nav className="flex flex-col gap-0.5">
@@ -119,14 +125,14 @@ export function Sidebar() {
         <div className="my-2.5 border-t border-neutral-200 dark:border-neutral-800" />
 
          {/* Organization */}
-         <div className="flex flex-col gap-0.5">
-           <p className="px-2.5 pt-1 pb-1.5 text-[9.5px] font-medium uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
-             Organize
-           </p>
-           {secondaryItems.map((item) => (
-             <NavLink key={item.name} item={item} />
-           ))}
-         </div>
+          <div className="flex flex-col gap-0.5">
+            <p className="px-2.5 pt-1 pb-1.5 text-[11px] font-medium uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
+              Organize
+            </p>
+            {secondaryItems.map((item) => (
+              <NavLink key={item.name} item={item} />
+            ))}
+          </div>
 
         {/* Spacer */}
         <div className="flex-1" />
@@ -146,40 +152,40 @@ export function Sidebar() {
 
         {/* User panel with dropdown */}
         <div className="relative" ref={userMenuRef}>
-           <button
-             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-             className={cn(
-               'flex items-center gap-2.5 px-2.5 py-2 w-full rounded-[7px] text-[13px] font-normal transition-colors',
-               isUserMenuOpen
-                 ? 'bg-neutral-100 text-neutral-900 font-medium dark:bg-neutral-700 dark:text-neutral-100'
-                 : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
-             )}
-           >
-             <div className="w-[26px] h-[26px] rounded-full bg-neutral-200 flex items-center justify-center text-[10px] font-medium text-neutral-700 dark:bg-neutral-600 dark:text-neutral-200 flex-shrink-0">
-               {initials}
-             </div>
-             <div className="flex-1 min-w-0 text-left">
-               <p className="text-[12px] font-medium text-neutral-800 truncate dark:text-neutral-100">{user?.name || 'User'}</p>
-               <p className="text-[10px] text-neutral-500 truncate dark:text-neutral-400">Free plan</p>
-             </div>
-            <ChevronUp className={cn(
-              'h-3 w-3 flex-shrink-0 opacity-70 transition-transform',
-              isUserMenuOpen && 'rotate-180'
-            )} />
-           </button>
+            <button
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className={cn(
+                'flex items-center gap-2.5 px-2.5 py-2 w-full rounded-[7px] text-[14px] font-normal transition-colors',
+                isUserMenuOpen
+                  ? 'bg-neutral-100 text-neutral-900 font-medium dark:bg-neutral-700 dark:text-neutral-100'
+                  : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
+              )}
+            >
+              <div className="w-[26px] h-[26px] rounded-full bg-neutral-200 flex items-center justify-center text-[11px] font-medium text-neutral-700 dark:bg-neutral-600 dark:text-neutral-200 flex-shrink-0">
+                {initials}
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-[13px] font-medium text-neutral-800 truncate dark:text-neutral-100">{user?.name || 'User'}</p>
+                <p className="text-[11px] text-neutral-500 truncate dark:text-neutral-400">Free plan</p>
+              </div>
+             <ChevronUp className={cn(
+               'h-[17px] w-[17px] flex-shrink-0 opacity-70 transition-transform',
+               isUserMenuOpen && 'rotate-180'
+             )} />
+            </button>
 
              {/* Dropdown menu */}
              {isUserMenuOpen && (
                <div className="absolute bottom-full left-0 right-0 mb-1.5 rounded-[7px] border border-neutral-200 bg-white shadow-lg overflow-hidden z-50 dark:border-neutral-800 dark:bg-neutral-800">
-                 <div className="py-1">
-                  <button
-                     onClick={handleLogout}
-                     className="flex items-center gap-2.5 px-2.5 py-2 w-full text-[12.5px] text-red-500 hover:bg-red-50 transition-colors dark:hover:bg-red-950/50 dark:text-red-400"
-                   >
-                     <LogOut className="h-3.5 w-3.5" />
-                     <span>Log out</span>
-                   </button>
-                 </div>
+                  <div className="py-1">
+                   <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2.5 px-2.5 py-2 w-full text-[13.5px] text-red-500 hover:bg-red-50 transition-colors dark:hover:bg-red-950/50 dark:text-red-400"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Log out</span>
+                    </button>
+                  </div>
                </div>
              )}
         </div>

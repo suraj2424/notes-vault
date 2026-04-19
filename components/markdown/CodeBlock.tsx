@@ -40,9 +40,9 @@ export function CodeBlock({ language = 'text', children, theme = 'dark' }: CodeB
    const style = theme === 'light' ? customOneLight : customOneDark;
 
    return (
-     <div className="relative group rounded-[10px] overflow-hidden border border-slate-200 bg-white dark:border-[#2a2a2a] dark:bg-[#0d1117]">
+     <div className="relative group rounded-[10px] overflow-hidden border border-neutral-200 bg-white dark:border-[#2a2a2a] dark:bg-neutral-900">
        {/* Header bar */}
-       <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100 px-4 py-2.5 text-slate-600 dark:border-[#2a2a2a] dark:bg-[#161616] dark:text-[#555555]">
+       <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-100 px-4 py-2.5 text-neutral-600 dark:border-[#2a2a2a] dark:bg-[#161616] dark:text-[#555555] capitalize">
          <span className="text-[12px] font-medium">
            {lang ? lang : 'Code'}
          </span>
@@ -50,7 +50,7 @@ export function CodeBlock({ language = 'text', children, theme = 'dark' }: CodeB
            onClick={copyToClipboard}
            className={cn(
              "flex items-center gap-1 text-[11px] transition-colors",
-             copied ? "text-green-600 dark:text-green-400" : "text-slate-500 hover:text-slate-900 dark:text-[#555555] dark:hover:text-[#ededed]"
+             copied ? "text-green-600 dark:text-green-400" : "text-neutral-500 hover:text-neutral-900 dark:text-[#555555] dark:hover:text-[#ededed]"
            )}
            title={copied ? "Copied" : "Copy code"}
          >
@@ -81,7 +81,7 @@ export function CodeBlock({ language = 'text', children, theme = 'dark' }: CodeB
 // Inline code component for markdown
 export function InlineCode({ children }: { children: React.ReactNode }) {
   return (
-    <code className="bg-slate-100 px-1.5 py-0.5 rounded text-sm font-mono text-slate-600 dark:bg-[#1e1e1e] dark:text-[#888888]">
+    <code className="bg-neutral-100 px-1.5 py-0.5 rounded text-sm font-mono text-neutral-600 dark:bg-[#1e1e1e] dark:text-[#888888]">
       {children}
     </code>
   );

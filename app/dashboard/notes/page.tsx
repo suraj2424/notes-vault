@@ -29,10 +29,12 @@ export default async function NotesLibraryPage({
 
   const projection = {
     _id: 1,
+    userId: 1,
     title: 1,
     type: 1,
     isFavorite: 1,
     tags: 1,
+    createdAt: 1,
     updatedAt: 1,
   };
 
@@ -47,10 +49,12 @@ export default async function NotesLibraryPage({
 
   const formattedNotes = notes.map(note => ({
     id: note._id.toString(),
+    userId: note.userId,
     title: note.title,
     type: note.type,
     isFavorite: note.isFavorite,
     tags: note.tags,
+    createdAt: note.createdAt,
     updatedAt: note.updatedAt,
   }));
 

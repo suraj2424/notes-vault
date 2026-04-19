@@ -298,19 +298,19 @@ export function NotesLibraryClient({
           <p className="mt-1 text-[13px] text-slate-500 dark:text-[#888888]">Manage and organize your knowledge.</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="relative">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-slate-400 dark:text-[#555555]" />
             <input
               type="text"
               placeholder="Search notes..."
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="h-8 w-full rounded-[7px] border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-[12.5px] outline-none transition-all focus:border-slate-300 focus:bg-white placeholder:text-slate-400 sm:w-64 dark:border-[#2a2a2a] dark:bg-[#1e1e1e] dark:focus:border-[#3a3a3a] dark:focus:bg-[#232323] dark:placeholder:text-[#444444] dark:text-[#ededed]"
+              className="h-8 w-full rounded-[7px] border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-[12.5px] outline-none transition-all focus:border-slate-300 focus:bg-white placeholder:text-slate-400 dark:border-[#2a2a2a] dark:bg-[#1e1e1e] dark:focus:border-[#3a3a3a] dark:focus:bg-[#232323] dark:placeholder:text-[#444444] dark:text-[#ededed]"
             />
           </div>
           <Link
             href="/dashboard/notes/new"
-            className="flex h-9 items-center gap-2 rounded-[7px] bg-[#1a1a1a] px-4 text-[12.5px] font-medium text-white transition-colors hover:bg-slate-800 dark:bg-[#ededed] dark:text-[#0f0f0f] dark:hover:bg-[#d4d4d4]"
+            className="flex flex-1 items-center justify-center gap-2 h-8 rounded-[7px] bg-[#1a1a1a] px-4 text-[12.5px] font-medium text-white transition-colors hover:bg-slate-800 dark:bg-[#ededed] dark:text-[#0f0f0f] dark:hover:bg-[#d4d4d4] sm:flex-initial"
           >
             <Plus className="h-3.5 w-3.5" />
             New
