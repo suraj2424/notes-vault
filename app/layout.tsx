@@ -1,17 +1,20 @@
 import type { Metadata } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { DM_Sans, DM_Serif_Display } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/hooks/use-auth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
 
-const inter = Inter({
+const dmSans = DM_Sans({
   subsets: ['latin'],
-  variable: '--font-sans',
+  weight: ['300', '400', '500'],
+  variable: '--font-dm-sans',
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const dmSerif = DM_Serif_Display({
   subsets: ['latin'],
-  variable: '--font-mono',
+  weight: '400',
+  variable: '--font-dm-serif',
 });
 
 export const metadata: Metadata = {
@@ -21,13 +24,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body suppressHydrationWarning className="bg-neutral-50 text-neutral-900 antialiased">
-        <ErrorBoundary>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </ErrorBoundary>
+    <html lang="en" className={`${dmSans.variable} ${dmSerif.variable}`}>
+      <body suppressHydrationWarning className="bg-[var(--color-bg)] text-[var(--color-text-primary)] antialiased">
+        <ThemeProvider>
+          <ErrorBoundary>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </ErrorBoundary>
+        </ThemeProvider>
       </body>
     </html>
   );

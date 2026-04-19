@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  serverExternalPackages: ['mongoose', 'mongodb', 'aws4', 'bufferutil', 'utf-8-validate', 'kerberos', 'snappy', 'zlib', 'bson', 'gridfs-stream'],
   // Allow access to remote image placeholder.
   images: {
     remotePatterns: [
@@ -29,12 +30,29 @@ const nextConfig: NextConfig = {
   transpilePackages: ['motion'],
   webpack: (config, {dev}) => {
     // HMR is disabled in AI Studio via DISABLE_HMR env var.
-    // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+    // Do not modify—file watching is disabled to prevent flickering during agent edits.
     if (dev && process.env.DISABLE_HMR === 'true') {
       config.watchOptions = {
         ignored: /.*/,
       };
     }
+
+    // Fix for Node.js built-in modules when bundling MongoDB for serverless
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      net: false,
+      tls: false,
+      fs: false,
+      path: false,
+      os: false,
+      crypto: false,
+      stream: false,
+      http: false,
+      https: false,
+      zlib: false,
+      child_process: false,
+    };
+
     return config;
   },
 };

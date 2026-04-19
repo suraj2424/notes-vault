@@ -16,8 +16,7 @@ export interface DSAData {
 
 export interface QAData {
   topic: string;
-  question: string;
-  answer: string;
+  content: string;
   importantPoints: string[];
 }
 
@@ -28,8 +27,8 @@ export interface Note {
   title: string;
   isFavorite: boolean;
   tags: string[];
-  createdAt: any; // Firestore Timestamp
-  updatedAt: any; // Firestore Timestamp
+  createdAt: Date;
+  updatedAt: Date;
   content?: string;
   dsa?: DSAData;
   qa?: QAData;
@@ -40,5 +39,5 @@ export interface UserProfile {
   email: string;
   displayName: string;
   photoURL: string;
-  createdAt: any;
+  createdAt: Date;
 }
