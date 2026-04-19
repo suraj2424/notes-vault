@@ -246,10 +246,6 @@ export function NotesLibraryClient({
 
   const handleSearchChange = (newSearch: string) => {
     setSearchQuery(newSearch);
-    startTransition(() => {
-      setPage(1);
-      updateURL(1, newSearch, typeFilter, showFavoritesOnly ? 'favorites' : undefined);
-    });
   };
 
   const handleFavoritesToggle = () => {
@@ -278,13 +274,14 @@ export function NotesLibraryClient({
       if (searchQuery !== (searchParams.get('search') || '')) {
         startTransition(() => {
           setPage(1);
+          updateURL(1, searchQuery, typeFilter, showFavoritesOnly ? 'favorites' : undefined);
           fetchNotes(1, searchQuery, typeFilter, showFavoritesOnly);
         });
       }
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, fetchNotes, typeFilter, showFavoritesOnly, searchParams]);
+  }, [searchQuery, fetchNotes, typeFilter, showFavoritesOnly, searchParams, updateURL]);
 
   if (!user) {
     return null;
@@ -299,7 +296,7 @@ export function NotesLibraryClient({
         </div>
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-[15px] w-[15px] -tranneutral-y-1/2 text-neutral-400 dark:text-[#555555]" />
+            <Search className="absolute left-3 top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-neutral-400 dark:text-[#555555]" />
             <input
               type="text"
               placeholder="Search notes..."
