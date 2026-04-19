@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 
 type Theme = 'dark' | 'light' | 'system';
 
@@ -30,25 +30,32 @@ function getStoredTheme(): Theme | null {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('system');
-  const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>('light');
-  const [mounted, setMounted] = useState(false);
-
-  // Initialize on mount - read localStorage and set mounted
-  useEffect(() => {
-    setMounted(true);
-    const stored = getStoredTheme();
-    if (stored) {
-      setThemeState(stored);
+  // Get initial theme synchronously to avoid FOUC
+  const getInitialTheme = (): Theme => {
+    if (typeof window !== 'undefined') {
+      const stored = getStoredTheme();
+      if (stored) return stored;
+      return 'system';
     }
-  }, []);
+    return 'system';
+  };
 
-  // Update resolved theme whenever theme or system preference changes
-  useEffect(() => {
-    if (!mounted) return;
-    const effective = theme === 'system' ? getSystemTheme() : theme;
-    setResolvedTheme(effective);
-  }, [theme, mounted]);
+  const getInitialResolvedTheme = (): 'dark' | 'light' => {
+    if (typeof window !== 'undefined') {
+      const stored = getStoredTheme();
+      if (stored && stored !== 'system') return stored;
+      return getSystemTheme();
+    }
+    return 'light';
+  };
+
+  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
+  const [systemTheme, setSystemTheme] = useState<'dark' | 'light'>(getInitialResolvedTheme);
+  const [mounted, setMounted] = useState(true);
+
+  const resolvedTheme = useMemo(() => {
+    return theme === 'system' ? systemTheme : theme;
+  }, [theme, systemTheme]);
 
   // Apply theme class to document
   const applyTheme = useCallback((themeToApply: 'dark' | 'light') => {
@@ -64,39 +71,26 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Apply theme on mount and when resolvedTheme changes
   useEffect(() => {
-    if (!mounted) return;
     applyTheme(resolvedTheme);
-  }, [mounted, resolvedTheme, applyTheme]);
+  }, [resolvedTheme, applyTheme]);
 
   // Listen for system theme changes
   useEffect(() => {
-    if (!mounted) return;
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     const handleChange = (e: MediaQueryListEvent) => {
-      if (theme === 'system') {
-        applyTheme(e.matches ? 'dark' : 'light');
-        setResolvedTheme(e.matches ? 'dark' : 'light');
-      }
+      const newSystem = e.matches ? 'dark' : 'light';
+      setSystemTheme(newSystem);
     };
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [mounted, theme, applyTheme]);
+  }, []);
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem('theme', newTheme);
-
-    if (newTheme === 'system') {
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      applyTheme(systemDark ? 'dark' : 'light');
-      setResolvedTheme(systemDark ? 'dark' : 'light');
-    } else {
-      applyTheme(newTheme);
-      setResolvedTheme(newTheme);
-    }
-  }, [applyTheme]);
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>

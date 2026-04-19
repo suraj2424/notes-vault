@@ -84,27 +84,27 @@ export default function DashboardClient({
   return (
     <div className={dmSans.className}>
       {/* Header */}
-      <header className="mb-8 flex items-end justify-between border-b border-slate-100 pb-6 dark:border-[#222222]">
+      <header className="mb-8 flex items-end justify-between border-b border-neutral-100 pb-6 dark:border-[#222222]">
         <div className="flex items-center gap-4">
           {/* User Avatar */}
-          <div className="hidden sm:flex w-[42px] h-[42px] rounded-full bg-slate-100 items-center justify-center text-[13px] font-medium text-slate-700 dark:bg-[#2a2a2a] dark:text-[#888888]">
+          <div className="hidden sm:flex w-[42px] h-[42px] rounded-full bg-neutral-100 items-center justify-center text-[13px] font-medium text-neutral-700 dark:bg-[#2a2a2a] dark:text-[#888888]">
             {initials}
           </div>
           <div>
-            <p className="text-[12px] font-medium uppercase tracking-widest text-slate-400 mb-1 dark:text-[#555555]">
+            <p className="text-[12px] font-medium uppercase tracking-widest text-neutral-400 mb-1 dark:text-[#555555]">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
-            <h1 className={cn('text-[28px] tracking-tight text-slate-900', dmSerif.className + ' dark:text-[#ededed]')}>
+            <h1 className={cn('text-[28px] tracking-tight text-neutral-900', dmSerif.className + ' dark:text-[#ededed]')}>
               Welcome back, {firstName}
             </h1>
-            <p className="mt-1 text-[14px] text-slate-400 dark:text-[#555555]">
+            <p className="mt-1 text-[14px] text-neutral-400 dark:text-[#555555]">
               Here&apos;s what&apos;s happening in your vault today.
             </p>
           </div>
         </div>
         <Link
           href="/dashboard/notes/new"
-          className="hidden sm:flex items-center gap-2 h-10 px-4 rounded-[7px] bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-slate-800 transition-colors dark:bg-[#ededed] dark:text-[#0f0f0f] dark:hover:bg-[#d4d4d4]"
+          className="hidden sm:flex items-center gap-2 h-10 px-4 rounded-[7px] bg-[#1a1a1a] text-white text-[14px] font-medium hover:bg-neutral-800 transition-colors dark:bg-[#ededed] dark:text-[#0f0f0f] dark:hover:bg-[#d4d4d4]"
         >
           <Plus className="h-4 w-4" />
           New Note
@@ -124,44 +124,44 @@ export default function DashboardClient({
 
         {/* Recent Notes */}
         <div className="lg:col-span-2">
-          <div className="rounded-[10px] border border-slate-200 overflow-hidden bg-white dark:border-[#2a2a2a] dark:bg-[#161616]">
-             <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 dark:border-[#222222]">
-               <h2 className="text-[14px] font-medium text-slate-900 dark:text-[#ededed]">Recent Activity</h2>
+          <div className="rounded-[10px] border border-neutral-200 overflow-hidden bg-white dark:border-[#2a2a2a] dark:bg-[#161616]">
+             <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-3.5 dark:border-[#222222]">
+               <h2 className="text-[14px] font-medium text-neutral-900 dark:text-[#ededed]">Recent Activity</h2>
                <Link
                  href="/dashboard/notes"
-                 className="text-[12.5px] font-medium text-slate-400 hover:text-slate-700 transition-colors dark:text-[#555555] dark:hover:text-[#ededed]"
+                 className="text-[12.5px] font-medium text-neutral-400 hover:text-neutral-700 transition-colors dark:text-[#555555] dark:hover:text-[#ededed]"
                >
                  View all →
                </Link>
              </div>
 
             {recentNotesState.length > 0 ? (
-              <div className="divide-y divide-slate-100 dark:divide-[#222222]">
+              <div className="divide-y divide-neutral-100 dark:divide-[#222222]">
                 {recentNotesState.map((note) => (
                   <div
                     key={note.id}
-                    className="group flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors dark:hover:bg-[#1e1e1e]"
+                    className="group flex items-center gap-4 px-5 py-3.5 hover:bg-neutral-50 transition-colors dark:hover:bg-[#1e1e1e]"
                   >
                     <Link href={`/dashboard/notes/${note.id}`} className="flex flex-1 items-center gap-3.5 min-w-0">
                       <div className={cn(
                         'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[7px]',
                         note.type === 'dsa' ? 'bg-blue-50 text-blue-500 dark:bg-blue-950 dark:text-blue-400' :
                         note.type === 'qa'  ? 'bg-amber-50 text-amber-500 dark:bg-amber-950 dark:text-amber-400' :
-                                                'bg-slate-100 text-slate-400 dark:bg-[#1e1e1e] dark:text-[#888888]'
+                                                'bg-neutral-100 text-neutral-400 dark:bg-[#1e1e1e] dark:text-[#888888]'
                       )}>
                         {note.type === 'dsa' ? <Code2 className="h-4 w-4" /> :
                          note.type === 'qa'  ? <BookOpen className="h-4 w-4" /> :
                                                  <FileText className="h-4 w-4" />}
                       </div>
                        <div className="min-w-0 flex-1">
-                         <p className="truncate text-[14px] font-medium text-slate-900 group-hover:text-slate-600 transition-colors dark:text-[#ededed] dark:group-hover:text-[#888888]">
+                         <p className="truncate text-[14px] font-medium text-neutral-900 group-hover:text-neutral-600 transition-colors dark:text-[#ededed] dark:group-hover:text-[#888888]">
                            {note.title}
                          </p>
                          <div className='flex gap-1'>
-                         <p className="mt-0.5 text-[12px] text-slate-400 uppercase dark:text-[#555555]">
+                         <p className="mt-0.5 text-[12px] text-neutral-400 uppercase dark:text-[#555555]">
                            {note.type + " ·"} 
                          </p>
-                         <p className='mt-0.5 text-[12px] text-slate-400 dark:text-[#555555]'> {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}</p>
+                         <p className='mt-0.5 text-[12px] text-neutral-400 dark:text-[#555555]'> {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}</p>
                          </div>
                        </div>
                     </Link>
@@ -175,14 +175,14 @@ export default function DashboardClient({
                            'p-1.5 rounded-[5px] transition-colors',
                            note.isFavorite
                              ? 'text-amber-400'
-                             : 'text-slate-300 dark:text-[#555555] hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950'
+                             : 'text-neutral-300 dark:text-[#555555] hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950'
                          )}
                        >
                          <Star className={cn('h-4 w-4', note.isFavorite && 'fill-amber-400')} />
                        </button>
                        <Link
                          href={`/dashboard/notes/${note.id}`}
-                         className="p-1.5 rounded-[5px] text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition-colors dark:text-[#555555] dark:hover:text-[#ededed] dark:hover:bg-[#1e1e1e]"
+                         className="p-1.5 rounded-[5px] text-neutral-300 hover:text-neutral-600 hover:bg-neutral-100 transition-colors dark:text-[#555555] dark:hover:text-[#ededed] dark:hover:bg-[#1e1e1e]"
                        >
                          <ArrowRight className="h-4 w-4" />
                        </Link>
@@ -192,10 +192,10 @@ export default function DashboardClient({
               </div>
              ) : (
                <div className="py-14 text-center">
-                 <p className="text-[14px] text-slate-400 dark:text-[#555555]">No recent activity yet.</p>
+                 <p className="text-[14px] text-neutral-400 dark:text-[#555555]">No recent activity yet.</p>
                  <Link
                    href="/dashboard/notes/new"
-                   className="mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-slate-700 hover:text-slate-900 transition-colors dark:text-[#888888] dark:hover:text-[#ededed]"
+                   className="mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-neutral-700 hover:text-neutral-900 transition-colors dark:text-[#888888] dark:hover:text-[#ededed]"
                  >
                    <Plus className="h-4 w-4" />
                    Create your first note
@@ -208,9 +208,9 @@ export default function DashboardClient({
         {/* Right column */}
         <div className="space-y-4">
            {/* Quick Actions */}
-           <div className="rounded-[10px] border border-slate-200 overflow-hidden bg-white dark:border-[#2a2a2a] dark:bg-[#161616]">
-             <div className="border-b border-slate-100 px-5 py-3.5 dark:border-[#222222]">
-               <h3 className="text-[14px] font-medium text-slate-900 dark:text-[#ededed]">Quick Actions</h3>
+           <div className="rounded-[10px] border border-neutral-200 overflow-hidden bg-white dark:border-[#2a2a2a] dark:bg-[#161616]">
+             <div className="border-b border-neutral-100 px-5 py-3.5 dark:border-[#222222]">
+               <h3 className="text-[14px] font-medium text-neutral-900 dark:text-[#ededed]">Quick Actions</h3>
              </div>
              <div className="grid grid-cols-2 gap-2 p-3">
                <QuickActionBtn icon={<Code2 className="h-5 w-5" />}    label="DSA Note"  href="/dashboard/notes/new?type=dsa" />
@@ -227,13 +227,13 @@ export default function DashboardClient({
 
 function StatCard({ label, value, icon }: { label: string; value: number; icon: ReactNode }) {
   return (
-    <div className="rounded-[10px] border border-slate-200 p-4 hover:border-slate-300 transition-colors bg-white dark:border-[#2a2a2a] dark:bg-[#161616] dark:hover:border-[#3a3a3a]">
+    <div className="rounded-[10px] border border-neutral-200 p-4 hover:border-neutral-300 transition-colors bg-white dark:border-[#2a2a2a] dark:bg-[#161616] dark:hover:border-[#3a3a3a]">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-[11.5px] font-medium uppercase tracking-widest text-slate-400 dark:text-[#555555]">{label}</p>
-          <p className="mt-1.5 text-2xl font-medium text-slate-900 dark:text-[#ededed]">{value}</p>
+          <p className="text-[11.5px] font-medium uppercase tracking-widest text-neutral-400 dark:text-[#555555]">{label}</p>
+          <p className="mt-1.5 text-2xl font-medium text-neutral-900 dark:text-[#ededed]">{value}</p>
         </div>
-        <div className="flex h-9 w-9 items-center justify-center rounded-[7px] bg-slate-100 text-slate-500 dark:bg-[#1e1e1e] dark:text-[#888888]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-[7px] bg-neutral-100 text-neutral-500 dark:bg-[#1e1e1e] dark:text-[#888888]">
           {icon}
         </div>
       </div>
@@ -245,10 +245,10 @@ function QuickActionBtn({ icon, label, href }: { icon: ReactNode; label: string;
   return (
     <Link
       href={href}
-      className="flex flex-col items-center justify-center gap-2 rounded-[7px] border border-slate-200 p-4 hover:border-slate-300 hover:bg-slate-50 transition-colors dark:border-[#2a2a2a] dark:hover:border-[#3a3a3a] dark:hover:bg-[#1e1e1e]"
+      className="flex flex-col items-center justify-center gap-2 rounded-[7px] border border-neutral-200 p-4 hover:border-neutral-300 hover:bg-neutral-50 transition-colors dark:border-[#2a2a2a] dark:hover:border-[#3a3a3a] dark:hover:bg-[#1e1e1e]"
     >
-      <div className="text-slate-400 dark:text-[#888888]">{icon}</div>
-      <span className="text-[11.5px] font-medium uppercase tracking-wider text-slate-500 dark:text-[#888888]">{label}</span>
+      <div className="text-neutral-400 dark:text-[#888888]">{icon}</div>
+      <span className="text-[11.5px] font-medium uppercase tracking-wider text-neutral-500 dark:text-[#888888]">{label}</span>
     </Link>
   );
 }

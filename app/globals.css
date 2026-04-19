@@ -32,6 +32,11 @@
 
   /* Animation */
   --animate-shine: shine 1.5s ease-out infinite;
+
+  /* Scrollbar colors - Light mode (Tailwind neutral) */
+  --color-scrollbar-track: #f3f4f6; /* neutral-100 */
+  --color-scrollbar-thumb: #9ca3af; /* neutral-400 */
+  --color-scrollbar-thumb-hover: #6b7280; /* neutral-500 */
 }
 
 /* Global font defaults */
@@ -64,12 +69,17 @@ body {
   --color-qa-bg: #451a03;
   --color-qa-text: #fbbf24;
   --color-favorite: #fbbf24;
-  --color-destructive: #f87171;
+   --color-destructive: #f87171;
 
-  --color-code-bg: #0d1117;
-  --color-code-header: #161616;
-  --color-code-border: #2a2a2a;
-}
+   --color-code-bg: #0d1117;
+   --color-code-header: #161616;
+   --color-code-border: #2a2a2a;
+
+   /* Scrollbar - dark mode */
+   --color-scrollbar-track: #1e1e1e;
+   --color-scrollbar-thumb: #3a3a3a;
+   --color-scrollbar-thumb-hover: #4a4a4a;
+ }
 
 /* Syntax highlighting */
 .dark .prism-code,
@@ -294,6 +304,48 @@ body {
    .font-sans { font-family: var(--font-dm-sans); }
    .font-serif { font-family: var(--font-dm-serif); }
  }
+
+/* Scrollbar styling - Light mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-thumb-hover);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
+}
+
+/* Dark mode scrollbar */
+.dark::-webkit-scrollbar-track {
+  background: var(--color-scrollbar-track);
+}
+
+.dark::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb);
+}
+
+.dark::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-thumb-hover);
+}
+
+.dark * {
+  scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
+}
 
 /* Markdown content styling */
 .markdown-content {

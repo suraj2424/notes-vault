@@ -5,8 +5,16 @@ import { redirect } from 'next/navigation';
 export default async function NotesLibraryPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const {
+    page: pageParam,
+    pageSize: pageSizeParam,
+    type: typeParam,
+    search: searchParam,
+    filter: filterParam,
+  } = await searchParams;
+
   const user = await getCurrentUser();
   if (!user) {
     redirect('/');
@@ -16,11 +24,11 @@ export default async function NotesLibraryPage({
   const { connectToDatabase } = await import('@/lib/mongodb');
   const Note = (await import('@/models/Note')).default;
 
-  const page = parseInt((searchParams.page as string) || '1');
-  const pageSize = parseInt((searchParams.pageSize as string) || '20');
-  const type = searchParams.type as 'dsa' | 'qa' | 'general' | undefined;
-  const search = searchParams.search as string | undefined;
-  const favorite = searchParams.filter === 'favorites';
+  const page = parseInt((pageParam as string) || '1');
+  const pageSize = parseInt((pageSizeParam as string) || '20');
+  const type = typeParam as 'dsa' | 'qa' | 'general' | undefined;
+  const search = searchParam as string | undefined;
+  const favorite = filterParam === 'favorites';
 
   const query: any = { userId: user.userId };
   if (type) query.type = type;

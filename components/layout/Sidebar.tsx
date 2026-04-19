@@ -166,7 +166,6 @@ export function Sidebar() {
               </div>
               <div className="flex-1 min-w-0 text-left">
                 <p className="text-[13px] font-medium text-neutral-800 truncate dark:text-neutral-100">{user?.name || 'User'}</p>
-                <p className="text-[11px] text-neutral-500 truncate dark:text-neutral-400">Free plan</p>
               </div>
              <ChevronUp className={cn(
                'h-[17px] w-[17px] flex-shrink-0 opacity-70 transition-transform',

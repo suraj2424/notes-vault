@@ -82,14 +82,14 @@ function NoteCard({ note }: { note: Note }) {
   };
 
   return (
-    <div className="group relative flex h-full flex-col rounded-[10px] border border-slate-200 bg-white transition-colors hover:border-slate-300 dark:border-[#2a2a2a] dark:bg-[#161616] dark:hover:border-[#3a3a3a]">
+    <div className="group relative flex h-full flex-col rounded-[10px] border border-neutral-200 bg-white transition-colors hover:border-neutral-300 dark:border-[#2a2a2a] dark:bg-[#161616] dark:hover:border-[#3a3a3a]">
       <div className="flex flex-col h-full p-5">
         <div className="flex items-start gap-3">
           <div className={cn(
-            "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[7px] border border-slate-200 dark:border-[#2a2a2a]",
+            "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[7px] border border-neutral-200 dark:border-[#2a2a2a]",
             note.type === 'dsa' ? "bg-blue-50 text-blue-500 dark:bg-blue-950 dark:text-blue-400" :
             note.type === 'qa' ? "bg-amber-50 text-amber-500 dark:bg-amber-950 dark:text-amber-400" :
-            "bg-slate-100 text-slate-400 dark:bg-[#1e1e1e] dark:text-[#888888]"
+            "bg-neutral-100 text-neutral-400 dark:bg-[#1e1e1e] dark:text-[#888888]"
           )}>
             {note.type === 'dsa' ? <Code2 className="h-4 w-4" /> :
              note.type === 'qa' ? <BookOpen className="h-4 w-4" /> :
@@ -97,7 +97,7 @@ function NoteCard({ note }: { note: Note }) {
           </div>
           <div className="flex-1 min-w-0">
             <Link href={`/dashboard/notes/${note.id}`}>
-              <h3 className="text-[13px] font-medium leading-snug text-slate-900 transition-colors group-hover:text-slate-600 dark:text-[#ededed] dark:group-hover:text-[#888888]">
+              <h3 className="text-[14px] font-medium leading-snug text-neutral-900 transition-colors group-hover:text-neutral-600 dark:text-[#ededed] dark:group-hover:text-[#888888]">
                 {note.title}
               </h3>
             </Link>
@@ -107,34 +107,34 @@ function NoteCard({ note }: { note: Note }) {
         {note.type === 'dsa' && note.dsa && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             <span className={cn(
-              "rounded-full px-2 py-0.5 text-[9.5px] font-medium uppercase tracking-wider",
+              "rounded-full px-2 py-0.5 text-[10.5px] font-medium uppercase tracking-wider",
               note.dsa.difficulty === 'Easy' ? "bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-400" :
               note.dsa.difficulty === 'Medium' ? "bg-yellow-50 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-400" :
               "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
             )}>
               {note.dsa.difficulty}
             </span>
-            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[9.5px] font-medium uppercase tracking-wider text-blue-500 dark:bg-blue-950 dark:text-blue-400">
+            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10.5px] font-medium uppercase tracking-wider text-blue-500 dark:bg-blue-950 dark:text-blue-400">
               {note.dsa.platform}
             </span>
           </div>
         )}
 
         {note.type === 'qa' && note.qa && note.qa.content && (
-          <p className="mt-2 line-clamp-2 text-[12px] italic text-slate-500 dark:text-[#888888]">
+          <p className="mt-2 line-clamp-2 text-[13px] italic text-neutral-500 dark:text-[#888888]">
             &ldquo;{note.qa.content.replace(/[#*`]/g, '').split('\n')[0]}&rdquo;
           </p>
         )}
 
         {note.type === 'general' && note.content && (
-          <p className="mt-2 line-clamp-2 text-[12px] text-slate-500 dark:text-[#888888]">
+          <p className="mt-2 line-clamp-2 text-[13px] text-neutral-500 dark:text-[#888888]">
             {note.content.replace(/[#*`]/g, '')}
           </p>
         )}
 
         <div className="flex-1 mt-2" />
-        <div className="border-t border-slate-100 dark:border-[#222222]" />
-        <div className="flex items-center justify-between pt-2 text-[10px] uppercase tracking-widest text-slate-400 dark:text-[#555555]">
+        <div className="border-t border-neutral-100 dark:border-[#222222]" />
+        <div className="flex items-center justify-between pt-2 text-[11px] uppercase tracking-widest text-neutral-400 dark:text-[#555555]">
           <div className="flex items-center gap-2">
             <span>{note.type}</span>
             <span>•</span>
@@ -144,7 +144,7 @@ function NoteCard({ note }: { note: Note }) {
             onClick={toggleFavorite}
             className={cn(
               "flex h-7 w-7 items-center justify-center rounded-[5px] transition-colors",
-              isFavorite ? "text-amber-400" : "text-slate-300 hover:text-amber-400 hover:bg-amber-50 dark:text-[#555555] dark:hover:bg-amber-950"
+              isFavorite ? "text-amber-400" : "text-neutral-300 hover:text-amber-400 hover:bg-amber-50 dark:text-[#555555] dark:hover:bg-amber-950"
             )}
           >
             <Star className={cn("h-3.5 w-3.5", isFavorite && "fill-amber-400")} />
@@ -294,23 +294,23 @@ export function NotesLibraryClient({
     <div>
       <header className="mb-5 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
         <div>
-          <h1 className="font-serif text-2xl tracking-tight text-slate-900 dark:text-[#ededed]">Notes Library</h1>
-          <p className="mt-1 text-[13px] text-slate-500 dark:text-[#888888]">Manage and organize your knowledge.</p>
+          <h1 className="font-serif text-[27px] tracking-tight text-neutral-900 dark:text-[#ededed]">Notes Library</h1>
+          <p className="mt-1 text-[14px] text-neutral-500 dark:text-[#888888]">Manage and organize your knowledge.</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-slate-400 dark:text-[#555555]" />
+            <Search className="absolute left-3 top-1/2 h-[15px] w-[15px] -tranneutral-y-1/2 text-neutral-400 dark:text-[#555555]" />
             <input
               type="text"
               placeholder="Search notes..."
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="h-8 w-full rounded-[7px] border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-[12.5px] outline-none transition-all focus:border-slate-300 focus:bg-white placeholder:text-slate-400 dark:border-[#2a2a2a] dark:bg-[#1e1e1e] dark:focus:border-[#3a3a3a] dark:focus:bg-[#232323] dark:placeholder:text-[#444444] dark:text-[#ededed]"
+              className="h-8 w-full rounded-[7px] border border-neutral-200 bg-neutral-50 py-2 pl-10 pr-4 text-[12.5px] outline-none transition-all focus:border-neutral-300 focus:bg-white placeholder:text-neutral-400 dark:border-[#2a2a2a] dark:bg-[#1e1e1e] dark:focus:border-[#3a3a3a] dark:focus:bg-[#232323] dark:placeholder:text-[#444444] dark:text-[#ededed]"
             />
           </div>
           <Link
             href="/dashboard/notes/new"
-            className="flex flex-1 items-center justify-center gap-2 h-8 rounded-[7px] bg-[#1a1a1a] px-4 text-[12.5px] font-medium text-white transition-colors hover:bg-slate-800 dark:bg-[#ededed] dark:text-[#0f0f0f] dark:hover:bg-[#d4d4d4] sm:flex-initial"
+            className="flex flex-1 items-center justify-center gap-2 h-8 rounded-[7px] bg-[#1a1a1a] px-4 text-[14px] font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-[#ededed] dark:text-[#0f0f0f] dark:hover:bg-[#d4d4d4] sm:flex-initial"
           >
             <Plus className="h-3.5 w-3.5" />
             New
@@ -319,33 +319,33 @@ export function NotesLibraryClient({
       </header>
 
       {/* Filters Bar */}
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-[10px] border border-slate-200 bg-white p-4 dark:border-[#2a2a2a] dark:bg-[#161616]">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-[10px] border border-neutral-200 bg-white p-4 dark:border-[#2a2a2a] dark:bg-[#161616]">
         <div className="flex flex-wrap items-center gap-2">
-          <Filter className="mr-2 h-[15px] w-[15px] text-slate-400 dark:text-[#555555]" />
+          <Filter className="mr-2 h-[15px] w-[15px] text-neutral-400 dark:text-[#555555]" />
           {(['all', 'dsa', 'qa', 'general'] as const).map((t) => (
             <button
               key={t}
               onClick={() => { handleTypeFilterChange(t); }}
-              className={cn(
-                "rounded-full px-4 py-1.5 text-[10.5px] font-medium uppercase tracking-wider transition-colors",
-                typeFilter === t
-                  ? "bg-[#1a1a1a] text-white dark:bg-[#ededed] dark:text-[#0f0f0f]"
-                  : "bg-slate-50 text-slate-500 hover:bg-slate-100 dark:bg-[#1e1e1e] dark:text-[#888888] dark:hover:bg-[#232323]"
-              )}
-            >
+               className={cn(
+                 "rounded-full px-4 py-1.5 text-[11.5px] font-medium uppercase tracking-wider transition-colors",
+                 typeFilter === t
+                   ? "bg-[#1a1a1a] text-white dark:bg-[#ededed] dark:text-[#0f0f0f]"
+                   : "bg-neutral-50 text-neutral-500 hover:bg-neutral-100 dark:bg-[#1e1e1e] dark:text-[#888888] dark:hover:bg-[#232323]"
+               )}
+             >
               {t}
             </button>
           ))}
-          <div className="mx-2 h-5 w-px bg-slate-100 dark:bg-[#2a2a2a]" />
-          <button
-            onClick={handleFavoritesToggle}
-            className={cn(
-              "flex items-center gap-2 rounded-full px-4 py-1.5 text-[10.5px] font-medium uppercase tracking-wider transition-colors",
-              showFavoritesOnly
-                ? "bg-amber-50 text-amber-500 dark:bg-amber-950 dark:text-amber-400"
-                : "bg-slate-50 text-slate-500 hover:bg-slate-100 dark:bg-[#1e1e1e] dark:text-[#888888] dark:hover:bg-[#232323]"
-            )}
-          >
+          <div className="mx-2 h-5 w-px bg-neutral-100 dark:bg-[#2a2a2a]" />
+           <button
+             onClick={handleFavoritesToggle}
+             className={cn(
+               "flex items-center gap-2 rounded-full px-4 py-1.5 text-[11.5px] font-medium uppercase tracking-wider transition-colors",
+               showFavoritesOnly
+                 ? "bg-amber-50 text-amber-500 dark:bg-amber-950 dark:text-amber-400"
+                 : "bg-neutral-50 text-neutral-500 hover:bg-neutral-100 dark:bg-[#1e1e1e] dark:text-[#888888] dark:hover:bg-[#232323]"
+             )}
+           >
             <Star className={cn("h-3.5 w-3.5", showFavoritesOnly && "fill-amber-400")} />
             Favorites
           </button>
@@ -354,7 +354,7 @@ export function NotesLibraryClient({
         <div className="relative">
           <button
             onClick={() => setShowSortDropdown(!showSortDropdown)}
-            className="flex h-8 items-center gap-2 rounded-[7px] px-3 text-[12.5px] font-medium text-slate-500 transition-colors hover:bg-slate-50 dark:text-[#888888] dark:hover:bg-[#1e1e1e]"
+            className="flex h-8 items-center gap-2 rounded-[7px] px-3 text-[12.5px] font-medium text-neutral-500 transition-colors hover:bg-neutral-50 dark:text-[#888888] dark:hover:bg-[#1e1e1e]"
           >
             <ArrowUpDown className="h-3.5 w-3.5" />
             <span>{sortOptions.find(o => o.value === sortBy)?.label}</span>
@@ -374,16 +374,16 @@ export function NotesLibraryClient({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full z-20 mt-1 w-40 overflow-hidden rounded-[7px] border border-slate-200 bg-white shadow-lg dark:border-[#2a2a2a] dark:bg-[#161616] dark:shadow-2xl"
+                  className="absolute right-0 top-full z-20 mt-1 w-40 overflow-hidden rounded-[7px] border border-neutral-200 bg-white shadow-lg dark:border-[#2a2a2a] dark:bg-[#161616] dark:shadow-2xl"
                 >
                   {sortOptions.map((option) => (
                     <button
                       key={option.value}
                       onClick={() => { setSortBy(option.value); setShowSortDropdown(false); }}
-                      className={cn(
-                        "w-full px-2.5 py-2 text-left text-[12.5px] transition-colors hover:bg-slate-50 dark:hover:bg-[#1e1e1e]",
-                        sortBy === option.value ? "font-medium text-slate-900 dark:text-[#ededed]" : "text-slate-600 dark:text-[#888888]"
-                      )}
+                       className={cn(
+                         "w-full px-2.5 py-2 text-left text-[13.5px] transition-colors hover:bg-neutral-50 dark:hover:bg-[#1e1e1e]",
+                         sortBy === option.value ? "font-medium text-neutral-900 dark:text-[#ededed]" : "text-neutral-600 dark:text-[#888888]"
+                       )}
                     >
                       {option.label}
                     </button>
@@ -399,7 +399,7 @@ export function NotesLibraryClient({
       {isPending || (notes.length === 0 && totalPagesState > 0) ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="h-44 animate-pulse rounded-[10px] bg-slate-50 dark:bg-[#1e1e1e]" />
+            <div key={i} className="h-44 animate-pulse rounded-[10px] bg-neutral-50 dark:bg-[#1e1e1e]" />
           ))}
         </div>
       ) : notes.length > 0 ? (
@@ -419,12 +419,12 @@ export function NotesLibraryClient({
           </AnimatePresence>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-[10px] border border-dashed border-slate-200 bg-white py-24 text-center dark:border-[#2a2a2a] dark:bg-[#161616]">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center text-slate-300 dark:text-[#555555]">
+        <div className="flex flex-col items-center justify-center rounded-[10px] border border-dashed border-neutral-200 bg-white py-24 text-center dark:border-[#2a2a2a] dark:bg-[#161616]">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center text-neutral-300 dark:text-[#555555]">
             <Search className="h-8 w-8" />
           </div>
-          <h3 className={cn('text-[17px] text-slate-900 dark:text-[#ededed]', dmSerif.className)}>No notes found</h3>
-          <p className="mt-2 max-w-[320px] text-[13px] text-slate-500 dark:text-[#888888]">Try adjusting your search or filters.</p>
+          <h3 className={cn('text-[17px] text-neutral-900 dark:text-[#ededed]', dmSerif.className)}>No notes found</h3>
+           <p className="mt-2 max-w-[320px] text-[14px] text-neutral-500 dark:text-[#888888]">Try adjusting your search or filters.</p>
           <button
             onClick={() => {
               setSearchQuery('');
@@ -433,7 +433,7 @@ export function NotesLibraryClient({
               setPage(1);
               router.push('/dashboard/notes');
             }}
-            className="mt-6 text-[12.5px] font-medium text-slate-500 hover:text-slate-700 transition-colors dark:text-[#888888] dark:hover:text-[#ededed]"
+             className="mt-6 text-[14px] font-medium text-neutral-500 hover:text-neutral-700 transition-colors dark:text-[#888888] dark:hover:text-[#ededed]"
           >
             Clear all filters
           </button>
@@ -445,8 +445,8 @@ export function NotesLibraryClient({
         <div className="mt-5 flex items-center justify-center gap-2">
           <button
             onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
-            className="flex h-8 items-center gap-1 rounded-[7px] px-3 text-[12.5px] font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#888888] dark:hover:bg-[#1e1e1e]"
+             disabled={page === 1}
+             className="flex h-8 items-center gap-1 rounded-[7px] px-3 text-[14px] font-medium text-neutral-600 transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#888888] dark:hover:bg-[#1e1e1e]"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
             Prev
@@ -467,12 +467,12 @@ export function NotesLibraryClient({
                 <button
                   key={pageNum}
                   onClick={() => handlePageChange(pageNum)}
-                  className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-[7px] text-[12.5px] font-medium transition-colors",
-                    page === pageNum
-                      ? "bg-[#1a1a1a] text-white dark:bg-[#ededed] dark:text-[#0f0f0f]"
-                      : "text-slate-600 hover:bg-slate-50 dark:text-[#888888] dark:hover:bg-[#1e1e1e]"
-                  )}
+                   className={cn(
+                     "flex h-8 w-8 items-center justify-center rounded-[7px] text-[14px] font-medium transition-colors",
+                     page === pageNum
+                       ? "bg-[#1a1a1a] text-white dark:bg-[#ededed] dark:text-[#0f0f0f]"
+                       : "text-neutral-600 hover:bg-neutral-50 dark:text-[#888888] dark:hover:bg-[#1e1e1e]"
+                   )}
                 >
                   {pageNum}
                 </button>
@@ -481,8 +481,8 @@ export function NotesLibraryClient({
           </div>
           <button
             onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPagesState}
-            className="flex h-8 items-center gap-1 rounded-[7px] px-3 text-[12.5px] font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#888888] dark:hover:bg-[#1e1e1e]"
+             disabled={page === totalPagesState}
+             className="flex h-8 items-center gap-1 rounded-[7px] px-3 text-[14px] font-medium text-neutral-600 transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#888888] dark:hover:bg-[#1e1e1e]"
           >
             Next
             <ChevronRight className="h-3.5 w-3.5" />

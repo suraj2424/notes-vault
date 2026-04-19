@@ -24,7 +24,32 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${dmSerif.variable}`}>
+    <html lang="en" className={`${dmSans.variable} ${dmSerif.variable}`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const stored = localStorage.getItem('theme');
+                  if (stored === 'dark' || stored === 'light') {
+                    document.documentElement.classList.add(stored);
+                  } else if (stored === 'system') {
+                    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    document.documentElement.classList.add(isDark ? 'dark' : 'light');
+                  } else {
+                    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    document.documentElement.classList.add(isDark ? 'dark' : 'light');
+                  }
+                } catch (e) {
+                  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  document.documentElement.classList.add(isDark ? 'dark' : 'light');
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body suppressHydrationWarning className="bg-[var(--color-bg)] text-[var(--color-text-primary)] antialiased">
         <ThemeProvider>
           <ErrorBoundary>
