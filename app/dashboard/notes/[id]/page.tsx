@@ -254,9 +254,71 @@ export default function NoteDetailPage({
           {/* Problem Statement - Full Width */}
           {note.dsa.problemStatement && (
             <div className="rounded-[10px] border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-              <div className="markdown-content max-w-none text-[14px]">
+              <div className="max-w-none text-[14px] text-neutral-700 dark:text-neutral-300">
                 <ReactMarkdown
+                  // remarkPlugins={[remarkGfm]} // Highly recommended for tables/tasklists
                   components={{
+                    // --- HEADINGS ---
+                    h1: ({ children }) => (
+                      <h1 className="mb-4 text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                        {children}
+                      </h1>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className="mb-3 mt-6 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+                        {children}
+                      </h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 className="mb-2 mt-4 text-lg font-semibold text-neutral-800 dark:text-neutral-200">
+                        {children}
+                      </h3>
+                    ),
+
+                    // --- TEXT ELEMENTS ---
+                    p: ({ children }) => (
+                      <p className="mb-4 leading-relaxed">{children}</p>
+                    ),
+                    strong: ({ children }) => (
+                      <strong className="font-semibold text-neutral-900 dark:text-neutral-100">
+                        {children}
+                      </strong>
+                    ),
+                    a: ({ children, href }) => (
+                      <a
+                        href={href}
+                        className="text-blue-600 underline decoration-neutral-400 underline-offset-4 hover:text-blue-500 dark:text-blue-400"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {children}
+                      </a>
+                    ),
+
+                    // --- LISTS ---
+                    ul: ({ children }) => (
+                      <ul className="mb-4 ml-6 list-disc space-y-1">
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className="mb-4 ml-6 list-decimal space-y-1">
+                        {children}
+                      </ol>
+                    ),
+                    li: ({ children }) => <li className="pl-1">{children}</li>,
+
+                    // --- BLOCKQUOTES & HR ---
+                    blockquote: ({ children }) => (
+                      <blockquote className="my-4 border-l-4 border-neutral-300 pl-4 italic text-neutral-600 dark:border-neutral-700 dark:text-neutral-400">
+                        {children}
+                      </blockquote>
+                    ),
+                    hr: () => (
+                      <hr className="my-6 border-neutral-200 dark:border-neutral-800" />
+                    ),
+
+                    // --- CODE RENDERING ---
                     code: ({ node, className, children, ...props }) => {
                       const match = /language-(\w+)/.exec(className || "");
                       const language = match ? match[1] : "";
@@ -265,21 +327,50 @@ export default function NoteDetailPage({
 
                       if (isInline) {
                         return (
-                          <code className={className} {...props}>
+                          <code
+                            className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[13px] font-medium text-neutral-900 dark:bg-neutral-800 dark:text-neutral-200"
+                            {...props}
+                          >
                             {children}
                           </code>
                         );
                       }
 
                       return (
-                        <CodeBlock
-                          language={language}
-                          theme={resolvedTheme === "light" ? "light" : "dark"}
-                        >
-                          {codeString}
-                        </CodeBlock>
+                        <div className="my-4 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
+                          <CodeBlock
+                            language={language}
+                            theme={resolvedTheme === "light" ? "light" : "dark"}
+                          >
+                            {codeString}
+                          </CodeBlock>
+                        </div>
                       );
                     },
+
+                    // --- TABLES (Requires remark-gfm) ---
+                    table: ({ children }) => (
+                      <div className="my-6 overflow-x-auto">
+                        <table className="w-full border-collapse text-left text-sm">
+                          {children}
+                        </table>
+                      </div>
+                    ),
+                    thead: ({ children }) => (
+                      <thead className="bg-neutral-50 dark:bg-neutral-800/50">
+                        {children}
+                      </thead>
+                    ),
+                    th: ({ children }) => (
+                      <th className="border border-neutral-200 p-2 font-semibold dark:border-neutral-700">
+                        {children}
+                      </th>
+                    ),
+                    td: ({ children }) => (
+                      <td className="border border-neutral-200 p-2 dark:border-neutral-700">
+                        {children}
+                      </td>
+                    ),
                   }}
                 >
                   {note.dsa.problemStatement}
@@ -345,12 +436,55 @@ export default function NoteDetailPage({
           {/* Notes / Key Takeaways */}
           {note.dsa.notes && (
             <div className="rounded-[10px] border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-              <h3 className="mb-3 text-[14px] font-medium text-neutral-900 dark:text-neutral-100">
+              <h3 className="mb-5 text-[12px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                 Notes
               </h3>
-              <div className="prose prose-sm prose-neutral max-w-none text-[14px] text-neutral-600 dark:text-neutral-400">
+              <div className="text-[14px] leading-relaxed">
                 <ReactMarkdown
                   components={{
+                    // --- HEADINGS (Added margins for hierarchy) ---
+                    h1: ({ children }) => (
+                      <h1 className="mb-6 mt-2 text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                        {children}
+                      </h1>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className="mb-4 mt-8 text-xl font-bold text-neutral-900 dark:text-neutral-100">
+                        {children}
+                      </h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 className="mb-3 mt-6 text-lg font-semibold text-neutral-800 dark:text-neutral-200">
+                        {children}
+                      </h3>
+                    ),
+
+                    // --- TEXT & LISTS (Added mb-4 for paragraph spacing) ---
+                    p: ({ children }) => (
+                      <p className="mb-4 text-neutral-700 dark:text-neutral-300">
+                        {children}
+                      </p>
+                    ),
+
+                    ul: ({ children }) => (
+                      <ul className="mb-4 ml-6 list-disc space-y-2 text-neutral-700 dark:text-neutral-300">
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className="mb-4 ml-6 list-decimal space-y-2 text-neutral-700 dark:text-neutral-300">
+                        {children}
+                      </ol>
+                    ),
+                    li: ({ children }) => <li className="pl-1">{children}</li>,
+
+                    strong: ({ children }) => (
+                      <strong className="font-bold text-neutral-900 dark:text-neutral-100">
+                        {children}
+                      </strong>
+                    ),
+
+                    // --- CODE HANDLING ---
                     code: ({ node, className, children, ...props }) => {
                       const match = /language-(\w+)/.exec(className || "");
                       const language = match ? match[1] : "";
@@ -359,21 +493,60 @@ export default function NoteDetailPage({
 
                       if (isInline) {
                         return (
-                          <code className={className} {...props}>
+                          <code
+                            className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[13px] font-semibold text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200"
+                            {...props}
+                          >
                             {children}
                           </code>
                         );
                       }
 
                       return (
-                        <CodeBlock
-                          language={language}
-                          theme={resolvedTheme === "light" ? "light" : "dark"}
-                        >
-                          {codeString}
-                        </CodeBlock>
+                        <div className="my-5">
+                          <CodeBlock
+                            language={language}
+                            theme={resolvedTheme === "light" ? "light" : "dark"}
+                          >
+                            {codeString}
+                          </CodeBlock>
+                        </div>
                       );
                     },
+
+                    // --- BLOCKQUOTES & HR ---
+                    blockquote: ({ children }) => (
+                      <blockquote className="my-6 border-l-4 border-neutral-200 pl-4 italic text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
+                        {children}
+                      </blockquote>
+                    ),
+                    hr: () => (
+                      <hr className="my-8 border-neutral-200 dark:border-neutral-800" />
+                    ),
+
+                    // --- TABLES ---
+                    table: ({ children }) => (
+                      <div className="my-6 overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
+                        <table className="w-full border-collapse text-left text-sm">
+                          {children}
+                        </table>
+                      </div>
+                    ),
+                    thead: ({ children }) => (
+                      <thead className="bg-neutral-50 dark:bg-neutral-800/50">
+                        {children}
+                      </thead>
+                    ),
+                    th: ({ children }) => (
+                      <th className="border border-neutral-200 p-2.5 font-semibold text-neutral-900 dark:border-neutral-700 dark:text-neutral-100">
+                        {children}
+                      </th>
+                    ),
+                    td: ({ children }) => (
+                      <td className="border border-neutral-200 p-2.5 text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
+                        {children}
+                      </td>
+                    ),
                   }}
                 >
                   {note.dsa.notes}
@@ -389,7 +562,7 @@ export default function NoteDetailPage({
         <div className="space-y-5">
           {note.qa.content && (
             <div className="rounded-[10px] border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-              <div className="markdown-content max-w-none text-[14px]">
+              <div className="max-w-none text-[14px]">
                 <ReactMarkdown
                   components={{
                     code: ({ node, className, children, ...props }) => {
@@ -448,7 +621,7 @@ export default function NoteDetailPage({
       {/* General Content */}
       {note.type === "general" && note.content && (
         <div className="rounded-[10px] border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="markdown-content max-w-none text-[14px]">
+          <div className="max-w-none text-[14px]">
             <ReactMarkdown
               components={{
                 code: ({ node, className, children, ...props }) => {

@@ -6,8 +6,8 @@ import { Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
-// Remove token backgrounds from prism styles
-const removeBackgrounds = (style:typeof oneDark) =>
+// Helper to remove token backgrounds so Tailwind controls the container color
+const removeBackgrounds = (style: typeof oneDark) =>
   Object.fromEntries(
     Object.entries(style).map(([key, value]) => {
       if (typeof value === 'object' && value !== null) {
@@ -37,51 +37,53 @@ export function CodeBlock({ language = 'text', children, theme = 'dark' }: CodeB
     setTimeout(() => setCopied(false), 2000);
   };
 
-   const style = theme === 'light' ? customOneLight : customOneDark;
+  const style = theme === 'light' ? customOneLight : customOneDark;
 
-   return (
-     <div className="relative group rounded-[10px] overflow-hidden border border-neutral-200 bg-white dark:border-[#2a2a2a] dark:bg-neutral-900">
-       {/* Header bar */}
-       <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-100 px-4 py-2.5 text-neutral-600 dark:border-[#2a2a2a] dark:bg-[#161616] dark:text-[#555555] capitalize">
-         <span className="text-[12px] font-medium">
-           {lang ? lang : 'Code'}
-         </span>
-         <button
-           onClick={copyToClipboard}
-           className={cn(
-             "flex items-center gap-1 text-[11px] transition-colors",
-             copied ? "text-green-600 dark:text-green-400" : "text-neutral-500 hover:text-neutral-900 dark:text-[#555555] dark:hover:text-[#ededed]"
-           )}
-           title={copied ? "Copied" : "Copy code"}
-         >
-           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-           <span>{copied ? 'Copied' : 'Copy'}</span>
-         </button>
-       </div>
-       <div className="overflow-x-auto [&_span]:!bg-transparent">
-         <SyntaxHighlighter
-           language={lang}
-           style={style}
-           PreTag="div"
-           className="!m-0 !p-4"
-           customStyle={{
-             margin: 0,
-             padding: '1rem',
-             fontSize: '0.75rem',
-             lineHeight: '1.6',
-           }}
-         >
-           {codeString}
-         </SyntaxHighlighter>
-       </div>
-     </div>
-   );
+  return (
+    <div className="group relative my-6 overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+      {/* Header bar: Neutral-50 for light, Neutral-900 for dark */}
+      <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-50 px-4 py-2 dark:border-neutral-800 dark:bg-neutral-900/50">
+        <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+          {lang || 'Code'}
+        </span>
+        <button
+          onClick={copyToClipboard}
+          className={cn(
+            "flex items-center gap-1.5 text-[11px] font-medium transition-all",
+            copied 
+              ? "text-green-600 dark:text-green-400" 
+              : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+          )}
+        >
+          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          <span>{copied ? 'Copied!' : 'Copy'}</span>
+        </button>
+      </div>
+
+      {/* Code Area */}
+      <div className="overflow-x-auto selection:bg-neutral-200 dark:selection:bg-neutral-800">
+        <SyntaxHighlighter
+          language={lang}
+          style={style}
+          PreTag="div"
+          className="!m-0 !bg-transparent !p-4"
+          customStyle={{
+            fontSize: '13px',
+            lineHeight: '1.6',
+            background: 'transparent',
+          }}
+        >
+          {codeString}
+        </SyntaxHighlighter>
+      </div>
+    </div>
+  );
 }
 
 // Inline code component for markdown
 export function InlineCode({ children }: { children: React.ReactNode }) {
   return (
-    <code className="bg-neutral-100 px-1.5 py-0.5 rounded text-sm font-mono text-neutral-600 dark:bg-[#1e1e1e] dark:text-[#888888]">
+    <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[13px] font-semibold text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">
       {children}
     </code>
   );
