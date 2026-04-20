@@ -52,7 +52,7 @@ export default function RecentClient({ userName, initialNotes }: RecentClientPro
 
   return (
     <div className={dmSans.className}>
-      <header className="mb-8 flex items-end justify-between border-b border-neutral-100 pb-6 dark:border-[#222222]">
+      <header className="flex items-end justify-between pb-6 dark:border-[#222222]">
         <div>
           <p className="text-[11px] font-medium uppercase tracking-widest text-neutral-400 mb-1 dark:text-[#555555]">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}

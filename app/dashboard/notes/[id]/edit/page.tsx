@@ -293,9 +293,12 @@ return (
         {/* General */}
         {type === 'general' && (
           <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900">
-            <div className="border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
+            <div className="flex items-center gap-2 border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
               <span className="text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                Content · Markdown supported
+                Content
+              </span>
+              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-500 dark:bg-blue-900/30 dark:text-blue-400">
+                Markdown
               </span>
             </div>
             <textarea
@@ -497,7 +500,7 @@ return (
                 <span className="text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   Content
                 </span>
-                <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-500 dark:bg-amber-900/30 dark:text-amber-400">
+                <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-500 dark:bg-blue-900/30 dark:text-blue-400">
                   Markdown
                 </span>
               </div>

@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { CodeBlock } from "@/components/markdown/CodeBlock";
 import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import remarkGfm from "remark-gfm";
 
 const dmSans = DM_Sans({ subsets: ["latin"], weight: ["300", "400", "500"] });
 const dmSerif = DM_Serif_Display({ subsets: ["latin"], weight: "400" });
@@ -195,7 +196,6 @@ export default function NoteDetailPage({
           </button>
         </div>
       </div>
-
       {/* Blueprint Row 1: Badges & Tags */}
       <div className="mb-6 flex items-center justify-between dark:border-neutral-800">
         {/* Left: Type, Difficulty, Platform, Pattern */}
@@ -248,7 +248,6 @@ export default function NoteDetailPage({
           </div>
         )}
       </div>
-
       {note.type === "dsa" && note.dsa && (
         <div className="space-y-5">
           {/* Problem Statement - Full Width */}
@@ -558,13 +557,57 @@ export default function NoteDetailPage({
       )}
 
       {/* Q&A Content */}
+
       {note.type === "qa" && note.qa && (
-        <div className="space-y-5">
+        <div className="space-y-8">
+          {/* Main Content Area */}
           {note.qa.content && (
-            <div className="rounded-[10px] border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-              <div className="max-w-none text-[14px]">
+            <div className="">
+              <div className="max-w-none text-[14px] leading-relaxed">
                 <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
                   components={{
+                    // --- HEADINGS ---
+                    h1: ({ children }) => (
+                      <h1 className="mb-6 mt-2 text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                        {children}
+                      </h1>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className="mb-4 mt-8 text-xl font-bold text-neutral-900 dark:text-neutral-100">
+                        {children}
+                      </h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 className="mb-3 mt-6 text-lg font-semibold text-neutral-800 dark:text-neutral-200">
+                        {children}
+                      </h3>
+                    ),
+
+                    // --- TEXT & LISTS ---
+                    p: ({ children }) => (
+                      <p className="mb-4 text-neutral-700 dark:text-neutral-300">
+                        {children}
+                      </p>
+                    ),
+                    ul: ({ children }) => (
+                      <ul className="mb-4 ml-6 list-disc space-y-2 text-neutral-700 dark:text-neutral-300">
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className="mb-4 ml-6 list-decimal space-y-2 text-neutral-700 dark:text-neutral-300">
+                        {children}
+                      </ol>
+                    ),
+                    li: ({ children }) => <li className="pl-1">{children}</li>,
+                    strong: ({ children }) => (
+                      <strong className="font-bold text-neutral-900 dark:text-neutral-100">
+                        {children}
+                      </strong>
+                    ),
+
+                    // --- CODE ---
                     code: ({ node, className, children, ...props }) => {
                       const match = /language-(\w+)/.exec(className || "");
                       const language = match ? match[1] : "";
@@ -573,21 +616,53 @@ export default function NoteDetailPage({
 
                       if (isInline) {
                         return (
-                          <code className={className} {...props}>
+                          <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[13px] font-semibold text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">
                             {children}
                           </code>
                         );
                       }
 
                       return (
-                        <CodeBlock
-                          language={language}
-                          theme={resolvedTheme === "light" ? "light" : "dark"}
-                        >
-                          {codeString}
-                        </CodeBlock>
+                        <div className="my-5">
+                          <CodeBlock
+                            language={language}
+                            theme={resolvedTheme === "light" ? "light" : "dark"}
+                          >
+                            {codeString}
+                          </CodeBlock>
+                        </div>
                       );
                     },
+
+                    // --- TABLES ---
+                    table: ({ children }) => (
+                      <div className="my-6 overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
+                        <table className="w-full border-collapse text-left text-[13px]">
+                          {children}
+                        </table>
+                      </div>
+                    ),
+                    thead: ({ children }) => (
+                      <thead className="bg-neutral-50 dark:bg-neutral-800/50">
+                        {children}
+                      </thead>
+                    ),
+                    th: ({ children }) => (
+                      <th className="border-b border-neutral-200 p-3 font-bold text-neutral-900 dark:border-neutral-800 dark:text-neutral-100">
+                        {children}
+                      </th>
+                    ),
+                    td: ({ children }) => (
+                      <td className="border-b border-neutral-100 p-3 text-neutral-700 dark:border-neutral-800/50 dark:text-neutral-300">
+                        {children}
+                      </td>
+                    ),
+
+                    blockquote: ({ children }) => (
+                      <blockquote className="my-6 border-l-4 border-neutral-200 pl-4 italic text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
+                        {children}
+                      </blockquote>
+                    ),
                   }}
                 >
                   {note.qa.content}
@@ -596,19 +671,20 @@ export default function NoteDetailPage({
             </div>
           )}
 
+          {/* Key Takeaways Section */}
           {note.qa.importantPoints &&
             note.qa.importantPoints.filter((p) => p.trim()).length > 0 && (
-              <div className="rounded-[10px] border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-                <h3 className="mb-3 text-[14px] font-medium text-neutral-900 dark:text-neutral-100">
+              <div className="rounded-[10px] border border-neutral-200 bg-neutral-50/50 p-5 dark:border-neutral-800 dark:bg-neutral-900/30">
+                <h3 className="mb-4 text-[12px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   Key Takeaways
                 </h3>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {note.qa.importantPoints.map((point, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-2.5 text-[13.5px] text-neutral-700 dark:text-neutral-300"
+                      className="flex items-start gap-3 text-[14px] leading-snug text-neutral-700 dark:text-neutral-300"
                     >
-                      <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-neutral-400 dark:bg-neutral-500" />
+                      <div className="mt-1.5 flex h-1.5 w-1.5 flex-shrink-0 items-center justify-center rounded-full bg-neutral-400 dark:bg-neutral-600" />
                       <span>{point}</span>
                     </li>
                   ))}
@@ -617,13 +693,68 @@ export default function NoteDetailPage({
             )}
         </div>
       )}
-
       {/* General Content */}
       {note.type === "general" && note.content && (
-        <div className="rounded-[10px] border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="max-w-none text-[14px]">
+        <div className="">
+          <div className="max-w-none text-[14px] leading-relaxed">
             <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
               components={{
+                // --- FIX: Horizontal Rule (Line Break) ---
+                hr: () => (
+                  <hr className="my-8 border-t border-neutral-200 dark:border-neutral-800" />
+                ),
+
+                // --- TABLE RENDERING ---
+                table: ({ children }) => (
+                  <div className="my-6 overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
+                    <table className="w-full border-collapse text-left text-[13px]">
+                      {children}
+                    </table>
+                  </div>
+                ),
+                thead: ({ children }) => (
+                  <thead className="bg-neutral-50 dark:bg-neutral-800/50">
+                    {children}
+                  </thead>
+                ),
+                th: ({ children }) => (
+                  <th className="border-b border-neutral-200 p-3 font-bold text-neutral-900 dark:border-neutral-800 dark:text-neutral-100">
+                    {children}
+                  </th>
+                ),
+                td: ({ children }) => (
+                  <td className="border-b border-neutral-100 p-3 text-neutral-700 dark:border-neutral-800/50 dark:text-neutral-300">
+                    {children}
+                  </td>
+                ),
+
+                // --- HEADINGS ---
+                h1: ({ children }) => (
+                  <h1 className="mb-6 mt-2 text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                    {children}
+                  </h1>
+                ),
+                h2: ({ children }) => (
+                  <h2 className="mb-4 mt-8 text-xl font-bold text-neutral-900 dark:text-neutral-100">
+                    {children}
+                  </h2>
+                ),
+
+                // --- TEXT & LISTS ---
+                p: ({ children }) => (
+                  <p className="mb-4 text-neutral-700 dark:text-neutral-300">
+                    {children}
+                  </p>
+                ),
+                ul: ({ children }) => (
+                  <ul className="mb-4 ml-6 list-disc space-y-2 text-neutral-700 dark:text-neutral-300">
+                    {children}
+                  </ul>
+                ),
+                li: ({ children }) => <li className="pl-1">{children}</li>,
+
+                // --- CODE HANDLING ---
                 code: ({ node, className, children, ...props }) => {
                   const match = /language-(\w+)/.exec(className || "");
                   const language = match ? match[1] : "";
@@ -632,19 +763,21 @@ export default function NoteDetailPage({
 
                   if (isInline) {
                     return (
-                      <code className={className} {...props}>
+                      <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[13px] font-semibold text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">
                         {children}
                       </code>
                     );
                   }
 
                   return (
-                    <CodeBlock
-                      language={language}
-                      theme={resolvedTheme === "light" ? "light" : "dark"}
-                    >
-                      {codeString}
-                    </CodeBlock>
+                    <div className="my-5">
+                      <CodeBlock
+                        language={language}
+                        theme={resolvedTheme === "light" ? "light" : "dark"}
+                      >
+                        {codeString}
+                      </CodeBlock>
+                    </div>
                   );
                 },
               }}
@@ -654,7 +787,6 @@ export default function NoteDetailPage({
           </div>
         </div>
       )}
-
       {/* Delete Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm dark:bg-black/60">

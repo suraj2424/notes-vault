@@ -41,7 +41,7 @@ export function CodeBlock({ language = 'text', children, theme = 'dark' }: CodeB
 
   return (
     <div className="group relative my-6 overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-      {/* Header bar: Neutral-50 for light, Neutral-900 for dark */}
+      {/* Header bar: Consistent Neutral Scale */}
       <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-50 px-4 py-2 dark:border-neutral-800 dark:bg-neutral-900/50">
         <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
           {lang || 'Code'}
@@ -51,9 +51,10 @@ export function CodeBlock({ language = 'text', children, theme = 'dark' }: CodeB
           className={cn(
             "flex items-center gap-1.5 text-[11px] font-medium transition-all",
             copied 
-              ? "text-green-600 dark:text-green-400" 
+              ? "text-emerald-600 dark:text-emerald-400" 
               : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
           )}
+          title={copied ? "Copied" : "Copy code"}
         >
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
           <span>{copied ? 'Copied!' : 'Copy'}</span>
