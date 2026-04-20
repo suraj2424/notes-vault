@@ -43,43 +43,7 @@ interface NotesLibraryClientProps {
   currentPage: number;
 }
 
-function NoteCard({ note }: { note: Note }) {
-  const [isFavorite, setIsFavorite] = useState(note.isFavorite);
-  const prevFavoriteRef = useRef(note.isFavorite);
-
-  useEffect(() => {
-    setIsFavorite(note.isFavorite);
-    prevFavoriteRef.current = note.isFavorite;
-  }, [note.isFavorite]);
-
-  const toggleFavorite = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const previousState = prevFavoriteRef.current;
-    const newState = !previousState;
-
-    // Optimistic update
-    setIsFavorite(newState);
-    prevFavoriteRef.current = newState;
-
-    try {
-      const response = await fetch(`/api/notes/${note.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isFavorite: newState }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update');
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      // Rollback on failure
-      setIsFavorite(previousState);
-      prevFavoriteRef.current = previousState;
-    }
-  };
+function NoteCard({ note, onToggleFavorite }: { note: Note; onToggleFavorite: (noteId: string, currentFavorite: boolean) => Promise<void> }) {
 
   return (
     <div className="group relative flex h-full flex-col rounded-[10px] border border-neutral-200 bg-white transition-colors hover:border-neutral-300 dark:border-[#2a2a2a] dark:bg-[#161616] dark:hover:border-[#3a3a3a]">
@@ -141,13 +105,17 @@ function NoteCard({ note }: { note: Note }) {
             <span>{formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}</span>
           </div>
           <button
-            onClick={toggleFavorite}
+            onClick={async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              await onToggleFavorite(note.id, note.isFavorite);
+            }}
             className={cn(
               "flex h-7 w-7 items-center justify-center rounded-[5px] transition-colors",
-              isFavorite ? "text-amber-400" : "text-neutral-300 hover:text-amber-400 hover:bg-amber-50 dark:text-[#555555] dark:hover:bg-amber-950"
+              note.isFavorite ? "text-amber-400" : "text-neutral-300 hover:text-amber-400 hover:bg-amber-50 dark:text-[#555555] dark:hover:bg-amber-950"
             )}
           >
-            <Star className={cn("h-3.5 w-3.5", isFavorite && "fill-amber-400")} />
+            <Star className={cn("h-3.5 w-3.5", note.isFavorite && "fill-amber-400")} />
           </button>
         </div>
       </div>
@@ -235,6 +203,37 @@ export function NotesLibraryClient({
       console.error('Error fetching notes:', error);
     }
   }, [sortBy]);
+
+  const handleToggleFavorite = useCallback(async (noteId: string, currentFavorite: boolean) => {
+    const newFavorite = !currentFavorite;
+
+    // Optimistic update
+    setNotes(prevNotes => {
+      if (showFavoritesOnly && !newFavorite) {
+        return prevNotes.filter(note => note.id !== noteId);
+      } else {
+        return prevNotes.map(note =>
+          note.id === noteId ? { ...note, isFavorite: newFavorite } : note
+        );
+      }
+    });
+
+    try {
+      const response = await fetch(`/api/notes/${noteId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isFavorite: newFavorite }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update');
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      // Rollback: refetch current page
+      fetchNotes(page, searchQuery, typeFilter, showFavoritesOnly);
+    }
+  }, [showFavoritesOnly, page, searchQuery, typeFilter, fetchNotes]);
 
   const handleTypeFilterChange = (newType: NoteType | 'all') => {
     startTransition(() => {
@@ -401,16 +400,17 @@ export function NotesLibraryClient({
         </div>
       ) : notes.length > 0 ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {notes.map((note, index) => (
               <motion.div
                 key={note.id}
+                layout
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2, delay: index * 0.03 }}
               >
-                <NoteCard note={note} />
+                <NoteCard note={note} onToggleFavorite={handleToggleFavorite} />
               </motion.div>
             ))}
           </AnimatePresence>

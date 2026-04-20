@@ -95,7 +95,7 @@ export async function PUT(
     const note = await Note.findOneAndUpdate(
       { _id: id, userId: user.userId },
       { ...updateData, updatedAt: new Date() },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     ).lean();
 
     if (!note) {

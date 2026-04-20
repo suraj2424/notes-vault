@@ -5,7 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { motion } from 'motion/react';
-import { Eye, EyeOff, ArrowLeft, UserPlus } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { DM_Sans, DM_Serif_Display } from 'next/font/google';
+import { cn } from '@/lib/utils';
+
+const dmSans = DM_Sans({ subsets: ['latin'], weight: ['300', '400', '500'] });
+const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400' });
 
 export default function SignupPage() {
   const [name, setName] = useState('');
@@ -32,162 +37,227 @@ export default function SignupPage() {
     }
 
     const result = await signup(name, email, password);
-
     if (result.success) {
       router.push('/dashboard');
     } else {
       setError(result.error || 'Signup failed');
     }
-
     setLoading(false);
   };
 
+  const inputClass =
+    'w-full h-9 rounded-[7px] border border-neutral-200 bg-neutral-50 px-3.5 text-[14px] text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-neutral-300 focus:bg-white transition-colors dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-700 dark:focus:border-neutral-700 dark:focus:bg-neutral-800';
+
+  const labelClass =
+    'block text-[12px] font-medium uppercase tracking-widest text-neutral-400 dark:text-neutral-600';
+
   return (
-    <div className="flex h-screen items-center justify-center bg-white dark:bg-[#0f0f0f]">
-      {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-neutral-50 border-r border-neutral-100 h-full flex-col justify-center px-16 dark:bg-[#161616] dark:border-[#222222]">
-        <Link href="/" className="flex items-center gap-3 mb-16">
-          <div className="h-10 w-10 bg-[#1a1a1a] dark:bg-white" />
-          <span className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-[#ededed]">NoteVault</span>
-        </Link>
-        <h2 className="text-4xl font-bold tracking-tight text-neutral-900 leading-tight dark:text-[#ededed]">
-          Your technical memory,{' '}
-          <span className="text-neutral-700 dark:text-[#aaaaaa]">
-            systematically organized.
+    <div className={cn('flex h-screen bg-white dark:bg-neutral-950', dmSans.className)}>
+
+      {/* Left — Branding */}
+      <div className="hidden lg:flex lg:w-1/2 h-full flex-col justify-between px-14 py-12 bg-neutral-50 border-r border-neutral-100 dark:bg-neutral-900 dark:border-neutral-800">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="h-[26px] w-[26px] rounded-[7px] bg-neutral-900 dark:bg-neutral-100 flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="2" y="2" width="4" height="4" rx="1" fill="white" className="dark:fill-neutral-900" />
+              <rect x="8" y="2" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" className="dark:fill-neutral-900" />
+              <rect x="2" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" className="dark:fill-neutral-900" />
+              <rect x="8" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.3" className="dark:fill-neutral-900" />
+            </svg>
+          </div>
+          <span className={cn('text-[18px] tracking-tight text-neutral-900 dark:text-neutral-100', dmSerif.className)}>
+            Notes Vault
           </span>
-        </h2>
-        <p className="mt-6 text-base text-neutral-500 leading-relaxed dark:text-[#888888]">
-          Join thousands of developers who organize their DSA prep and technical knowledge with NoteVault.
+        </Link>
+
+        {/* Headline */}
+        <div className="space-y-5">
+          <h2 className={cn('text-[40px] tracking-tight leading-tight text-neutral-900 dark:text-neutral-100', dmSerif.className)}>
+            Start building your{' '}
+            <span className="text-neutral-400 dark:text-neutral-500">
+              technical knowledge base.
+            </span>
+          </h2>
+          <p className="text-[14px] text-neutral-500 dark:text-neutral-500 leading-6 max-w-sm">
+            Join developers who organize their DSA prep and technical notes in one structured place.
+          </p>
+
+          <div className="pt-4 space-y-3">
+            {[
+              'DSA problem notes with code & complexity',
+              'Topic Q&A with key takeaways',
+              'Tag-based organization & search',
+            ].map((item) => (
+              <div key={item} className="flex items-center gap-3">
+                <span className="h-1.5 w-1.5 rounded-full bg-neutral-300 dark:bg-neutral-600 flex-shrink-0" />
+                <span className="text-[14px] text-neutral-500 dark:text-neutral-500">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-[12px] text-neutral-400 dark:text-neutral-600">
+          &copy; {2026} Notes Vault
         </p>
       </div>
 
-      {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 px-8 max-w-md mx-auto">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 mb-8 dark:text-[#888888] dark:hover:text-[#ededed]"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to home
-        </Link>
+      {/* Right — Form */}
+      <div className="flex w-full lg:w-1/2 flex-col justify-center px-8">
+        <div className="mx-auto w-full max-w-[360px]">
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-8 w-8 bg-[#1a1a1a] lg:hidden dark:bg-white" />
-              <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-[#ededed]">Create account</h1>
+          {/* Back */}
+          <Link
+            href="/"
+            className="mb-10 inline-flex items-center gap-1.5 text-[14px] font-medium text-neutral-400 hover:text-neutral-700 dark:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to home
+          </Link>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            {/* Mobile logo */}
+            <div className="mb-8 flex items-center gap-2.5 lg:hidden">
+              <div className="h-[26px] w-[26px] rounded-[7px] bg-neutral-900 dark:bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <rect x="2" y="2" width="4" height="4" rx="1" fill="white" className="dark:fill-neutral-900" />
+                  <rect x="8" y="2" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" className="dark:fill-neutral-900" />
+                  <rect x="2" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" className="dark:fill-neutral-900" />
+                  <rect x="8" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.3" className="dark:fill-neutral-900" />
+                </svg>
+              </div>
+              <span className={cn('text-[18px] tracking-tight text-neutral-900 dark:text-neutral-100', dmSerif.className)}>
+                Notes Vault
+              </span>
             </div>
-            <p className="text-neutral-500 dark:text-[#888888]">
-              Start organizing your technical knowledge today
+
+            {/* Heading */}
+            <div className="mb-8">
+              <h1 className={cn('text-[26px] tracking-tight text-neutral-900 dark:text-neutral-100', dmSerif.className)}>
+                Create account
+              </h1>
+              <p className="mt-1.5 text-[14px] text-neutral-500 dark:text-neutral-500">
+                Start organizing your technical knowledge today
+              </p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+
+              {error && (
+                <div className="rounded-[7px] border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-500 dark:border-red-900 dark:bg-red-950 dark:text-red-400">
+                  {error}
+                </div>
+              )}
+
+              {/* Name */}
+              <div className="space-y-1.5">
+                <label htmlFor="name" className={labelClass}>Name</label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  placeholder="Your name"
+                  className={inputClass}
+                />
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1.5">
+                <label htmlFor="email" className={labelClass}>Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="you@example.com"
+                  className={inputClass}
+                />
+              </div>
+
+              {/* Password */}
+              <div className="space-y-1.5">
+                <label htmlFor="password" className={labelClass}>Password</label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="Create a password"
+                    className={cn(inputClass, 'pr-10')}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-400 hover:text-neutral-700 dark:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm Password */}
+              <div className="space-y-1.5">
+                <label htmlFor="confirmPassword" className={labelClass}>Confirm Password</label>
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    placeholder="Confirm your password"
+                    className={cn(inputClass, 'pr-10', confirmPassword && password !== confirmPassword
+                      ? 'border-red-300 dark:border-red-800'
+                      : ''
+                    )}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-400 hover:text-neutral-700 dark:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+                {confirmPassword && password !== confirmPassword && (
+                  <p className="text-[12px] text-red-400">Passwords do not match</p>
+                )}
+              </div>
+
+              {/* Submit */}
+              <div className="pt-1">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-9 rounded-[7px] bg-neutral-900 text-[14px] font-medium text-white hover:bg-neutral-700 transition-colors disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
+                >
+                  {loading ? 'Creating account...' : 'Create account'}
+                </button>
+              </div>
+            </form>
+
+            {/* Footer */}
+            <p className="mt-8 pt-6 border-t border-neutral-100 dark:border-neutral-800 text-center text-[14px] text-neutral-400 dark:text-neutral-600">
+              Already have an account?{' '}
+              <Link
+                href="/auth/login"
+                className="font-medium text-neutral-700 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors"
+              >
+                Sign in
+              </Link>
             </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900 dark:bg-red-950 dark:text-red-400">
-                {error}
-              </div>
-            )}
-
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-neutral-700 dark:text-[#ededed]">
-                Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="mt-1.5 block w-full border border-neutral-200 px-3 py-2.5 text-sm placeholder-neutral-400 focus:border-neutral-300 focus:outline-none focus:ring-0 dark:border-[#2a2a2a] dark:bg-[#1e1e1e] dark:text-[#ededed] dark:placeholder:text-[#444444]"
-                placeholder="Your name"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-[#ededed]">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mt-1.5 block w-full border border-neutral-200 px-3 py-2.5 text-sm placeholder-neutral-400 focus:border-neutral-300 focus:outline-none focus:ring-0 dark:border-[#2a2a2a] dark:bg-[#1e1e1e] dark:text-[#ededed] dark:placeholder:text-[#444444]"
-                placeholder="you@example.com"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-neutral-700 dark:text-[#ededed]">
-                Password
-              </label>
-              <div className="relative mt-1.5">
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="block w-full border border-neutral-200 px-3 py-2.5 pr-10 text-sm placeholder-neutral-400 focus:border-neutral-300 focus:outline-none focus:ring-0 dark:border-[#2a2a2a] dark:bg-[#1e1e1e] dark:text-[#ededed] dark:placeholder:text-[#444444]"
-                  placeholder="Create a password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-400 hover:text-neutral-600 dark:text-[#555555] dark:hover:text-[#ededed]"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-neutral-700 dark:text-[#ededed]">
-                Confirm Password
-              </label>
-              <div className="relative mt-1.5">
-                <input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  className="block w-full border border-neutral-200 px-3 py-2.5 pr-10 text-sm placeholder-neutral-400 focus:border-neutral-300 focus:outline-none focus:ring-0 dark:border-[#2a2a2a] dark:bg-[#1e1e1e] dark:text-[#ededed] dark:placeholder:text-[#444444]"
-                  placeholder="Confirm your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-400 hover:text-neutral-600 dark:text-[#555555] dark:hover:text-[#ededed]"
-                >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-[#1a1a1a] px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50 dark:bg-[#ededed] dark:text-[#0f0f0f] dark:hover:bg-[#d4d4d4]"
-            >
-              {loading ? 'Creating account...' : 'Create account'}
-              {!loading && <UserPlus className="h-4 w-4" />}
-            </button>
-          </form>
-
-          <p className="mt-8 text-center text-sm text-neutral-500 border-t border-neutral-100 pt-8 dark:text-[#888888] dark:border-[#222222]">
-            Already have an account?{' '}
-            <Link href="/auth/login" className="font-medium text-neutral-600 hover:text-neutral-900 dark:text-[#888888] dark:hover:text-[#ededed]">
-              Sign in
-            </Link>
-          </p>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
