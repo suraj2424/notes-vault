@@ -1,195 +1,227 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { useUser, useClerk } from '@clerk/nextjs';
 import {
   LayoutDashboard,
   FileText,
   Tags,
   Clock,
   Settings,
-  HelpCircle,
-  ChevronUp,
   LogOut,
+  User as UserIcon,
+  ChevronUp,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { DM_Sans, DM_Serif_Display } from 'next/font/google';
-import { useAuth } from '@/hooks/use-auth';
 import { ThemeSwitcher } from './ThemeSwitcher';
+import Link from 'next/link';
 
-const dmSans = DM_Sans({ subsets: ['latin'], weight: ['300', '400', '500'] });
+const dmSans = DM_Sans({ subsets: ['latin'], weight: ['400', '500', '700'] });
 const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400' });
 
-const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'All Notes', href: '/dashboard/notes', icon: FileText },
-];
+/**
+ * 1. TOOLTIP (High Contrast & Centered)
+ */
+export const Tooltip = ({ text, children, active }: { text: string; children: React.ReactNode; active: boolean }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  if (!active) return <>{children}</>;
 
-const secondaryItems = [
-  { name: 'Tags', href: '/dashboard/tags', icon: Tags },
-  { name: 'Recent', href: '/dashboard/recent', icon: Clock },
-];
+  return (
+    <div 
+      className="relative flex items-center justify-center w-full" 
+      onMouseEnter={() => setIsVisible(true)} 
+      onMouseLeave={() => setIsVisible(false)}
+    >
+      {children}
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div
+            initial={{ opacity: 0, x: 3 }}
+            animate={{ opacity: 1, x: 8 }}
+            exit={{ opacity: 0, x: 3 }}
+            className="absolute left-full whitespace-nowrap z-[100] px-3 py-1.5 bg-neutral-950 text-white text-[12px] font-bold rounded-md shadow-xl dark:bg-white dark:text-neutral-950 border border-neutral-800 dark:border-neutral-200"
+          >
+            {text}
+            <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-neutral-950 rotate-45 dark:bg-white" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
-const bottomItems = [
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-  { name: 'Help', href: '/dashboard/help', icon: HelpCircle },
-];
+/**
+ * 2. NAVLINK (Fixed Centering)
+ */
+interface NavLinkProps {
+  item: { name: string; href: string; icon: React.ElementType };
+  isActive: boolean;
+  isCollapsed: boolean;
+}
 
+const NavLink = ({ item, isActive, isCollapsed }: NavLinkProps) => {
+  return (
+    <Tooltip text={item.name} active={isCollapsed}>
+      <Link
+        href={item.href}
+        className={cn(
+          'flex items-center transition-all duration-200 group',
+          isCollapsed ? 'justify-center w-10 h-10 mx-auto rounded-xl' : 'gap-3 px-3 py-2 w-full rounded-lg text-[14px]',
+          isActive
+            ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 shadow-md'
+            : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-400 dark:hover:bg-neutral-800/80 dark:hover:text-neutral-50'
+        )}
+      >
+        <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100")} />
+        {!isCollapsed && (
+          <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-semibold tracking-tight">
+            {item.name}
+          </motion.span>
+        )}
+      </Link>
+    </Tooltip>
+  );
+};
+
+/**
+ * 3. MAIN SIDEBAR
+ */
 export function Sidebar() {
-  const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isLogoHovered, setIsLogoHovered] = useState(false);
+  const pathname = usePathname();
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const userMenuRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+    const handler = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setIsUserMenuOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    router.push('/');
-  };
-
-  const initials = user?.name
-    ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-    : 'U';
-
-      const NavLink = ({
-        item,
-      }: {
-        item: { name: string; href: string; icon: React.ElementType; badge?: string };
-      }) => {
-        const isActive = pathname === item.href;
-        return (
-          <Link
-            href={item.href}
-            className={cn(
-              'flex items-center gap-2.5 px-2.5 py-[7px] rounded-[7px] text-[14px] font-normal transition-colors',
-              isActive
-                ? 'bg-neutral-800 text-white font-medium dark:bg-neutral-700 dark:text-neutral-100'
-                : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
-            )}
-          >
-            <item.icon className="h-[17px] w-[17px] flex-shrink-0 opacity-70" />
-            <span className="flex-1">{item.name}</span>
-            {item.badge && (
-              <span className="ml-auto text-[11px] font-medium bg-neutral-100 text-neutral-500 px-1.5 py-0.5 rounded-full dark:bg-neutral-700 dark:text-neutral-300">
-                {item.badge}
-              </span>
-            )}
-          </Link>
-        );
-      };
-
-   return (
-       <aside className="sticky top-0 hidden h-screen w-[220px] flex-col lg:flex border-r border-neutral-200 bg-white dark:bg-neutral-900 dark:border-neutral-800">
-        <div className={cn('relative flex flex-col h-full py-5 px-3', dmSans.className)}>
-
-            {/* Logo */}
-            <div className="flex items-center gap-2.5 px-2 pb-5">
-              <div className="w-[26px] h-[26px] rounded-[7px] bg-neutral-800 flex items-center justify-center flex-shrink-0 dark:bg-white dark:text-neutral-900">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="dark:hidden">
-                  <rect x="2" y="2" width="4" height="4" rx="1" fill="white" />
-                  <rect x="8" y="2" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" />
-                  <rect x="2" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" />
-                  <rect x="8" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.3" />
-                </svg>
-                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="hidden dark:block">
-                  <rect x="2" y="2" width="4" height="4" rx="1" fill="#18181b" />
-                  <rect x="8" y="2" width="4" height="4" rx="1" fill="#18181b" fillOpacity="0.5" />
-                  <rect x="2" y="8" width="4" height="4" rx="1" fill="#18181b" fillOpacity="0.5" />
-                  <rect x="8" y="8" width="4" height="4" rx="1" fill="#18181b" fillOpacity="0.3" />
-                </svg>
-              </div>
-              <span className={cn('text-[18px] tracking-tight text-neutral-900 dark:text-neutral-100', dmSerif.className)}>
-                NoteVault
-              </span>
-           </div>
-
-         {/* Main nav */}
-         <nav className="flex flex-col gap-0.5">
-           {navItems.map((item) => (
-             <NavLink key={item.name} item={item} />
-           ))}
-         </nav>
-
-        {/* Divider */}
-        <div className="my-2.5 border-t border-neutral-200 dark:border-neutral-800" />
-
-         {/* Organization */}
-          <div className="flex flex-col gap-0.5">
-            <p className="px-2.5 pt-1 pb-1.5 text-[11px] font-medium uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
-              Organize
-            </p>
-            {secondaryItems.map((item) => (
-              <NavLink key={item.name} item={item} />
-            ))}
-          </div>
-
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Bottom items */}
-        <div className="flex flex-col gap-0.5">
-          {bottomItems.map((item) => (
-            <NavLink key={item.name} item={item} />
-          ))}
-        </div>
-
-         {/* Theme Switcher */}
-         <ThemeSwitcher />
-
-        {/* Divider */}
-        <div className="my-1 border-t border-neutral-200 dark:border-neutral-800" />
-
-        {/* User panel with dropdown */}
-        <div className="relative" ref={userMenuRef}>
-            <button
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+  return (
+    <motion.aside
+      animate={{ width: isCollapsed ? 80 : 260 }}
+      className="sticky top-0 hidden h-screen flex-col lg:flex border-r border-neutral-200 bg-white dark:bg-neutral-950 dark:border-neutral-900 z-40 transition-colors"
+    >
+      <div className={cn('relative flex flex-col h-full py-6 transition-all', isCollapsed ? 'px-0' : 'px-4', dmSans.className)}>
+        
+        {/* LOGO SECTION */}
+        <div className={cn("mb-10 flex items-center", isCollapsed ? "justify-center" : "justify-between px-1")}>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => isCollapsed && setIsCollapsed(false)}
+              onMouseEnter={() => setIsLogoHovered(true)}
+              onMouseLeave={() => setIsLogoHovered(false)}
               className={cn(
-                'flex items-center gap-2.5 px-2.5 py-2 w-full rounded-[7px] text-[14px] font-normal transition-colors',
-                isUserMenuOpen
-                  ? 'bg-neutral-100 text-neutral-900 font-medium dark:bg-neutral-700 dark:text-neutral-100'
-                  : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
+                "relative w-[34px] h-[34px] rounded-[9px] flex items-center justify-center shrink-0 transition-all group",
+                isCollapsed 
+                  ? "bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-950 dark:hover:bg-white" 
+                  : "bg-neutral-950 dark:bg-white cursor-default"
               )}
             >
-              <div className="w-[26px] h-[26px] rounded-full bg-neutral-200 flex items-center justify-center text-[11px] font-medium text-neutral-700 dark:bg-neutral-600 dark:text-neutral-200 flex-shrink-0">
-                {initials}
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-[13px] font-medium text-neutral-800 truncate dark:text-neutral-100">{user?.name || 'User'}</p>
-              </div>
-             <ChevronUp className={cn(
-               'h-[17px] w-[17px] flex-shrink-0 opacity-70 transition-transform',
-               isUserMenuOpen && 'rotate-180'
-             )} />
+              <AnimatePresence mode="wait">
+                {(isCollapsed && isLogoHovered) ? (
+                  <motion.div key="expand" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}>
+                    <PanelLeftOpen className="h-4 w-4 text-white dark:text-neutral-950" />
+                  </motion.div>
+                ) : (
+                  <motion.div key="logo" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-center">
+                    <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+                      <rect x="2" y="2" width="4" height="4" rx="1" className={isCollapsed ? "fill-neutral-500 dark:fill-neutral-400" : "fill-white dark:fill-neutral-950"} />
+                      <rect x="8" y="2" width="4" height="4" rx="1" fillOpacity="0.5" className={isCollapsed ? "fill-neutral-500 dark:fill-neutral-400" : "fill-white dark:fill-neutral-950"} />
+                      <rect x="2" y="8" width="4" height="4" rx="1" fillOpacity="0.5" className={isCollapsed ? "fill-neutral-500 dark:fill-neutral-400" : "fill-white dark:fill-neutral-950"} />
+                      <rect x="8" y="8" width="4" height="4" rx="1" fillOpacity="0.3" className={isCollapsed ? "fill-neutral-500 dark:fill-neutral-400" : "fill-white dark:fill-neutral-950"} />
+                    </svg>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </button>
+            
+            {!isCollapsed && (
+              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={cn('text-[19px] tracking-tight font-bold text-neutral-950 dark:text-white', dmSerif.className)}>
+                NoteVault
+              </motion.span>
+            )}
+          </div>
 
-             {/* Dropdown menu */}
-             {isUserMenuOpen && (
-               <div className="absolute bottom-full left-0 right-0 mb-1.5 rounded-[7px] border border-neutral-200 bg-white shadow-lg overflow-hidden z-50 dark:border-neutral-800 dark:bg-neutral-800">
-                  <div className="py-1">
-                   <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-2.5 px-2.5 py-2 w-full text-[13.5px] text-red-500 hover:bg-red-50 transition-colors dark:hover:bg-red-950/50 dark:text-red-400"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span>Log out</span>
-                    </button>
-                  </div>
-               </div>
-             )}
+          {!isCollapsed && (
+             <button onClick={() => setIsCollapsed(true)} className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+                <PanelLeftClose className="h-4 w-4" />
+             </button>
+          )}
         </div>
 
+        {/* Links */}
+        <nav className="space-y-1">
+          <NavLink item={{ name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard }} isActive={pathname === '/dashboard'} isCollapsed={isCollapsed} />
+          <NavLink item={{ name: 'All Notes', href: '/dashboard/notes', icon: FileText }} isActive={pathname === '/dashboard/notes'} isCollapsed={isCollapsed} />
+        </nav>
+
+        <div className="my-6 mx-4 border-t border-neutral-200 dark:border-neutral-800" />
+
+        <nav className="space-y-1">
+          <p className={cn("px-4 mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400", isCollapsed && "text-center px-0")}>
+            {isCollapsed ? "•••" : "Organize"}
+          </p>
+          <NavLink item={{ name: 'Tags', href: '/dashboard/tags', icon: Tags }} isActive={pathname === '/dashboard/tags'} isCollapsed={isCollapsed} />
+          <NavLink item={{ name: 'Recent', href: '/dashboard/recent', icon: Clock }} isActive={pathname === '/dashboard/recent'} isCollapsed={isCollapsed} />
+        </nav>
+
+        <div className="flex-1" />
+
+        <div className="space-y-1 mb-4">
+          <NavLink item={{ name: 'Settings', href: '/dashboard/settings', icon: Settings }} isActive={pathname === '/dashboard/settings'} isCollapsed={isCollapsed} />
+          <ThemeSwitcher isCollapsed={isCollapsed} TooltipWrapper={Tooltip} />
+        </div>
+
+        {/* USER PROFILE */}
+        <div className="relative" ref={userMenuRef}>
+          <AnimatePresence>
+            {isUserMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                className="absolute bottom-full left-4 right-4 mb-3 min-w-[200px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-2 z-50"
+              >
+                <button onClick={() => signOut()} className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all font-bold">
+                  <LogOut className="h-4 w-4" /> Logout
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <button
+            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+            className={cn(
+              "flex items-center transition-all duration-300",
+              isCollapsed ? "justify-center w-12 h-12 mx-auto rounded-xl" : "gap-3 p-2 w-full rounded-2xl",
+              isUserMenuOpen ? "bg-neutral-100 dark:bg-neutral-900" : "hover:bg-neutral-50 dark:hover:bg-neutral-900/50"
+            )}
+          >
+            <div className="h-9 w-9 rounded-xl bg-neutral-200 dark:bg-neutral-800 shrink-0 overflow-hidden border border-neutral-200 dark:border-neutral-800">
+              {user?.imageUrl ? <img src={user.imageUrl} className="h-full w-full object-cover" alt="User" /> : <UserIcon className="p-2 text-neutral-400" />}
+            </div>
+            {!isCollapsed && (
+              <div className="flex-1 text-left min-w-0">
+                <p className="text-[13px] font-bold text-neutral-950 dark:text-white truncate">{user?.firstName || 'User'}</p>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">{user?.emailAddresses[0].emailAddress}</p>
+              </div>
+            )}
+            {!isCollapsed && <ChevronUp className={cn("h-4 w-4 text-neutral-400 transition-transform", isUserMenuOpen && "rotate-180")} />}
+          </button>
+        </div>
       </div>
-    </aside>
+    </motion.aside>
   );
 }

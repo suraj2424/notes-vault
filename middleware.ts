@@ -1,58 +1,26 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { verifyToken } from './lib/auth';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-const JWT_SECRET = process.env.JWT_SECRET!;
+const publicRoutes = ['/', '/auth/login', '/auth/signup', '/auth/signup(.*)', '/api/auth/logout', '/api/notes', '/api/tags', '/api/stats'];
+const ignoredRoutes = ['/api/auth/login', '/api/auth/signup', '/api/auth/me'];
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+const isPublicRoute = createRouteMatcher(publicRoutes);
+const isIgnoredRoute = createRouteMatcher(ignoredRoutes);
 
-  // Define protected routes
-  const protectedRoutes = ['/dashboard', '/notes'];
-
-  // Check if the current path is protected
-  const isProtectedRoute = protectedRoutes.some(route =>
-    pathname.startsWith(route)
-  );
-
-  if (isProtectedRoute) {
-    // Get token from cookies
-    const token = request.cookies.get('auth-token')?.value;
-
-    if (!token) {
-      // Redirect to login if not authenticated
-      const loginUrl = new URL('/auth/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // Verify token
-    try {
-      verifyToken(token);
-    } catch (error) {
-      // Token is invalid, redirect to login
-      const loginUrl = new URL('/auth/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
+export default clerkMiddleware(async (auth, req) => {
+  if (!isPublicRoute(req)) {
+    await auth.protect();
   }
-
-  // Allow the request to continue
-  return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)',
   ],
-  // Use Node.js runtime to support jsonwebtoken library
-  runtime: 'nodejs',
 };

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '../../../lib/mongodb';
 import Note from '../../../models/Note';
-import { getCurrentUser } from '../../../lib/auth';
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     // Aggregate stats in a single query for efficiency
     const stats = await Note.aggregate([
-      { $match: { userId: user.userId } },
+      { $match: { userId: userId } },
       {
         $group: {
           _id: null,

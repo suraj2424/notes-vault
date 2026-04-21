@@ -1,4 +1,4 @@
-import { getCurrentUser } from '@/lib/auth';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { NotesLibraryClient } from './NotesLibraryClient';
 import { redirect } from 'next/navigation';
 
@@ -15,10 +15,14 @@ export default async function NotesLibraryPage({
     filter: filterParam,
   } = await searchParams;
 
-  const user = await getCurrentUser();
-  if (!user) {
+  const { userId } = await auth();
+  if (!userId) {
     redirect('/');
   }
+
+  const user = await currentUser();
+  const userName = user?.firstName || user?.fullName || 'User';
+  const userEmail = user?.emailAddresses[0]?.emailAddress || '';
 
   // Dynamically import mongoose to avoid bundling in client
   const { connectToDatabase } = await import('@/lib/mongodb');
@@ -30,7 +34,7 @@ export default async function NotesLibraryPage({
   const search = searchParam as string | undefined;
   const favorite = filterParam === 'favorites';
 
-  const query: any = { userId: user.userId };
+  const query: any = { userId: userId };
   if (type) query.type = type;
   if (favorite) query.isFavorite = true;
   if (search) query.$text = { $search: search };
@@ -70,7 +74,7 @@ export default async function NotesLibraryPage({
 
   return (
     <NotesLibraryClient
-      user={{ name: user.name, email: user.email }}
+      user={{ name: userName, email: userEmail }}
       initialNotes={formattedNotes}
       totalPages={totalPages}
       currentPage={page}

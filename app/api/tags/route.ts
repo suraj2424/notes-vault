@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '../../../lib/mongodb';
 import Note from '../../../models/Note';
-import { getCurrentUser } from '../../../lib/auth';
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     // Aggregate unique tags with counts for the user
     const result = await Note.aggregate([
-      { $match: { userId: user.userId } },
+      { $match: { userId: userId } },
       { $unwind: '$tags' },
       { $group: { _id: '$tags', count: { $sum: 1 } } },
       { $sort: { count: -1, _id: 1 } }, // Sort by count desc, then name

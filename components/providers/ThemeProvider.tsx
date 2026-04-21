@@ -12,77 +12,43 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-function getSystemTheme(): 'dark' | 'light' {
-  if (typeof window !== 'undefined') {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  return 'light';
-}
-
-function getStoredTheme(): Theme | null {
-  if (typeof window !== 'undefined') {
-    const stored = localStorage.getItem('theme') as Theme | null;
-    if (stored && ['dark', 'light', 'system'].includes(stored)) {
-      return stored;
-    }
-  }
-  return null;
-}
-
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Get initial theme synchronously to avoid FOUC
-  const getInitialTheme = (): Theme => {
+  const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      const stored = getStoredTheme();
-      if (stored) return stored;
-      return 'system';
+      const stored = localStorage.getItem('theme') as Theme | null;
+      if (stored && ['dark', 'light', 'system'].includes(stored)) {
+        return stored;
+      }
     }
     return 'system';
-  };
-
-  const getInitialResolvedTheme = (): 'dark' | 'light' => {
+  });
+  const [systemTheme, setSystemTheme] = useState<'dark' | 'light'>(() => {
     if (typeof window !== 'undefined') {
-      const stored = getStoredTheme();
-      if (stored && stored !== 'system') return stored;
-      return getSystemTheme();
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
     return 'light';
-  };
+  });
 
-  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
-  const [systemTheme, setSystemTheme] = useState<'dark' | 'light'>(getInitialResolvedTheme);
-  const [mounted, setMounted] = useState(true);
+  const resolvedTheme = useMemo(() => (theme === 'system' ? systemTheme : theme), [theme, systemTheme]);
 
-  const resolvedTheme = useMemo(() => {
-    return theme === 'system' ? systemTheme : theme;
-  }, [theme, systemTheme]);
-
-  // Apply theme class to document
-  const applyTheme = useCallback((themeToApply: 'dark' | 'light') => {
+  // Apply theme class when resolvedTheme changes
+  useEffect(() => {
     const html = document.documentElement;
-    if (themeToApply === 'dark') {
+    if (resolvedTheme === 'dark') {
       html.classList.add('dark');
       html.classList.remove('light');
     } else {
       html.classList.remove('dark');
       html.classList.add('light');
     }
-  }, []);
-
-  // Apply theme on mount and when resolvedTheme changes
-  useEffect(() => {
-    applyTheme(resolvedTheme);
-  }, [resolvedTheme, applyTheme]);
+  }, [resolvedTheme]);
 
   // Listen for system theme changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
     const handleChange = (e: MediaQueryListEvent) => {
-      const newSystem = e.matches ? 'dark' : 'light';
-      setSystemTheme(newSystem);
+      setSystemTheme(e.matches ? 'dark' : 'light');
     };
-
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);

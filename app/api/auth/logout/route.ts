@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { clearAuthCookie } from '../../../../lib/auth';
+import { auth } from '@clerk/nextjs/server';
 
 export async function POST(request: NextRequest) {
-  try {
-    await clearAuthCookie();
-
-    return NextResponse.json({ message: 'Logged out successfully' });
-  } catch (error) {
-    console.error('Logout error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  // Clerk handles sign-out on the frontend via useAuth().signOut()
+  // This API route is kept for compatibility but is not needed with Clerk
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
+
+  return NextResponse.json({ message: 'Logout handled by Clerk' });
 }

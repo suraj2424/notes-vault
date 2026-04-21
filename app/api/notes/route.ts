@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import connectToDatabase from '../../../lib/mongodb';
 import Note from '../../../models/Note';
-import { getCurrentUser } from '../../../lib/auth';
+import { auth } from '@clerk/nextjs/server';
 
 const createNoteSchema = z.object({
   type: z.enum(['dsa', 'qa', 'general']),
@@ -32,8 +32,8 @@ const createNoteSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get('pageSize') || '20');
     const fields = searchParams.get('fields'); // comma-separated list of fields to include
 
-    let query: any = { userId: user.userId };
+    let query: any = { userId: userId };
 
     if (type) {
       query.type = type;
@@ -118,8 +118,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     const noteData = createNoteSchema.parse(body);
 
     const note = await Note.create({
-      userId: user.userId,
+      userId: userId,
       ...noteData,
     });
 

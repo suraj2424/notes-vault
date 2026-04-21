@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import connectToDatabase from '../../../../lib/mongodb';
 import Note from '../../../../models/Note';
-import { getCurrentUser } from '../../../../lib/auth';
+import { auth } from '@clerk/nextjs/server';
 
 const updateNoteSchema = z.object({
   type: z.enum(['dsa', 'qa', 'general']).optional(),
@@ -35,8 +35,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
@@ -46,7 +46,7 @@ export async function GET(
 
     const note = await Note.findOne({
       _id: id,
-      userId: user.userId,
+      userId: userId,
     }).lean();
 
     if (!note) {
@@ -80,8 +80,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
@@ -93,7 +93,7 @@ export async function PUT(
     const updateData = updateNoteSchema.parse(body);
 
     const note = await Note.findOneAndUpdate(
-      { _id: id, userId: user.userId },
+      { _id: id, userId: userId },
       { ...updateData, updatedAt: new Date() },
       { returnDocument: 'after', runValidators: true }
     ).lean();
@@ -136,8 +136,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
@@ -147,7 +147,7 @@ export async function DELETE(
 
     const result = await Note.findOneAndDelete({
       _id: id,
-      userId: user.userId,
+      userId: userId,
     });
 
     if (!result) {

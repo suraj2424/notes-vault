@@ -1,10 +1,10 @@
-import { getCurrentUser } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
 import TagsClient from './TagsClient';
 import { redirect } from 'next/navigation';
 
 export default async function TagsPage() {
-  const user = await getCurrentUser();
-  if (!user) {
+  const { userId } = await auth();
+  if (!userId) {
     redirect('/');
   }
 
@@ -16,7 +16,7 @@ export default async function TagsPage() {
 
   // Fetch tags with counts using aggregation
   const result = await Note.aggregate([
-    { $match: { userId: user.userId } },
+    { $match: { userId: userId } },
     { $unwind: '$tags' },
     { $group: { _id: '$tags', count: { $sum: 1 } } },
     { $sort: { count: -1, _id: 1 } },

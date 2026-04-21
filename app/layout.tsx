@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { DM_Sans, DM_Serif_Display } from 'next/font/google';
+import { ClerkProvider } from '@clerk/nextjs';
+import Script from 'next/script';
 import './globals.css';
-import { AuthProvider } from '@/hooks/use-auth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 
@@ -24,41 +25,41 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${dmSerif.variable}`} suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  const stored = localStorage.getItem('theme');
-                  if (stored === 'dark' || stored === 'light') {
-                    document.documentElement.classList.add(stored);
-                  } else if (stored === 'system') {
-                    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    document.documentElement.classList.add(isDark ? 'dark' : 'light');
-                  } else {
+    <ClerkProvider>
+      <html lang="en" className={`${dmSans.variable} ${dmSerif.variable}`} suppressHydrationWarning>
+        <body suppressHydrationWarning className="bg-[var(--color-bg)] text-[var(--color-text-primary)] antialiased">
+          <ThemeProvider>
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
+          </ThemeProvider>
+          <Script
+            id="theme-init"
+            strategy="beforeInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  try {
+                    const stored = localStorage.getItem('theme');
+                    if (stored === 'dark' || stored === 'light') {
+                      document.documentElement.classList.add(stored);
+                    } else if (stored === 'system') {
+                      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                      document.documentElement.classList.add(isDark ? 'dark' : 'light');
+                    } else {
+                      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                      document.documentElement.classList.add(isDark ? 'dark' : 'light');
+                    }
+                  } catch (e) {
                     const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                     document.documentElement.classList.add(isDark ? 'dark' : 'light');
                   }
-                } catch (e) {
-                  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  document.documentElement.classList.add(isDark ? 'dark' : 'light');
-                }
-              })();
-            `,
-          }}
-        />
-      </head>
-      <body suppressHydrationWarning className="bg-[var(--color-bg)] text-[var(--color-text-primary)] antialiased">
-        <ThemeProvider>
-          <ErrorBoundary>
-            <AuthProvider>
-              {children}
-            </AuthProvider>
-          </ErrorBoundary>
-        </ThemeProvider>
-      </body>
-    </html>
+                })();
+              `,
+            }}
+          />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

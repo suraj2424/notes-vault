@@ -48,7 +48,7 @@ export default function RecentClient({ userName, initialNotes }: RecentClientPro
     }
   };
 
-  const firstName = userName.split(' ')[0];
+   const firstName = (userName || '').split(' ')[0];
 
   return (
     <div className={dmSans.className}>

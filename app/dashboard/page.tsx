@@ -1,12 +1,17 @@
-import { getCurrentUser } from '@/lib/auth';
-import DashboardClient from './DashboardClient';
+import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import DashboardClient from './DashboardClient';
 
 export default async function DashboardPage() {
-  const user = await getCurrentUser();
-  if (!user) {
-    redirect('/');
+  const { userId } = await auth();
+  if (!userId) {
+    redirect('/auth/login');
   }
+
+  // Get user info from Clerk
+  const { currentUser } = await import('@clerk/nextjs/server');
+  const user = await currentUser();
+  const userName = user?.firstName || user?.fullName || 'User';
 
   // Dynamically import mongoose to avoid bundling it in the client
   const { connectToDatabase } = await import('@/lib/mongodb');
@@ -15,7 +20,7 @@ export default async function DashboardPage() {
   await connectToDatabase();
 
   // Fetch recent notes (limit 5)
-  const recentNotes = await Note.find({ userId: user.userId })
+  const recentNotes = await Note.find({ userId: userId })
     .sort({ updatedAt: -1 })
     .limit(5)
     .select('_id title type isFavorite tags updatedAt')
@@ -23,7 +28,7 @@ export default async function DashboardPage() {
 
   // Fetch stats using aggregation for efficiency
   const statsResult = await Note.aggregate([
-    { $match: { userId: user.userId } },
+    { $match: { userId: userId } },
     {
       $group: {
         _id: null,
@@ -54,7 +59,7 @@ export default async function DashboardPage() {
 
   return (
     <DashboardClient
-      userName={user.name}
+      userName={userName}
       recentNotes={formattedRecentNotes}
       stats={stats}
     />

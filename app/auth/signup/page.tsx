@@ -1,263 +1,112 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/use-auth';
+import { SignUp } from '@clerk/nextjs';
 import { motion } from 'motion/react';
-import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { DM_Sans, DM_Serif_Display } from 'next/font/google';
 import { cn } from '@/lib/utils';
 
-const dmSans = DM_Sans({ subsets: ['latin'], weight: ['300', '400', '500'] });
+const dmSans = DM_Sans({ subsets: ['latin'], weight: ['300', '400', '500', '700'] });
 const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400' });
 
 export default function SignupPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const { signup } = useAuth();
-  const router = useRouter();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
-    }
-
-    const result = await signup(name, email, password);
-    if (result.success) {
-      router.push('/dashboard');
-    } else {
-      setError(result.error || 'Signup failed');
-    }
-    setLoading(false);
-  };
-
-  const inputClass =
-    'w-full h-9 rounded-[7px] border border-neutral-200 bg-neutral-50 px-3.5 text-[14px] text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-neutral-300 focus:bg-white transition-colors dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-700 dark:focus:border-neutral-700 dark:focus:bg-neutral-800';
-
-  const labelClass =
-    'block text-[12px] font-medium uppercase tracking-widest text-neutral-400 dark:text-neutral-600';
-
   return (
     <div className={cn('flex h-screen bg-white dark:bg-neutral-950', dmSans.className)}>
 
       {/* Left — Branding */}
-      <div className="hidden lg:flex lg:w-1/2 h-full flex-col justify-between px-14 py-12 bg-neutral-50 border-r border-neutral-100 dark:bg-neutral-900 dark:border-neutral-800">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="h-[26px] w-[26px] rounded-[7px] bg-neutral-900 dark:bg-neutral-100 flex items-center justify-center">
+      <div className="hidden lg:flex lg:w-1/2 h-full flex-col justify-between px-16 py-12 bg-neutral-50 border-r border-neutral-200 dark:bg-neutral-900/30 dark:border-neutral-800">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="h-7 w-7 rounded-lg bg-neutral-900 dark:bg-neutral-100 flex items-center justify-center transition-transform group-hover:scale-105">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <rect x="2" y="2" width="4" height="4" rx="1" fill="white" className="dark:fill-neutral-900" />
-              <rect x="8" y="2" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" className="dark:fill-neutral-900" />
-              <rect x="2" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" className="dark:fill-neutral-900" />
-              <rect x="8" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.3" className="dark:fill-neutral-900" />
+              <rect x="8" y="2" width="4" height="4" rx="1" fill="white" fillOpacity="0.7" className="dark:fill-neutral-900" />
+              <rect x="2" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.7" className="dark:fill-neutral-900" />
+              <rect x="8" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.4" className="dark:fill-neutral-900" />
             </svg>
           </div>
-          <span className={cn('text-[18px] tracking-tight text-neutral-900 dark:text-neutral-100', dmSerif.className)}>
+          <span className={cn('text-xl tracking-tight text-neutral-900 dark:text-neutral-100', dmSerif.className)}>
             Notes Vault
           </span>
         </Link>
 
-        {/* Headline */}
-        <div className="space-y-5">
-          <h2 className={cn('text-[40px] tracking-tight leading-tight text-neutral-900 dark:text-neutral-100', dmSerif.className)}>
-            Start building your{' '}
+        <div className="space-y-6">
+          <h2 className={cn('text-5xl tracking-tight leading-[1.1] text-neutral-900 dark:text-neutral-50', dmSerif.className)}>
+            Start building your <br />
             <span className="text-neutral-400 dark:text-neutral-500">
               technical knowledge base.
             </span>
           </h2>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-500 leading-6 max-w-sm">
+          <p className="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm">
             Join developers who organize their DSA prep and technical notes in one structured place.
           </p>
 
-          <div className="pt-4 space-y-3">
+          <div className="pt-4 space-y-4">
             {[
               'DSA problem notes with code & complexity',
               'Topic Q&A with key takeaways',
               'Tag-based organization & search',
             ].map((item) => (
               <div key={item} className="flex items-center gap-3">
-                <span className="h-1.5 w-1.5 rounded-full bg-neutral-300 dark:bg-neutral-600 flex-shrink-0" />
-                <span className="text-[14px] text-neutral-500 dark:text-neutral-500">{item}</span>
+                <div className="h-5 w-5 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center">
+                   <div className="h-1.5 w-1.5 rounded-full bg-neutral-600 dark:bg-neutral-400" />
+                </div>
+                <span className="text-sm text-neutral-600 dark:text-neutral-400 font-medium">{item}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="text-[12px] text-neutral-400 dark:text-neutral-600">
-          &copy; {2026} Notes Vault
+        <p className="text-[11px] text-neutral-400 dark:text-neutral-500 font-bold tracking-[0.2em] uppercase">
+          &copy; 2026 Notes Vault
         </p>
       </div>
 
       {/* Right — Form */}
-      <div className="flex w-full lg:w-1/2 flex-col justify-center px-8">
-        <div className="mx-auto w-full max-w-[360px]">
+      <div className="flex w-full lg:w-1/2 flex-col items-center justify-center bg-white dark:bg-neutral-950 px-8 relative">
+        
+        {/* Back Link - Positioned Top Left of the right section */}
+        <Link
+          href="/"
+          className="absolute top-10 left-8 lg:left-12 inline-flex items-center gap-2 text-sm font-bold text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back
+        </Link>
 
-          {/* Back */}
-          <Link
-            href="/"
-            className="mb-10 inline-flex items-center gap-1.5 text-[14px] font-medium text-neutral-400 hover:text-neutral-700 dark:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to home
-          </Link>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-[400px]"
+        >
+          <SignUp 
+            appearance={{
+              elements: {
+                rootBox: "w-full",
+                card: "shadow-none border-none bg-transparent p-0",
+                headerTitle: cn(dmSerif.className, "text-2xl text-neutral-900 dark:text-neutral-50"),
+                headerSubtitle: "text-neutral-500 dark:text-neutral-400",
+                socialButtonsBlockButton: "border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all",
+                formButtonPrimary: "bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200 shadow-none normal-case text-sm",
+                formFieldLabel: "text-neutral-700 dark:text-neutral-300 font-semibold",
+                formFieldInput: "border-neutral-200 dark:border-neutral-800 focus:ring-1 focus:ring-neutral-400 transition-all",
+                footer: "hidden", // We hide Clerk's footer to use your custom one below
+              }
+            }}
+          />
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            {/* Mobile logo */}
-            <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-              <div className="h-[26px] w-[26px] rounded-[7px] bg-neutral-900 dark:bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <rect x="2" y="2" width="4" height="4" rx="1" fill="white" className="dark:fill-neutral-900" />
-                  <rect x="8" y="2" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" className="dark:fill-neutral-900" />
-                  <rect x="2" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.5" className="dark:fill-neutral-900" />
-                  <rect x="8" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.3" className="dark:fill-neutral-900" />
-                </svg>
-              </div>
-              <span className={cn('text-[18px] tracking-tight text-neutral-900 dark:text-neutral-100', dmSerif.className)}>
-                Notes Vault
-              </span>
-            </div>
-
-            {/* Heading */}
-            <div className="mb-8">
-              <h1 className={cn('text-[26px] tracking-tight text-neutral-900 dark:text-neutral-100', dmSerif.className)}>
-                Create account
-              </h1>
-              <p className="mt-1.5 text-[14px] text-neutral-500 dark:text-neutral-500">
-                Start organizing your technical knowledge today
-              </p>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-
-              {error && (
-                <div className="rounded-[7px] border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-500 dark:border-red-900 dark:bg-red-950 dark:text-red-400">
-                  {error}
-                </div>
-              )}
-
-              {/* Name */}
-              <div className="space-y-1.5">
-                <label htmlFor="name" className={labelClass}>Name</label>
-                <input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  placeholder="Your name"
-                  className={inputClass}
-                />
-              </div>
-
-              {/* Email */}
-              <div className="space-y-1.5">
-                <label htmlFor="email" className={labelClass}>Email</label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="you@example.com"
-                  className={inputClass}
-                />
-              </div>
-
-              {/* Password */}
-              <div className="space-y-1.5">
-                <label htmlFor="password" className={labelClass}>Password</label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="Create a password"
-                    className={cn(inputClass, 'pr-10')}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-400 hover:text-neutral-700 dark:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Confirm Password */}
-              <div className="space-y-1.5">
-                <label htmlFor="confirmPassword" className={labelClass}>Confirm Password</label>
-                <div className="relative">
-                  <input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    placeholder="Confirm your password"
-                    className={cn(inputClass, 'pr-10', confirmPassword && password !== confirmPassword
-                      ? 'border-red-300 dark:border-red-800'
-                      : ''
-                    )}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-400 hover:text-neutral-700 dark:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-                  >
-                    {showConfirmPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                  </button>
-                </div>
-                {confirmPassword && password !== confirmPassword && (
-                  <p className="text-[12px] text-red-400">Passwords do not match</p>
-                )}
-              </div>
-
-              {/* Submit */}
-              <div className="pt-1">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full h-9 rounded-[7px] bg-neutral-900 text-[14px] font-medium text-white hover:bg-neutral-700 transition-colors disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
-                >
-                  {loading ? 'Creating account...' : 'Create account'}
-                </button>
-              </div>
-            </form>
-
-            {/* Footer */}
-            <p className="mt-8 pt-6 border-t border-neutral-100 dark:border-neutral-800 text-center text-[14px] text-neutral-400 dark:text-neutral-600">
-              Already have an account?{' '}
-              <Link
-                href="/auth/login"
-                className="font-medium text-neutral-700 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors"
-              >
-                Sign in
-              </Link>
-            </p>
-          </motion.div>
-        </div>
+          {/* Custom Footer */}
+          <p className="mt-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
+            Already have an account?{' '}
+            <Link
+              href="/auth/login"
+              className="font-bold text-neutral-900 dark:text-neutral-100 hover:underline"
+            >
+              Sign in
+            </Link>
+          </p>
+        </motion.div>
       </div>
     </div>
   );

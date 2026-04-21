@@ -1,18 +1,21 @@
-import { getCurrentUser } from '@/lib/auth';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import RecentClient from './RecentClient';
 import { redirect } from 'next/navigation';
 
 export default async function RecentPage() {
-  const user = await getCurrentUser();
-  if (!user) {
+  const { userId } = await auth();
+  if (!userId) {
     redirect('/');
   }
+
+  const user = await currentUser();
+  const userName = user?.firstName || user?.fullName || 'User';
 
   // Dynamically import mongoose to avoid client-side bundling
   const { connectToDatabase } = await import('@/lib/mongodb');
   const Note = (await import('@/models/Note')).default;
 
-  const recentNotes = await Note.find({ userId: user.userId })
+  const recentNotes = await Note.find({ userId: userId })
     .sort({ updatedAt: -1 })
     .limit(20)
     .select('_id title type isFavorite tags updatedAt')
