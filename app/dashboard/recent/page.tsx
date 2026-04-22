@@ -15,6 +15,8 @@ export default async function RecentPage() {
   const { connectToDatabase } = await import('@/lib/mongodb');
   const Note = (await import('@/models/Note')).default;
 
+  await connectToDatabase();
+
   const recentNotes = await Note.find({ userId: userId })
     .sort({ updatedAt: -1 })
     .limit(20)
@@ -27,7 +29,7 @@ export default async function RecentPage() {
     type: note.type,
     isFavorite: note.isFavorite,
     tags: note.tags,
-    updatedAt: note.updatedAt,
+    updatedAt: note.updatedAt instanceof Date ? note.updatedAt.toISOString() : String(note.updatedAt),
   }));
 
   return <RecentClient userName={user.name} initialNotes={formattedNotes} />;

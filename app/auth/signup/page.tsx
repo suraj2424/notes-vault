@@ -3,15 +3,10 @@
 import Link from 'next/link';
 import { SignUp } from '@clerk/nextjs';
 import { motion } from 'motion/react';
-import { DM_Sans, DM_Serif_Display } from 'next/font/google';
-import { cn } from '@/lib/utils';
-
-const dmSans = DM_Sans({ subsets: ['latin'], weight: ['300', '400', '500', '700'] });
-const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400' });
 
 export default function SignupPage() {
   return (
-    <div className={cn('flex h-screen bg-white dark:bg-neutral-950', dmSans.className)}>
+    <div className="flex h-screen bg-white dark:bg-neutral-950 font-sans">
 
       {/* Left — Branding */}
       <div className="hidden lg:flex lg:w-1/2 h-full flex-col justify-between px-16 py-12 bg-neutral-50 border-r border-neutral-200 dark:bg-neutral-900/30 dark:border-neutral-800">
@@ -24,13 +19,13 @@ export default function SignupPage() {
               <rect x="8" y="8" width="4" height="4" rx="1" fill="white" fillOpacity="0.4" className="dark:fill-neutral-900" />
             </svg>
           </div>
-          <span className={cn('text-xl tracking-tight text-neutral-900 dark:text-neutral-100', dmSerif.className)}>
+          <span className="text-xl tracking-tight text-neutral-900 dark:text-neutral-100 font-serif">
             Notes Vault
           </span>
         </Link>
 
         <div className="space-y-6">
-          <h2 className={cn('text-5xl tracking-tight leading-[1.1] text-neutral-900 dark:text-neutral-50', dmSerif.className)}>
+          <h2 className="text-5xl tracking-tight leading-[1.1] text-neutral-900 dark:text-neutral-50 font-serif">
             Start building your <br />
             <span className="text-neutral-400 dark:text-neutral-500">
               technical knowledge base.
@@ -85,7 +80,7 @@ export default function SignupPage() {
               elements: {
                 rootBox: "w-full",
                 card: "shadow-none border-none bg-transparent p-0",
-                headerTitle: cn(dmSerif.className, "text-2xl text-neutral-900 dark:text-neutral-50"),
+                headerTitle: "font-serif text-2xl text-neutral-900 dark:text-neutral-50",
                 headerSubtitle: "text-neutral-500 dark:text-neutral-400",
                 socialButtonsBlockButton: "border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all",
                 formButtonPrimary: "bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200 shadow-none normal-case text-sm",

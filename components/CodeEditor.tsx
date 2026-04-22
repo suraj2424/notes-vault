@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atelierCaveLight, atelierCaveDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { cn } from '@/lib/utils';
@@ -46,19 +46,12 @@ export function CodeEditor({ language, value, onChange, placeholder = '// Your c
    // Calculate line count
    const lineCount = value.split('\n').length;
 
-   // Get line number (1-based) from cursor position
-   const getLineNumber = (pos: number): number => {
-     const textUpToCursor = value.substring(0, pos);
-     return textUpToCursor.split('\n').length;
-   };
-
-   // Update cursor line on cursor movement
-   const updateCursorLine = () => {
+   const updateCursorLine = useCallback(() => {
      const textarea = textareaRef.current;
-     if (textarea) {
-       setCursorLine(getLineNumber(textarea.selectionStart));
-     }
-   };
+     if (!textarea) return;
+     const textUpToCursor = value.substring(0, textarea.selectionStart);
+     setCursorLine(textUpToCursor.split('\n').length);
+   }, [value]);
 
    // Track cursor position
    useEffect(() => {
@@ -66,14 +59,18 @@ export function CodeEditor({ language, value, onChange, placeholder = '// Your c
      if (!textarea) return;
 
      const handleClick = updateCursorLine;
-     const handleKeyUp = (e: KeyboardEvent) => {
-       if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Home' || e.key === 'End') {
-         updateCursorLine();
-       }
+     const handleMouseUp = updateCursorLine;
+     const handleSelect = updateCursorLine;
+     const handleKeyUp = () => updateCursorLine();
+     const handleKeyDown = () => {
+       requestAnimationFrame(updateCursorLine);
      };
 
      textarea.addEventListener('click', handleClick);
+     textarea.addEventListener('mouseup', handleMouseUp);
+     textarea.addEventListener('select', handleSelect);
      textarea.addEventListener('keyup', handleKeyUp);
+     textarea.addEventListener('keydown', handleKeyDown);
      textarea.addEventListener('scroll', syncScroll);
 
      // Initial line
@@ -81,15 +78,18 @@ export function CodeEditor({ language, value, onChange, placeholder = '// Your c
 
      return () => {
        textarea.removeEventListener('click', handleClick);
+       textarea.removeEventListener('mouseup', handleMouseUp);
+       textarea.removeEventListener('select', handleSelect);
        textarea.removeEventListener('keyup', handleKeyUp);
+       textarea.removeEventListener('keydown', handleKeyDown);
        textarea.removeEventListener('scroll', syncScroll);
      };
-   }, [value]);
+   }, [updateCursorLine, value]);
 
    useEffect(() => {
      syncScroll();
      updateCursorLine();
-   }, [value]);
+   }, [updateCursorLine, value]);
 
   const sharedStyles: React.CSSProperties = {
     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
@@ -297,30 +297,37 @@ export function CodeEditor({ language, value, onChange, placeholder = '// Your c
           fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
           fontSize: '14px',
           lineHeight: '1.6',
-          padding: '20px 8px 20px 12px',
           textAlign: 'right',
         }}
       >
-        {Array.from({ length: lineCount }, (_, i) => {
-          const lineNum = i + 1;
-          const isCurrentLine = lineNum === cursorLine;
-          return (
-            <div
-              key={lineNum}
-              className={cn(
-                "transition-colors duration-75",
-                isCurrentLine
-                  ? isDark
-                    ? 'text-neutral-100'
-                    : 'text-neutral-900'
-                  : 'text-neutral-400 dark:text-neutral-500'
-              )}
-              style={{ lineHeight: '1.6' }}
-            >
-              {lineNum}
-            </div>
-          );
-        })}
+        <div
+          style={{
+            padding: '20px 8px 20px 12px',
+            transform: `translateY(-${scrollTop}px)`,
+            willChange: 'transform',
+          }}
+        >
+          {Array.from({ length: lineCount }, (_, i) => {
+            const lineNum = i + 1;
+            const isCurrentLine = lineNum === cursorLine;
+            return (
+              <div
+                key={lineNum}
+                className={cn(
+                  "transition-colors duration-75",
+                  isCurrentLine
+                    ? isDark
+                      ? 'text-neutral-100'
+                      : 'text-neutral-900'
+                    : 'text-neutral-400 dark:text-neutral-500'
+                )}
+                style={{ height: lineHeightPx, lineHeight: '1.6' }}
+              >
+                {lineNum}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
         {/* Syntax Highlighted Layer */}
@@ -355,7 +362,7 @@ export function CodeEditor({ language, value, onChange, placeholder = '// Your c
 
         {/* Current line highlight - full width including gutter */}
         <div
-          className="absolute pointer-events-none z-0 transition-all duration-75"
+          className="absolute pointer-events-none z-0"
           style={{
             left: '0',
             right: '0',

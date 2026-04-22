@@ -4,11 +4,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { HelpCircle, Book, MessageCircle, ExternalLink, Code2, BookOpen, FileText } from 'lucide-react';
-import { DM_Sans, DM_Serif_Display } from 'next/font/google';
-import { cn } from '@/lib/utils';
-
-const dmSans = DM_Sans({ subsets: ['latin'], weight: ['300', '400', '500'] });
-const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400' });
 
 export default function HelpPage() {
   const { user, loading } = useAuth();
@@ -21,12 +16,12 @@ export default function HelpPage() {
   if (loading || !user) return null;
 
   return (
-    <div className={dmSans.className}>
+    <div className="font-sans">
       <header className="mb-10 text-center border-b border-neutral-100 pb-8 dark:border-[#222222]">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-[7px] border border-neutral-200 text-neutral-500 dark:border-[#2a2a2a] dark:text-[#888888]">
           <HelpCircle className="h-7 w-7" />
         </div>
-        <h1 className={cn('text-2xl tracking-tight text-neutral-900 dark:text-[#ededed]', dmSerif.className)}>How can we help?</h1>
+        <h1 className="text-2xl tracking-tight text-neutral-900 dark:text-[#ededed] font-serif">How can we help?</h1>
         <p className="mt-2 text-[13px] text-neutral-500 dark:text-[#888888]">Everything you need to know about using NoteVault.</p>
       </header>
 

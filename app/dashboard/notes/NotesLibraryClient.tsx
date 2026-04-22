@@ -20,10 +20,6 @@ import {
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
-import { DM_Sans, DM_Serif_Display } from "next/font/google";
-
-const dmSans = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "700"] });
-const dmSerif = DM_Serif_Display({ subsets: ["latin"], weight: "400" });
 
 const sortOptions = [
   { value: "recent", label: "Most Recent" },
@@ -43,6 +39,45 @@ interface NotesLibraryClientProps {
   currentPage: number;
 }
 
+const NOTE_TYPE_STYLES: Record<
+  NoteType,
+  { iconWrap: string; typeBadge: string; accentBorder: string; filterChip: string; filterChipActive: string }
+> = {
+  dsa: {
+    iconWrap: "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400",
+    typeBadge: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300",
+    accentBorder:
+      "hover:border-blue-200 dark:hover:border-blue-900/60 group-hover:shadow-[0_0_0_1px_rgba(59,130,246,0.10)]",
+    filterChip:
+      "bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/15",
+    filterChipActive:
+      "bg-blue-600 text-white dark:bg-blue-500/25 dark:text-blue-100",
+  },
+  qa: {
+    iconWrap: "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400",
+    typeBadge:
+      "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+    accentBorder:
+      "hover:border-amber-200 dark:hover:border-amber-900/60 group-hover:shadow-[0_0_0_1px_rgba(245,158,11,0.10)]",
+    filterChip:
+      "bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/15",
+    filterChipActive:
+      "bg-amber-600 text-white dark:bg-amber-500/25 dark:text-amber-100",
+  },
+  general: {
+    iconWrap:
+      "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+    typeBadge:
+      "bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200",
+    accentBorder:
+      "hover:border-emerald-200 dark:hover:border-emerald-900/60 group-hover:shadow-[0_0_0_1px_rgba(16,185,129,0.10)]",
+    filterChip:
+      "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:bg-emerald-500/15",
+    filterChipActive:
+      "bg-emerald-600 text-white dark:bg-emerald-500/25 dark:text-emerald-100",
+  },
+};
+
 function NoteCard({
   note,
   onToggleFavorite,
@@ -52,17 +87,18 @@ function NoteCard({
 }) {
   return (
     // Fixed: Standardized border-neutral-200 and dark:border-neutral-800
-    <div className="group relative flex h-full flex-col rounded-xl border border-neutral-200 bg-white transition-all hover:border-neutral-400 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:border-neutral-600 shadow-sm">
+    <div
+      className={cn(
+        "group relative flex h-full flex-col rounded-xl border border-neutral-200 bg-white transition-all dark:border-neutral-800 dark:bg-neutral-950 shadow-sm",
+        NOTE_TYPE_STYLES[note.type].accentBorder,
+      )}
+    >
       <div className="flex flex-col h-full p-5">
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-3">
           <div
             className={cn(
               "flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800",
-              note.type === "dsa"
-                ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
-                : note.type === "qa"
-                  ? "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
-                  : "bg-neutral-100 text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400",
+              NOTE_TYPE_STYLES[note.type].iconWrap,
             )}
           >
             {note.type === "dsa" ? (
@@ -99,6 +135,29 @@ function NoteCard({
             <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
               {note.dsa.platform}
             </span>
+            {!!note.dsa.pattern && (
+              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
+                {note.dsa.pattern}
+              </span>
+            )}
+          </div>
+        )}
+
+        {!!note.tags?.length && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {note.tags.slice(0, 4).map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-black tracking-wider text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300"
+              >
+                {tag}
+              </span>
+            ))}
+            {note.tags.length > 4 && (
+              <span className="rounded-full bg-neutral-50 px-2 py-0.5 text-[10px] font-black tracking-wider text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
+                +{note.tags.length - 4}
+              </span>
+            )}
           </div>
         )}
 
@@ -118,7 +177,12 @@ function NoteCard({
         <div className="border-t border-neutral-100 dark:border-neutral-900" />
         <div className="flex items-center justify-between pt-3 text-[10px] font-black uppercase tracking-[0.15em] text-neutral-400 dark:text-neutral-500">
           <div className="flex items-center gap-2">
-            <span className="text-neutral-950 dark:text-neutral-300">
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider",
+                NOTE_TYPE_STYLES[note.type].typeBadge,
+              )}
+            >
               {note.type}
             </span>
             <span className="opacity-50">•</span>
@@ -183,7 +247,7 @@ export function NotesLibraryClient({
     const type = params.get("type") as NoteType | null;
     const filter = params.get("filter");
 
-    if (search) setSearchQuery(search); // eslint-disable-line react-hooks/set-state-in-effect
+    if (search) setSearchQuery(search);
     if (type && ["dsa", "qa", "general"].includes(type)) setTypeFilter(type);
     if (filter) setShowFavoritesOnly(filter === "favorites");
   }, [searchParams]);
@@ -339,7 +403,7 @@ export function NotesLibraryClient({
 
   // Fetch notes when page/sort/filters change
   useEffect(() => {
-    fetchNotes(page, searchQuery, typeFilter, showFavoritesOnly); // eslint-disable-line react-hooks/set-state-in-effect
+    fetchNotes(page, searchQuery, typeFilter, showFavoritesOnly);
   }, [page, typeFilter, showFavoritesOnly, sortBy, fetchNotes, searchQuery]);
 
   useEffect(() => {
@@ -375,13 +439,13 @@ export function NotesLibraryClient({
   if (!user) return null;
 
   return (
-    <div className={cn(dmSans.className, "max-w-7xl mx-auto")}>
+    <div className="max-w-7xl mx-auto font-sans">
       <header className="mb-8 flex flex-col justify-between gap-6 sm:flex-row sm:items-end border-b border-neutral-200 pb-8 dark:border-neutral-800">
         <div>
           <h1
             className={cn(
               "text-[32px] tracking-tight text-neutral-950 dark:text-neutral-50 leading-none",
-              dmSerif.className,
+              "font-serif",
             )}
           >
             Notes Library
@@ -391,23 +455,24 @@ export function NotesLibraryClient({
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
+          <div className="relative flex-1 sm:w-64 group">
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 pointer-events-none transition-colors group-focus-within:text-neutral-900 dark:group-focus-within:text-neutral-100" />
             <input
               type="text"
               placeholder="Search vault..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-10 w-full rounded-xl border border-neutral-200 bg-neutral-50 pl-10 pr-4 text-[13px] font-medium outline-none transition-all focus:border-neutral-400 focus:bg-white dark:border-neutral-800 dark:bg-neutral-900 dark:focus:border-neutral-600 dark:text-neutral-100"
+              className={cn(
+                "h-11 w-full rounded-xl border pl-10 pr-4 text-[13.5px] font-medium outline-none transition-all",
+                // Light Mode: Matches your verified "Quick search" logic
+                "bg-neutral-50 border-neutral-200 text-neutral-900 placeholder:text-neutral-400",
+                "focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100",
+                // Dark Mode: Matches your verified "Quick search" logic
+                "dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500",
+                "dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50",
+              )}
             />
           </div>
-          <Link
-            href="/dashboard/notes/new"
-            className="flex items-center gap-2 h-10 rounded-xl bg-neutral-950 px-5 text-[14px] font-bold text-white transition-all hover:bg-neutral-800 dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-white active:scale-95 shadow-sm"
-          >
-            <Plus className="h-4 w-4 stroke-[3]" />
-            New
-          </Link>
         </div>
       </header>
 
@@ -425,10 +490,17 @@ export function NotesLibraryClient({
                 setPage(1);
               }}
               className={cn(
-                "rounded-xl px-5 py-2 text-[11px] font-black uppercase tracking-[0.1em] transition-all",
-                typeFilter === t
-                  ? "bg-neutral-950 text-white dark:bg-neutral-50 dark:text-neutral-950"
-                  : "bg-neutral-50 text-neutral-500 hover:bg-neutral-200 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800",
+                "rounded-xl px-5 py-2 text-[11px] font-black uppercase tracking-[0.1em] transition-all border",
+                t === "all"
+                  ? typeFilter === "all"
+                    ? "bg-neutral-950 text-white border-neutral-950 dark:bg-neutral-50 dark:text-neutral-950 dark:border-neutral-50"
+                    : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:bg-neutral-200 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-800 dark:hover:bg-neutral-800"
+                  : typeFilter === t
+                    ? cn(
+                        NOTE_TYPE_STYLES[t].filterChipActive,
+                        "border-transparent",
+                      )
+                    : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:bg-neutral-200 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-800 dark:hover:bg-neutral-800",
               )}
             >
               {t}
@@ -438,16 +510,18 @@ export function NotesLibraryClient({
           <button
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             className={cn(
-              "flex items-center gap-2 rounded-xl px-5 py-2 text-[11px] font-black uppercase tracking-[0.1em] transition-all",
+              "flex items-center gap-2 rounded-xl px-5 py-2 text-[11px] font-black uppercase tracking-[0.1em] transition-all border",
               showFavoritesOnly
-                ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
-                : "bg-neutral-50 text-neutral-500 hover:bg-neutral-200 dark:bg-neutral-900 dark:text-neutral-400",
+                ? "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
+                : "bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-800 dark:hover:bg-neutral-800",
             )}
           >
             <Star
               className={cn(
-                "h-3.5 w-3.5",
-                showFavoritesOnly && "fill-amber-500",
+                "h-3.5 w-3.5 transition-transform",
+                showFavoritesOnly
+                  ? "fill-amber-500 text-amber-500 scale-110"
+                  : "text-neutral-400",
               )}
             />
             Favorites
@@ -545,7 +619,7 @@ export function NotesLibraryClient({
           <h3
             className={cn(
               "text-xl text-neutral-950 dark:text-neutral-50",
-              dmSerif.className,
+              "font-serif",
             )}
           >
             No notes found

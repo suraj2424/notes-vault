@@ -5,15 +5,16 @@ import { redirect } from 'next/navigation';
 export default async function NotesLibraryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const resolvedSearchParams = (await searchParams) ?? {};
   const {
     page: pageParam,
     pageSize: pageSizeParam,
     type: typeParam,
     search: searchParam,
     filter: filterParam,
-  } = await searchParams;
+  } = resolvedSearchParams;
 
   const { userId } = await auth();
   if (!userId) {
@@ -27,6 +28,8 @@ export default async function NotesLibraryPage({
   // Dynamically import mongoose to avoid bundling in client
   const { connectToDatabase } = await import('@/lib/mongodb');
   const Note = (await import('@/models/Note')).default;
+
+  await connectToDatabase();
 
   const page = parseInt((pageParam as string) || '1');
   const pageSize = parseInt((pageSizeParam as string) || '20');
@@ -66,8 +69,8 @@ export default async function NotesLibraryPage({
     type: note.type,
     isFavorite: note.isFavorite,
     tags: note.tags,
-    createdAt: note.createdAt,
-    updatedAt: note.updatedAt,
+    createdAt: note.createdAt instanceof Date ? note.createdAt.toISOString() : String(note.createdAt),
+    updatedAt: note.updatedAt instanceof Date ? note.updatedAt.toISOString() : String(note.updatedAt),
   }));
 
   const totalPages = Math.ceil(total / pageSize);

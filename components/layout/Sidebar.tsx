@@ -1,28 +1,22 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useUser, useClerk } from '@clerk/nextjs';
+import { useUser, UserButton } from '@clerk/nextjs';
 import {
   LayoutDashboard,
   FileText,
   Tags,
   Clock,
   Settings,
-  LogOut,
   User as UserIcon,
-  ChevronUp,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
-import { DM_Sans, DM_Serif_Display } from 'next/font/google';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import Link from 'next/link';
-
-const dmSans = DM_Sans({ subsets: ['latin'], weight: ['400', '500', '700'] });
-const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400' });
 
 /**
  * 1. TOOLTIP (High Contrast & Centered)
@@ -73,7 +67,7 @@ const NavLink = ({ item, isActive, isCollapsed }: NavLinkProps) => {
           'flex items-center transition-all duration-200 group',
           isCollapsed ? 'justify-center w-10 h-10 mx-auto rounded-xl' : 'gap-3 px-3 py-2 w-full rounded-lg text-[14px]',
           isActive
-            ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 shadow-md'
+            ? 'bg-neutral-950 text-white shadow-md hover:bg-neutral-900 hover:shadow-lg dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-50'
             : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-400 dark:hover:bg-neutral-800/80 dark:hover:text-neutral-50'
         )}
       >
@@ -93,29 +87,16 @@ const NavLink = ({ item, isActive, isCollapsed }: NavLinkProps) => {
  */
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
   const pathname = usePathname();
   const { user } = useUser();
-  const { signOut } = useClerk();
-  const userMenuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setIsUserMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
 
   return (
     <motion.aside
       animate={{ width: isCollapsed ? 80 : 260 }}
       className="sticky top-0 hidden h-screen flex-col lg:flex border-r border-neutral-200 bg-white dark:bg-neutral-950 dark:border-neutral-900 z-40 transition-colors"
     >
-      <div className={cn('relative flex flex-col h-full py-6 transition-all', isCollapsed ? 'px-0' : 'px-4', dmSans.className)}>
+      <div className={cn('relative flex flex-col h-full py-6 transition-all font-sans', isCollapsed ? 'px-0' : 'px-4')}>
         
         {/* LOGO SECTION */}
         <div className={cn("mb-10 flex items-center", isCollapsed ? "justify-center" : "justify-between px-1")}>
@@ -150,7 +131,7 @@ export function Sidebar() {
             </button>
             
             {!isCollapsed && (
-              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={cn('text-[19px] tracking-tight font-bold text-neutral-950 dark:text-white', dmSerif.className)}>
+              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[19px] tracking-tight font-bold text-neutral-950 dark:text-white font-serif">
                 NoteVault
               </motion.span>
             )}
@@ -187,39 +168,32 @@ export function Sidebar() {
         </div>
 
         {/* USER PROFILE */}
-        <div className="relative" ref={userMenuRef}>
-          <AnimatePresence>
-            {isUserMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                className="absolute bottom-full left-4 right-4 mb-3 min-w-[200px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-2 z-50"
-              >
-                <button onClick={() => signOut()} className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all font-bold">
-                  <LogOut className="h-4 w-4" /> Logout
-                </button>
-              </motion.div>
+        <div className={cn("flex items-center transition-all duration-300", isCollapsed ? "justify-center w-12 h-12 mx-auto rounded-xl" : "gap-3 p-2 w-full rounded-2xl hover:bg-neutral-50 dark:hover:bg-neutral-900/50")}>
+          <div className="shrink-0 overflow-hidden">
+            {user ? (
+              <UserButton
+                showName={false}
+                appearance={{
+                  elements: {
+                    rootBox: "w-full h-full flex items-center justify-center",
+                    userButtonBox: "w-full h-full flex items-center justify-center",
+                    avatarBox: "w-9 h-9 rounded-xl",
+                    userButtonTrigger: "w-full h-full",
+                    userButtonOuterIdentifier: "hidden",
+                  },
+                }}
+              />
+            ) : (
+              <UserIcon className="p-2 text-neutral-400" />
             )}
-          </AnimatePresence>
+          </div>
 
-          <button
-            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            className={cn(
-              "flex items-center transition-all duration-300",
-              isCollapsed ? "justify-center w-12 h-12 mx-auto rounded-xl" : "gap-3 p-2 w-full rounded-2xl",
-              isUserMenuOpen ? "bg-neutral-100 dark:bg-neutral-900" : "hover:bg-neutral-50 dark:hover:bg-neutral-900/50"
-            )}
-          >
-            <div className="h-9 w-9 rounded-xl bg-neutral-200 dark:bg-neutral-800 shrink-0 overflow-hidden border border-neutral-200 dark:border-neutral-800">
-              {user?.imageUrl ? <img src={user.imageUrl} className="h-full w-full object-cover" alt="User" /> : <UserIcon className="p-2 text-neutral-400" />}
+          {!isCollapsed && (
+            <div className="flex-1 text-left min-w-0">
+              <p className="text-[13px] font-bold text-neutral-950 dark:text-white truncate">{user?.firstName || 'User'}</p>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">{user?.emailAddresses[0]?.emailAddress}</p>
             </div>
-            {!isCollapsed && (
-              <div className="flex-1 text-left min-w-0">
-                <p className="text-[13px] font-bold text-neutral-950 dark:text-white truncate">{user?.firstName || 'User'}</p>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">{user?.emailAddresses[0].emailAddress}</p>
-              </div>
-            )}
-            {!isCollapsed && <ChevronUp className={cn("h-4 w-4 text-neutral-400 transition-transform", isUserMenuOpen && "rotate-180")} />}
-          </button>
+          )}
         </div>
       </div>
     </motion.aside>

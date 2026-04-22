@@ -7,9 +7,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Note } from '@/types';
 import { cn } from '@/lib/utils';
 import { useRouter, usePathname } from 'next/navigation';
-import { DM_Sans } from 'next/font/google';
-
-const dmSans = DM_Sans({ subsets: ['latin'], weight: ['400', '500', '700'] });
 
 export function Navbar() {
   const { user } = useUser();
@@ -83,8 +80,7 @@ export function Navbar() {
 
   return (
     <nav className={cn(
-      'sticky top-0 z-50 border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950',
-      dmSans.className
+      'sticky top-0 z-50 border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 font-sans'
     )}>
       <div className="flex items-center justify-between px-4 h-[56px]">
 
@@ -182,7 +178,7 @@ export function Navbar() {
                 ) : (
                   <div className="py-10 px-6 text-center">
                     <p className="text-[14px] font-bold text-neutral-950 dark:text-neutral-50">No notes found</p>
-                    <p className="mt-1 text-[12px] font-medium text-neutral-500 dark:text-neutral-400">We couldn't find anything matching &quot;{searchQuery}&quot;</p>
+                    <p className="mt-1 text-[12px] font-medium text-neutral-500 dark:text-neutral-400">We couldn&apos;t find anything matching &quot;{searchQuery}&quot;</p>
                   </div>
                 )}
               </div>

@@ -54,7 +54,7 @@ export default async function DashboardPage() {
     type: note.type,
     isFavorite: note.isFavorite,
     tags: note.tags,
-    updatedAt: note.updatedAt,
+    updatedAt: note.updatedAt instanceof Date ? note.updatedAt.toISOString() : String(note.updatedAt),
   }));
 
   return (

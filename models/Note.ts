@@ -22,10 +22,10 @@ const DSASchema: Schema = new Schema({
   implementations: [{
     language: { type: String, required: true },
     code: { type: String, required: true },
+    timeComplexity: { type: String, required: true },
+    spaceComplexity: { type: String, required: true },
   }],
-  timeComplexity: { type: String, required: true },
-  spaceComplexity: { type: String, required: true },
-  notes: { type: String }, // optional now
+  notes: { type: String }, // optional
 }, { _id: false });
 
 const QASchema: Schema = new Schema({

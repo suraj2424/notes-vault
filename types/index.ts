@@ -8,10 +8,13 @@ export interface DSAData {
   implementations: {
     language: string;
     code: string;
+    timeComplexity: string;
+    spaceComplexity: string;
   }[];
-  timeComplexity: string;
-  spaceComplexity: string;
   notes: string;
+  // Backward compatibility: old notes may have complexity at top level
+  timeComplexity?: string;
+  spaceComplexity?: string;
 }
 
 export interface QAData {
@@ -27,8 +30,8 @@ export interface Note {
   title: string;
   isFavorite: boolean;
   tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   content?: string;
   dsa?: DSAData;
   qa?: QAData;

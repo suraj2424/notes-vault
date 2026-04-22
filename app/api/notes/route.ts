@@ -18,9 +18,9 @@ const createNoteSchema = z.object({
     implementations: z.array(z.object({
       language: z.string(),
       code: z.string(),
+      timeComplexity: z.string().default(''),
+      spaceComplexity: z.string().default(''),
     })),
-    timeComplexity: z.string(),
-    spaceComplexity: z.string(),
     notes: z.string().optional(),
   }).optional(),
    qa: z.object({

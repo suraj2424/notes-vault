@@ -5,33 +5,152 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { NoteType, DSAData, QAData } from "@/types";
 import {
-  X,
-  Plus,
-  Trash2,
-  ChevronLeft,
-  Code2,
-  BookOpen,
-  FileText,
-  Star,
-  Tag,
-  Check,
+  X, Plus, Trash2, ChevronLeft, Code2, BookOpen, FileText, Star, Tag, Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { CodeEditor } from "@/components/CodeEditor";
-import { DM_Sans, DM_Serif_Display } from "next/font/google";
 
-const dmSans = DM_Sans({
-  weight: ["300", "400", "500"],
-  subsets: ["latin"],
-  variable: "--font-dm-sans",
-});
+// --- REUSABLE UI SUB-COMPONENTS ---
 
-const dmSerifDisplay = DM_Serif_Display({
-  weight: ["400"],
-  subsets: ["latin"],
-  variable: "--font-dm-serif",
-});
+const Label = ({ children }: { children: React.ReactNode }) => (
+  <label className="block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 mb-2 dark:text-neutral-400">
+    {children}
+  </label>
+);
+
+interface FormSectionProps {
+  title: string;
+  badge?: string;
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}
+
+const FormSection = ({ title, badge, children, action }: FormSectionProps) => (
+  <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
+    <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
+      <div className="flex items-center gap-2">
+        <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
+          {title}
+        </span>
+        {badge && (
+          <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[9px] font-bold text-neutral-500 uppercase dark:bg-neutral-800 dark:text-neutral-400">
+            {badge}
+          </span>
+        )}
+      </div>
+      {action}
+    </div>
+    {children}
+  </div>
+);
+
+const InputField = ({ ...props }) => (
+  <input
+    {...props}
+    className={cn(
+      "h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all",
+      "border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400",
+      "focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100",
+      "dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50",
+      props.className
+    )}
+  />
+);
+
+type DropdownOption<T extends string> = { label: string; value: T };
+
+function Dropdown<T extends string>({
+  value,
+  options,
+  onChange,
+  ariaLabel,
+}: {
+  value: T;
+  options: DropdownOption<T>[];
+  onChange: (next: T) => void;
+  ariaLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const root = target.closest("[data-dropdown-root='true']");
+      if (!root) setOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  const current = options.find(o => o.value === value)?.label ?? value;
+
+  return (
+    <div className="relative" data-dropdown-root="true">
+      <button
+        type="button"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen(v => !v)}
+        className={cn(
+          "h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all",
+          "border-neutral-200 bg-neutral-50 text-neutral-900",
+          "hover:bg-white",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-100",
+          "dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-950 dark:focus-visible:ring-neutral-900/50"
+        )}
+      >
+        <span className="flex items-center justify-between gap-3">
+          <span className="truncate">{current}</span>
+          <ChevronLeft className={cn("h-4 w-4 rotate-[-90deg] text-neutral-400 transition-transform", open && "rotate-[90deg]")} />
+        </span>
+      </button>
+
+      {open && (
+        <div
+          role="listbox"
+          tabIndex={-1}
+          className={cn(
+            "absolute z-20 mt-2 w-full overflow-hidden rounded-xl border bg-white shadow-lg",
+            "border-neutral-200",
+            "dark:border-neutral-800 dark:bg-neutral-950"
+          )}
+        >
+          {options.map(opt => (
+            <button
+              key={opt.value}
+              type="button"
+              role="option"
+              aria-selected={opt.value === value}
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
+              className={cn(
+                "w-full px-4 py-2.5 text-left text-[13px] font-semibold transition-colors",
+                opt.value === value
+                  ? "bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100"
+                  : "text-neutral-700 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-900/60"
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function NewNoteForm() {
   const { user, loading } = useAuth();
@@ -39,6 +158,7 @@ export function NewNoteForm() {
   const searchParams = useSearchParams();
   const initialType = (searchParams.get("type") as NoteType) || "general";
 
+  // State
   const [type, setType] = useState<NoteType>(initialType);
   const [title, setTitle] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
@@ -47,496 +167,206 @@ export function NewNoteForm() {
   const [content, setContent] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // DSA Specific State
   const [dsa, setDsa] = useState<DSAData>({
-    platform: "",
-    difficulty: "Medium",
-    pattern: "",
-    problemStatement: "",
-    implementations: [{ language: "Java", code: "" }],
-    timeComplexity: "",
-    spaceComplexity: "",
+    platform: "", difficulty: "Medium", pattern: "", problemStatement: "",
+    implementations: [{ language: "Java", code: "", timeComplexity: "", spaceComplexity: "" }],
     notes: "",
   });
 
-  // QA Specific State
-  const [qa, setQa] = useState<QAData>({
-    topic: "",
-    content: "",
-    importantPoints: [""],
-  });
+  const [qa, setQa] = useState<QAData>({ topic: "", content: "", importantPoints: [""] });
 
   useEffect(() => {
     if (!loading && !user) router.push("/");
   }, [user, loading, router]);
 
-  const handleAddTag = (e: React.KeyboardEvent) => {
+  // Handlers
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
-      if (!tags.includes(tagInput.trim())) {
-        setTags([...tags, tagInput.trim()]);
-      }
+      if (!tags.includes(tagInput.trim())) setTags([...tags, tagInput.trim()]);
       setTagInput("");
     }
   };
 
-  const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag));
-  };
-
-  const handleAddImplementation = () => {
-    setDsa({
-      ...dsa,
-      implementations: [...dsa.implementations, { language: "Java", code: "" }],
-    });
-  };
-
-  const handleRemoveImplementation = (index: number) => {
-    const newImpls = [...dsa.implementations];
-    newImpls.splice(index, 1);
-    setDsa({ ...dsa, implementations: newImpls });
-  };
-
-  const handleAddPoint = () => {
-    setQa({ ...qa, importantPoints: [...qa.importantPoints, ""] });
-  };
-
-  const handleRemovePoint = (index: number) => {
-    const newPoints = [...qa.importantPoints];
-    newPoints.splice(index, 1);
-    setQa({ ...qa, importantPoints: newPoints });
-  };
-
+  const updateDsa = (fields: Partial<DSAData>) => setDsa(prev => ({ ...prev, ...fields }));
+  
   const handleSave = async () => {
     if (!title.trim()) return alert("Title is required");
     if (!user) return;
-
     setIsSaving(true);
     try {
-      const noteData: any = { type, title, isFavorite, tags };
-
-      if (type === "general") noteData.content = content;
-      if (type === "dsa") noteData.dsa = dsa;
-      if (type === "qa") noteData.qa = qa;
-
-      const response = await fetch("/api/notes", {
+      const noteData = { type, title, isFavorite, tags, 
+        ...(type === "general" && { content }),
+        ...(type === "dsa" && { dsa }),
+        ...(type === "qa" && { qa })
+      };
+      const res = await fetch("/api/notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(noteData),
       });
-
-      if (response.ok) {
-        router.push("/dashboard");
-      } else {
-        const error = await response.json();
-        alert(`Failed to save note: ${error.error}`);
-      }
-    } catch (error) {
-      console.error("Save note error:", error);
-      alert("Failed to save note.");
-    } finally {
-      setIsSaving(false);
-    }
+      if (res.ok) router.push("/dashboard");
+    } catch (err) { alert("Failed to save note."); }
+    finally { setIsSaving(false); }
   };
 
   if (loading || !user) return null;
 
   return (
-    <div
-      className={cn(
-        "mx-auto max-w-6xl",
-        dmSans.variable,
-        dmSerifDisplay.variable,
-      )}
-    >
-       <div className="mb-2 flex items-center justify-between pb-4 dark:border-neutral-800">
-         <div className="flex items-center gap-3">
-           <Link
-             href="/dashboard/notes"
-             className="flex h-8 w-8 items-center justify-center rounded-[7px] text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-colors dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-           >
-            <ChevronLeft className="h-4 w-4" />
+    <div className="mx-auto max-w-5xl pb-20 font-sans">
+      {/* Header */}
+      <div className="mb-8 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard/notes" className="group flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-all hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800">
+            <ChevronLeft className="h-4 w-4 text-neutral-500 group-hover:text-neutral-900 dark:text-neutral-400 dark:group-hover:text-neutral-100" />
           </Link>
-           <h1 className="text-xl font-serif tracking-tight text-neutral-900 dark:text-neutral-100">
-             New Note
-           </h1>
+          <h1 className="text-2xl font-serif tracking-tight text-neutral-900 dark:text-neutral-100">New Note</h1>
         </div>
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setIsFavorite(!isFavorite)}
-            className={cn(
-              "h-8 w-8 flex items-center justify-center rounded-[7px] transition-colors",
-              isFavorite
-                ? "text-amber-400 bg-amber-50 dark:bg-amber-900/30"
-                : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200",
-            )}
-          >
-            <Star
-              className={cn("h-3.5 w-3.5", isFavorite && "fill-amber-400")}
-            />
+
+        <div className="flex items-center gap-2">
+          <button onClick={() => setIsFavorite(!isFavorite)} className={cn("h-9 w-9 flex items-center justify-center rounded-xl border transition-all", isFavorite ? "bg-amber-50 border-amber-200 text-amber-500 dark:bg-amber-500/10 dark:border-amber-500/20" : "bg-white border-neutral-200 text-neutral-400 hover:text-neutral-600 dark:bg-neutral-900 dark:border-neutral-800")}>
+            <Star className={cn("h-4 w-4", isFavorite && "fill-current")} />
           </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center gap-1.5 h-9 px-4 rounded-[7px] bg-neutral-900 text-white text-[12.5px] font-medium hover:bg-neutral-800 transition-colors disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
-          >
-            {isSaving ? (
-              "Saving..."
-            ) : (
-              <>
-                <Check className="h-3.5 w-3.5" /> Save Note
-              </>
-            )}
+          <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 h-9 px-5 rounded-xl bg-neutral-900 text-white text-[12px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-all disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200">
+            {isSaving ? "Saving..." : <><Check className="h-4 w-4" /> Save</>}
           </button>
         </div>
       </div>
 
       {/* Type Selector */}
-      <div className="mb-6 flex items-center gap-2">
+      <div className="mb-8 flex p-1.5 w-fit rounded-2xl bg-neutral-100/50 border border-neutral-200/50 dark:bg-neutral-900/50 dark:border-neutral-800">
         {(["general", "dsa", "qa"] as const).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setType(t)}
-              className={cn(
-                "flex items-center gap-1.5 px-3.5 h-8 rounded-[7px] text-[12px] font-medium transition-colors",
-                type === t
-                  ? "bg-neutral-800 text-white dark:bg-neutral-200 dark:text-neutral-900"
-                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 hover:text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-200",
-              )}
+            className={cn(
+              "flex items-center gap-2 px-6 h-9 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all",
+              "border border-transparent",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+              "dark:focus-visible:ring-neutral-700 dark:focus-visible:ring-offset-neutral-900",
+              type === t
+                ? "bg-white text-neutral-900 shadow-sm border-neutral-200 dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-700"
+                : "bg-transparent text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-500 dark:hover:bg-neutral-900/40 dark:hover:text-neutral-300"
+            )}
           >
             {t === "dsa" && <Code2 className="h-3.5 w-3.5" />}
             {t === "qa" && <BookOpen className="h-3.5 w-3.5" />}
             {t === "general" && <FileText className="h-3.5 w-3.5" />}
-            <span className="uppercase tracking-wide">
-              {t === "qa" ? "Q&A" : t}
-            </span>
+            {t === "qa" ? "Q&A" : t}
           </button>
         ))}
       </div>
 
-      {/* Title + Tags grouped */}
-      <div className="mb-6 space-y-3">
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Note title..."
-          className="w-full h-10 rounded-[7px] border border-neutral-200 bg-white px-4 text-[13px] font-medium text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-neutral-300 transition-colors dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:bg-neutral-800"
-        />
+      <div className="space-y-6">
+        <InputField value={title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)} placeholder="Note title..." className="h-12 text-base font-semibold" />
 
-        {/* Tags */}
-        <div className="flex flex-wrap items-center gap-2 rounded-[7px] border border-neutral-200 bg-white px-4 py-2.5 dark:border-neutral-700 dark:bg-neutral-900">
-          <Tag className="h-[13px] w-[13px] text-neutral-400 shrink-0 dark:text-neutral-500" />
+        {/* Tags Block */}
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+          <Tag className="h-3.5 w-3.5 text-neutral-400 mr-2" />
           {tags.map((tag) => (
-            <span
-              key={tag}
-               className="flex items-center gap-1 bg-neutral-100 px-2.5 py-1 text-[10.5px] font-medium uppercase tracking-wider text-neutral-600 rounded-full dark:bg-neutral-800 dark:text-neutral-400"
-            >
+            <span key={tag} className="flex items-center gap-1.5 bg-neutral-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-neutral-600 rounded-lg dark:bg-neutral-800 dark:text-neutral-400">
               #{tag}
-              <button
-                type="button"
-                onClick={() => handleRemoveTag(tag)}
-                className="text-neutral-400 hover:text-red-400 transition-colors ml-0.5 dark:text-neutral-500"
-              >
-                <X className="h-2.5 w-2.5" />
-              </button>
+              <button onClick={() => setTags(tags.filter(t => t !== tag))}><X className="h-3 w-3 hover:text-red-500" /></button>
             </span>
           ))}
-          <input
-            type="text"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={handleAddTag}
-            placeholder="Add tag and press Enter..."
-            className="flex-1 min-w-[160px] h-7 text-[12.5px] outline-none placeholder:text-neutral-400 bg-transparent text-neutral-600 dark:placeholder:text-neutral-600 dark:text-neutral-100"
-          />
+          <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={handleAddTag} placeholder="Add tag..." className="flex-1 min-w-[120px] bg-transparent outline-none text-[13px] placeholder:text-neutral-400 dark:text-neutral-100" />
         </div>
-      </div>
 
-      {/* Type-specific content */}
-      <div className="space-y-5">
-         {/* General */}
-         {type === "general" && (
-           <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900">
-             <div className="border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
-               <span className="text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                 Content · Markdown supported
-               </span>
-             </div>
-             <textarea
-               value={content}
-               onChange={(e) => setContent(e.target.value)}
-               placeholder="Write your note in Markdown..."
-               className="w-full min-h-[420px] p-5 text-[13px] text-neutral-600 placeholder:text-neutral-400 outline-none resize-none bg-transparent leading-6 dark:text-neutral-400 dark:placeholder:text-neutral-600"
-             />
-           </div>
-         )}
+        {/* Dynamic Content Areas */}
+        {type === "general" && (
+          <FormSection title="Content" badge="Markdown">
+            <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Write your note..." className="w-full min-h-[400px] p-6 text-[14px] text-neutral-700 bg-transparent outline-none resize-none leading-relaxed dark:text-neutral-300" />
+          </FormSection>
+        )}
 
-        {/* DSA */}
         {type === "dsa" && (
-          <div className="space-y-5">
-            {/* Meta row */}
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900">
-              <div className="border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
-                <span className="text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                  Problem Info
-                </span>
+          <div className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-1"><Label>Platform</Label><InputField placeholder="LeetCode" value={dsa.platform} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateDsa({platform: e.target.value})} /></div>
+              <div className="space-y-1"><Label>Difficulty</Label>
+                <Dropdown
+                  ariaLabel="Difficulty"
+                  value={dsa.difficulty as "Easy" | "Medium" | "Hard"}
+                  onChange={(next) => updateDsa({ difficulty: next as any })}
+                  options={[
+                    { label: "Easy", value: "Easy" },
+                    { label: "Medium", value: "Medium" },
+                    { label: "Hard", value: "Hard" },
+                  ]}
+                />
               </div>
-              <div className="grid grid-cols-2 gap-5 p-5">
-                <div>
-                  <label className="block text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 mb-2 dark:text-neutral-400">
-                    Platform
-                  </label>
-                  <input
-                    type="text"
-                    value={dsa.platform}
-                    onChange={(e) =>
-                      setDsa({ ...dsa, platform: e.target.value })
-                    }
-                     placeholder="LeetCode"
-                     className="w-full h-9 rounded-[7px] border border-neutral-200 bg-neutral-50 px-3.5 text-[12.5px] outline-none focus:border-neutral-300 focus:bg-white transition-colors placeholder:text-neutral-400 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:focus:border-neutral-600 dark:focus:bg-neutral-700 dark:placeholder:text-neutral-600 dark:text-neutral-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 mb-2 dark:text-neutral-400">
-                    Difficulty
-                  </label>
-                  <select
-                    value={dsa.difficulty}
-                    onChange={(e) =>
-                      setDsa({
-                        ...dsa,
-                        difficulty: e.target.value as
-                          | "Easy"
-                          | "Medium"
-                          | "Hard",
-                      })
-                    }
-                     className="w-full h-9 rounded-[7px] border border-neutral-200 bg-neutral-50 px-3.5 text-[12.5px] outline-none focus:border-neutral-300 focus:bg-white transition-colors text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:focus:border-neutral-600 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                  >
-                    <option>Easy</option>
-                    <option>Medium</option>
-                    <option>Hard</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 mb-2 dark:text-neutral-400">
-                    Pattern
-                  </label>
-                  <input
-                    type="text"
-                    value={dsa.pattern}
-                    onChange={(e) =>
-                      setDsa({ ...dsa, pattern: e.target.value })
-                    }
-                     placeholder="Two Pointers, Sliding Window..."
-                     className="w-full h-9 rounded-[7px] border border-neutral-200 bg-neutral-50 px-3.5 text-[12.5px] outline-none focus:border-neutral-300 focus:bg-white transition-colors placeholder:text-neutral-400 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:focus:border-neutral-600 dark:focus:bg-neutral-700 dark:placeholder:text-neutral-600 dark:text-neutral-200"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 mb-2 dark:text-neutral-400">
-                      Time
-                    </label>
-                    <input
-                      type="text"
-                      value={dsa.timeComplexity}
-                      onChange={(e) =>
-                        setDsa({ ...dsa, timeComplexity: e.target.value })
-                      }
-                       placeholder="O(n)"
-                       className="w-full h-9 rounded-[7px] border border-neutral-200 bg-neutral-50 px-3 text-[12.5px] font-mono outline-none focus:border-neutral-300 focus:bg-white transition-colors placeholder:text-neutral-400 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:focus:border-neutral-600 dark:focus:bg-neutral-700 dark:placeholder:text-neutral-600 dark:text-neutral-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 mb-2 dark:text-neutral-400">
-                      Space
-                    </label>
-                    <input
-                      type="text"
-                      value={dsa.spaceComplexity}
-                      onChange={(e) =>
-                        setDsa({ ...dsa, spaceComplexity: e.target.value })
-                      }
-                       placeholder="O(1)"
-                       className="w-full h-9 rounded-[7px] border border-neutral-200 bg-neutral-50 px-3 text-[12.5px] font-mono outline-none focus:border-neutral-300 focus:bg-white transition-colors placeholder:text-neutral-400 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:focus:border-neutral-600 dark:focus:bg-neutral-700 dark:placeholder:text-neutral-600 dark:text-neutral-200"
-                    />
-                  </div>
-                </div>
-              </div>
+               <div className="space-y-1"><Label>Pattern</Label><InputField placeholder="Sliding Window" value={dsa.pattern} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateDsa({pattern: e.target.value})} /></div>
             </div>
 
-            {/* Problem Statement */}
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900">
-              <div className="flex items-center gap-2 border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
-                <span className="text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                  Problem Statement
-                </span>
-                <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-500 dark:bg-blue-900/30 dark:text-blue-400">
-                  Markdown
-                </span>
-              </div>
-              <textarea
-                value={dsa.problemStatement}
-                onChange={(e) =>
-                  setDsa({ ...dsa, problemStatement: e.target.value })
-                }
-                placeholder="Describe the problem..."
-                className="w-full min-h-[120px] p-5 text-[13px] text-neutral-600 placeholder:text-neutral-400 outline-none resize-none bg-transparent leading-6 dark:text-neutral-400 dark:placeholder:text-neutral-600"
-              />
-            </div>
+            <FormSection title="Problem Statement" badge="Markdown">
+              <textarea value={dsa.problemStatement} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateDsa({problemStatement: e.target.value})} className="w-full min-h-[150px] p-5 text-[13.5px] bg-transparent outline-none resize-none dark:text-neutral-300" />
+            </FormSection>
 
-            {/* Implementations */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                  Implementations
-                </span>
-                <button
-                  type="button"
-                  onClick={handleAddImplementation}
-                  className="flex items-center gap-1 h-7 px-3 rounded-[7px] border border-neutral-200 text-[12px] font-medium text-neutral-600 hover:bg-neutral-50 transition-colors dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
-                >
-                  <Plus className="h-3 w-3" /> Add Language
-                </button>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between"><Label>Implementations</Label>
+                <button onClick={() => updateDsa({implementations: [...dsa.implementations, { language: "Java", code: "", timeComplexity: "", spaceComplexity: "" }]})} className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-200 text-[11px] font-bold uppercase hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800"><Plus className="h-3 w-3" /> Add Language</button>
               </div>
-               <div className="space-y-4">
-                 {dsa.implementations.map((impl, index) => (
-                   <div
-                     key={index}
-                     className="rounded-[10px] border border-neutral-800 bg-neutral-900 overflow-hidden dark:border-neutral-700 dark:bg-neutral-800"
-                   >
-                     <div className="flex items-center justify-between border-b border-neutral-700 px-4 py-2.5 dark:border-neutral-700 dark:bg-neutral-900">
-                       <input
-                         type="text"
-                         value={impl.language}
-                         onChange={(e) => {
-                           const newImpls = [...dsa.implementations];
-                           newImpls[index].language = e.target.value;
-                           setDsa({ ...dsa, implementations: newImpls });
+              {dsa.implementations.map((impl, idx) => (
+                <div key={idx} className="rounded-2xl border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-950">
+                   <div className="flex items-center justify-between bg-neutral-50 px-4 py-2 border-b border-neutral-200 dark:bg-neutral-900 dark:border-neutral-800">
+                     <div className="w-[140px]">
+                       <Dropdown
+                         ariaLabel="Language"
+                         value={impl.language as "Java" | "Python" | "C++"}
+                         onChange={(next) => {
+                           const nextImpl = [...dsa.implementations];
+                           nextImpl[idx].language = next;
+                           updateDsa({ implementations: nextImpl });
                          }}
-                      placeholder="Language"
-                      className="text-[12px] font-medium outline-none bg-transparent placeholder:text-neutral-600 text-neutral-400 w-32 dark:placeholder:text-neutral-600 dark:text-neutral-200"
+                         options={[
+                           { label: "Java", value: "Java" },
+                           { label: "Python", value: "Python" },
+                           { label: "C++", value: "C++" },
+                         ]}
                        />
-                       {dsa.implementations.length > 1 && (
-                         <button
-                           type="button"
-                           onClick={() => handleRemoveImplementation(index)}
-                           className="text-neutral-600 hover:text-red-400 transition-colors dark:text-neutral-400"
-                         >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </div>
-                    <CodeEditor
-                      language={impl.language}
-                      value={impl.code}
-                      onChange={(code) => {
-                        const newImpls = [...dsa.implementations];
-                        newImpls[index].code = code;
-                        setDsa({ ...dsa, implementations: newImpls });
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
+                     </div>
+                     <button onClick={() => { const next = [...dsa.implementations]; next.splice(idx,1); updateDsa({implementations: next}); }}><Trash2 className="h-4 w-4 text-neutral-500 hover:text-red-500 dark:text-neutral-600" /></button>
+                   </div>
+                   <CodeEditor language={impl.language} value={impl.code} onChange={code => { const next = [...dsa.implementations]; next[idx].code = code; updateDsa({implementations: next}); }} />
+                   <div className="grid grid-cols-2 border-t border-neutral-200 p-4 gap-4 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+                      <div className="flex items-center gap-3"><span className="text-[10px] font-black text-neutral-500 uppercase dark:text-neutral-600">Time</span><input className="bg-transparent border-b border-neutral-200 text-[12px] font-mono text-neutral-700 outline-none focus:border-neutral-400 pb-1 w-full placeholder:text-neutral-400 dark:border-neutral-800 dark:text-neutral-300 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600" placeholder="O(n)" value={impl.timeComplexity} onChange={e => { const next = [...dsa.implementations]; next[idx].timeComplexity = e.target.value; updateDsa({implementations: next}); }} /></div>
+                      <div className="flex items-center gap-3"><span className="text-[10px] font-black text-neutral-500 uppercase dark:text-neutral-600">Space</span><input className="bg-transparent border-b border-neutral-200 text-[12px] font-mono text-neutral-700 outline-none focus:border-neutral-400 pb-1 w-full placeholder:text-neutral-400 dark:border-neutral-800 dark:text-neutral-300 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600" placeholder="O(1)" value={impl.spaceComplexity} onChange={e => { const next = [...dsa.implementations]; next[idx].spaceComplexity = e.target.value; updateDsa({implementations: next}); }} /></div>
+                   </div>
+                </div>
+              ))}
             </div>
 
-             {/* Notes */}
-             <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900">
-               <div className="border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
-                 <span className="text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                   Notes
-                 </span>
-               </div>
-               <textarea
-                 value={dsa.notes}
-                 onChange={(e) => setDsa({ ...dsa, notes: e.target.value })}
-                 placeholder="Additional notes, hints, edge cases..."
-                 className="w-full min-h-[120px] p-5 text-[13px] text-neutral-600 placeholder:text-neutral-400 outline-none resize-none bg-transparent leading-6 dark:text-neutral-400 dark:placeholder:text-neutral-600"
-               />
-             </div>
+            <FormSection title="Notes" badge="Markdown">
+              <textarea
+                value={dsa.notes}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateDsa({ notes: e.target.value })}
+                placeholder="Extra notes, edge cases, intuition..."
+                className="w-full min-h-[180px] p-5 text-[13.5px] text-neutral-700 bg-transparent outline-none resize-none dark:text-neutral-300 placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
+              />
+            </FormSection>
           </div>
         )}
 
-        {/* Q&A */}
         {type === "qa" && (
-          <div className="space-y-5">
-            <div>
-              <label className="block text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 mb-2 dark:text-neutral-400">
-                Topic
-              </label>
-              <input
-                type="text"
-                value={qa.topic}
-                onChange={(e) => setQa({ ...qa, topic: e.target.value })}
-                placeholder="System Design, React, Node.js..."
-                className="w-full h-9 rounded-[7px] border border-neutral-200 bg-white px-4 text-[12.5px] outline-none focus:border-neutral-300 transition-colors placeholder:text-neutral-400 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:focus:border-neutral-600 dark:text-neutral-100 dark:placeholder:text-neutral-600"
-              />
-            </div>
-
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900">
-              <div className="flex items-center gap-2 border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
-                <span className="text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                  Content
-                </span>
-                <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-500 dark:bg-amber-900/30 dark:text-amber-400">
-                  Markdown
-                </span>
-              </div>
-              <textarea
-                value={qa.content}
-                onChange={(e) => setQa({ ...qa, content: e.target.value })}
-                placeholder="Write your Q&A in Markdown..."
-                className="w-full min-h-[420px] p-5 text-[13px] text-neutral-600 placeholder:text-neutral-400 outline-none resize-none bg-transparent leading-6 dark:text-neutral-400 dark:placeholder:text-neutral-600"
-              />
-            </div>
-
-            {/* Key Takeaways */}
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900">
-              <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
-                <span className="text-[10.5px] font-medium uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                  Key Takeaways
-                </span>
-                <button
-                  type="button"
-                  onClick={handleAddPoint}
-                  className="flex items-center gap-1 h-7 px-3 rounded-[7px] border border-neutral-200 text-[12px] font-medium text-neutral-600 hover:bg-neutral-50 transition-colors dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
-                >
-                  <Plus className="h-3 w-3" /> Add Point
-                </button>
-              </div>
-              <div className="p-4 space-y-2.5">
-                {qa.importantPoints.map((point, index) => (
-                  <div key={index} className="flex items-center gap-2.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-neutral-300 flex-shrink-0 dark:bg-neutral-600" />
-                    <input
-                      type="text"
-                      value={point}
-                      onChange={(e) => {
-                        const newPoints = [...qa.importantPoints];
-                        newPoints[index] = e.target.value;
-                        setQa({ ...qa, importantPoints: newPoints });
-                      }}
-                       placeholder="Important point..."
-                       className="flex-1 h-9 rounded-[7px] border border-neutral-200 bg-neutral-50 px-3 text-[12.5px] outline-none focus:border-neutral-300 focus:bg-white transition-colors placeholder:text-neutral-400 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:focus:border-neutral-600 dark:focus:bg-neutral-700 dark:placeholder:text-neutral-600 dark:text-neutral-200"
-                    />
-                    {qa.importantPoints.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemovePoint(index)}
-                        className="flex-shrink-0 text-neutral-400 hover:text-red-400 transition-colors dark:text-neutral-500"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    )}
+          <div className="space-y-6">
+             <div className="space-y-1"><Label>Topic</Label><InputField placeholder="e.g., System Design" value={qa.topic} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQa({...qa, topic: e.target.value})} /></div>
+            <FormSection title="Detailed Answer" badge="Markdown">
+              <textarea value={qa.content} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setQa({...qa, content: e.target.value})} className="w-full min-h-[300px] p-6 text-[14px] bg-transparent outline-none resize-none dark:text-neutral-300" />
+            </FormSection>
+            <FormSection title="Key Takeaways" action={
+              <button onClick={() => setQa({...qa, importantPoints: [...qa.importantPoints, ""]})} className="p-1.5 hover:bg-neutral-100 rounded-lg dark:hover:bg-neutral-800 text-neutral-500"><Plus className="h-4 w-4" /></button>
+            }>
+              <div className="p-4 space-y-3">
+                 {qa.importantPoints.map((p, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="h-1.5 w-1.5 rounded-full bg-neutral-300 dark:bg-neutral-700 shrink-0" />
+                    <input value={p} onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const next = [...qa.importantPoints]; next[i] = e.target.value; setQa({...qa, importantPoints: next}); }} className="flex-1 bg-transparent border-b border-neutral-100 dark:border-neutral-800 py-1 text-[13px] outline-none focus:border-neutral-400 dark:focus:border-neutral-500 dark:text-neutral-200" placeholder="Point..." />
+                    <button onClick={() => { const next = [...qa.importantPoints]; next.splice(i,1); setQa({...qa, importantPoints: next}); }}><X className="h-3.5 w-3.5 text-neutral-400 hover:text-red-500" /></button>
                   </div>
                 ))}
               </div>
-            </div>
+            </FormSection>
           </div>
         )}
       </div>

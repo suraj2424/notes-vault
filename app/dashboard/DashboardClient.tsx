@@ -15,10 +15,6 @@ import {
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { DM_Sans, DM_Serif_Display } from 'next/font/google';
-
-const dmSans = DM_Sans({ subsets: ['latin'], weight: ['300', '400', '500', '700', '800'] });
-const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400' });
 
 interface Note {
   id: string;
@@ -68,7 +64,7 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
   const initials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <div className={cn(dmSans.className, "min-h-screen")}>
+    <div className="min-h-screen font-sans">
       {/* Header */}
       <header className="mb-10 flex items-end justify-between border-b border-neutral-200 pb-8 dark:border-neutral-800 transition-colors">
         <div className="flex items-center gap-5">
@@ -79,7 +75,7 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
             <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-neutral-500 dark:text-neutral-400 mb-2">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
-            <h1 className={cn('text-[34px] tracking-tight text-neutral-950 dark:text-neutral-50 leading-none', dmSerif.className)}>
+            <h1 className="text-[34px] tracking-tight text-neutral-950 dark:text-neutral-50 leading-none font-serif">
               Welcome back, {userName.split(' ')[0]}
             </h1>
             <p className="mt-2 text-[14px] font-medium text-neutral-500 dark:text-neutral-400">

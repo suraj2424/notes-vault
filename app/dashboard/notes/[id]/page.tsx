@@ -1,34 +1,422 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
+import type { ReactNode } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { Note } from "@/types";
-import { motion } from "motion/react";
-import {
-  ChevronLeft,
-  Edit,
-  Trash2,
-  Star,
-  Tag,
-  Copy,
-  Check,
-  Code2,
-  Clock,
-  Layers,
-  ExternalLink,
-} from "lucide-react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CodeBlock } from "@/components/markdown/CodeBlock";
-import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 
-const dmSans = DM_Sans({ subsets: ["latin"], weight: ["300", "400", "500"] });
-const dmSerif = DM_Serif_Display({ subsets: ["latin"], weight: "400" });
+import { ChevronLeft, Edit, Trash2 } from "lucide-react";
+
+// Custom Minimalist Badge
+interface BadgeProps {
+  children: ReactNode;
+  variant?: "default" | "indigo" | "amber" | "secondary";
+  className?: string;
+}
+
+const Badge = ({ children, variant = "default", className }: BadgeProps) => {
+  const variants = {
+    default:
+      "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
+    indigo: "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
+    amber:
+      "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    secondary:
+      "border border-neutral-200 text-neutral-600 dark:border-neutral-800 dark:text-neutral-400",
+  };
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold tracking-wide transition-colors",
+        variants[variant],
+        className,
+      )}
+    >
+      {children}
+    </span>
+  );
+};
+
+// Custom Minimalist Button
+interface ButtonProps {
+  children: ReactNode;
+  onClick?: () => void;
+  variant?: "outline" | "ghost";
+  className?: string;
+}
+
+const Button = ({
+  children,
+  onClick,
+  variant = "outline",
+  className,
+}: ButtonProps) => {
+  const variants = {
+    outline:
+      "border border-neutral-200 bg-transparent hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900 dark:text-neutral-300",
+    ghost: "hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500",
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-all active:scale-95",
+        variants[variant],
+        className,
+      )}
+    >
+      {children}
+    </button>
+  );
+};
+
+// 1. Unified Markdown Configuration (Handles DSA, Q&A, and General)
+interface NoteMarkdownProps {
+  content: string;
+  resolvedTheme: string;
+}
+
+const NoteMarkdown = ({ content, resolvedTheme }: NoteMarkdownProps) => (
+  <ReactMarkdown
+    remarkPlugins={[remarkGfm, remarkBreaks]}
+    components={{
+      hr: () => (
+        <hr className="my-10 border-t border-neutral-200 dark:border-neutral-800/60" />
+      ),
+
+      // Section Headers
+      h1: ({ children }) => (
+        <h1 className="mb-6 mt-2 text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
+          {children}
+        </h1>
+      ),
+      h2: ({ children }) => (
+        <h2 className="mb-4 mt-10 text-lg font-bold tracking-tight text-neutral-800 dark:text-neutral-200">
+          {children}
+        </h2>
+      ),
+
+      // Text handling
+      p: ({ children }) => (
+        <p className="mb-5 leading-7 text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap">
+          {children}
+        </p>
+      ),
+
+      ul: ({ children }) => (
+        <ul className="mb-5 ml-5 list-disc space-y-2.5 text-neutral-600 dark:text-neutral-400">
+          {children}
+        </ul>
+      ),
+      li: ({ children }) => <li className="pl-2">{children}</li>,
+
+      strong: ({ children }) => (
+        <strong className="font-semibold text-neutral-950 dark:text-neutral-100">
+          {children}
+        </strong>
+      ),
+
+      // Code Block & Inline Code
+      code: ({ className, children, ...props }) => {
+        const match = /language-(\w+)/.exec(className || "");
+        const codeString = String(children).replace(/\n$/, "");
+
+        // Inline Code
+        if (!match && !codeString.includes("\n")) {
+          return (
+            <code className="rounded-md bg-neutral-100 px-1.5 py-0.5 font-mono text-[13px] font-medium text-indigo-600 dark:bg-neutral-800/50 dark:text-indigo-400 break-words border border-neutral-200/50 dark:border-neutral-700/50">
+              {children}
+            </code>
+          );
+        }
+
+        // Full Code Block
+        return (
+          <div className="overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800/70 shadow-sm bg-neutral-100 dark:bg-neutral-950 ">
+            {/* Optional: Add a "Language Indicator" header like your screenshot */}
+            {/* <div className="flex items-center justify-between px-4 py-2 bg-neutral-100 dark:bg-[#161b22] border-b border-neutral-200 dark:border-neutral-800/70">
+              <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                {match?.[1] || "text"}
+              </span>
+            </div> */}
+
+            <CodeBlock
+              language={match?.[1] || "text"}
+              theme={resolvedTheme === "light" ? "light" : "dark"}
+              // Ensure your CodeBlock component doesn't add its own extra padding
+            >
+              {codeString}
+            </CodeBlock>
+          </div>
+        );
+      },
+
+      // Tables
+      table: ({ children }) => (
+        <div className="my-8 overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800/80 shadow-sm">
+          <table className="w-full border-collapse text-left text-sm">
+            {children}
+          </table>
+        </div>
+      ),
+      th: ({ children }) => (
+        <th className="border-b border-neutral-200 p-4 font-semibold text-neutral-900 dark:border-neutral-800 dark:text-neutral-100 bg-neutral-50/50 dark:bg-neutral-900/50">
+          {children}
+        </th>
+      ),
+      td: ({ children }) => (
+        <td className="border-b border-neutral-100/50 p-4 text-neutral-600 dark:border-neutral-800/50 dark:text-neutral-400">
+          {children}
+        </td>
+      ),
+    }}
+  >
+    {content}
+  </ReactMarkdown>
+);
+
+// 2. Complexity Stats (For DSA)
+const ComplexityCard = ({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  className?: string;
+}) => (
+  <div
+    className={cn(
+      "rounded-[10px] border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900",
+      className,
+    )}
+  >
+    <p className="mb-1.5 text-[11.5px] font-medium uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+      {label}
+    </p>
+    <p className="font-mono text-[14px] text-neutral-900 dark:text-neutral-100">
+      {value || "O(1)"}
+    </p>
+  </div>
+);
+
+function NoteDisplay({
+  note,
+  resolvedTheme,
+  onDelete,
+  onEdit,
+}: {
+  note: Note;
+  resolvedTheme: string;
+  onDelete: (id: string) => void;
+  onEdit: (id: string) => void;
+}) {
+  const [activeLang, setActiveLang] = useState(0);
+
+  // Difficulty specific styles
+  const difficultyMap = {
+    Easy: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400",
+    Medium:
+      "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
+    Hard: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400",
+  };
+
+  return (
+    <div className="mx-auto max-w-4xl px-6 py-10">
+      {/* --- HEADER --- */}
+      <header className="mb-10 flex items-start justify-between border-b border-neutral-100 pb-8 dark:border-neutral-800/60">
+        <div className="flex items-center gap-5">
+          <Link
+            href="/dashboard/notes"
+            className="rounded-xl border border-neutral-200 p-2.5 text-neutral-500 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900 transition-all"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
+              {note.title}
+            </h1>
+            <p className="mt-1.5 text-xs font-medium text-neutral-400 uppercase tracking-widest">
+              Updated {format(new Date(note.updatedAt), "MMM d, yyyy")}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <Button onClick={() => onEdit(note.id)}>
+            <Edit className="mr-2 h-3.5 w-3.5" /> Edit
+          </Button>
+          <Button
+            onClick={() => onDelete(note.id)}
+            className="text-red-500 hover:text-red-600 dark:hover:bg-red-950/20"
+          >
+            <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+          </Button>
+        </div>
+      </header>
+
+      {/* --- METADATA --- */}
+      <div className="mb-10 flex flex-wrap items-center gap-4">
+        <Badge variant="indigo">{note.type.toUpperCase()}</Badge>
+        {note.type === "dsa" && note.dsa ? (
+          <>
+            <Badge variant="secondary">{note.dsa.platform}</Badge>
+            <span
+              className={cn(
+                "rounded-md px-2 py-0.5 text-[11px] font-bold uppercase",
+                difficultyMap[note.dsa.difficulty],
+              )}
+            >
+              {note.dsa.difficulty}
+            </span>
+          </>
+        ) : null}
+        {note.tags?.map((tag) => (
+          <Link
+            key={tag}
+            href={`/dashboard/notes?search=${encodeURIComponent(tag)}`}
+            className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors cursor-pointer"
+          >
+            #{tag}
+          </Link>
+        ))}
+      </div>
+
+      {/* --- CONTENT --- */}
+      <main className="max-w-4xl mx-auto space-y-16">
+        {note.type === "dsa" && note.dsa && (
+          <div className="space-y-12">
+            {/* Problem Statement Section */}
+            {note.dsa.problemStatement && (
+              <section className="animate-in fade-in slide-in-from-bottom-3 duration-500">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="h-6 w-1 bg-indigo-600 rounded-full" />
+                  <h4 className="text-xl font-bold uppercase tracking-widest text-neutral-700 dark:text-neutral-200">
+                    Problem Statement
+                  </h4>
+                </div>
+                <div className="">
+                  <NoteMarkdown
+                    content={note.dsa.problemStatement}
+                    resolvedTheme={resolvedTheme}
+                  />
+                </div>
+              </section>
+            )}
+
+            {/* Implementation Tabs */}
+            {note.dsa.implementations?.length > 0 && (
+              <section className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-6 w-1 bg-indigo-600 rounded-full" />
+                  <h4 className="text-xl font-bold uppercase tracking-widest text-neutral-800 dark:text-neutral-200">
+                    Implementations
+                  </h4>
+                </div>
+
+                <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden bg-white dark:bg-neutral-950 shadow-sm">
+                  {/* Tab Header */}
+                  <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 px-2">
+                    {note.dsa.implementations.map((impl, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveLang(idx)}
+                        className={cn(
+                          "relative px-6 py-4 text-sm font-bold capitalize tracking-tighter transition-all",
+                          activeLang === idx
+                            ? "text-indigo-600 dark:text-indigo-400"
+                            : "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200",
+                        )}
+                      >
+                        {impl.language}
+                        {activeLang === idx && (
+                          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Code Content */}
+                  <div className="p-0">
+                    {/* Bypass NoteMarkdown to avoid redundant borders/headers */}
+                    <CodeBlock
+                      language={
+                        note.dsa.implementations[
+                          activeLang
+                        ]?.language.toLowerCase() || "text"
+                      }
+                      minimal={true}
+                      theme={resolvedTheme === "light" ? "light" : "dark"}
+                    >
+                      {note.dsa.implementations[activeLang]?.code || ""}
+                    </CodeBlock>
+                  </div>
+                </div>
+
+                {/* Complexity Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <ComplexityCard
+                    label="Time Complexity"
+                    value={
+                      note.dsa.implementations[activeLang]?.timeComplexity ||
+                      note.dsa.timeComplexity ||
+                      "O(N)"
+                    }
+                    className="bg-neutral-50/30 dark:bg-neutral-900/10 border-neutral-200 dark:border-neutral-800"
+                  />
+                  <ComplexityCard
+                    label="Space Complexity"
+                    value={
+                      note.dsa.implementations[activeLang]?.spaceComplexity ||
+                      note.dsa.spaceComplexity ||
+                      "O(1)"
+                    }
+                    className="bg-neutral-50/30 dark:bg-neutral-900/10 border-neutral-200 dark:border-neutral-800"
+                  />
+                </div>
+              </section>
+            )}
+
+            {note.dsa.notes && (
+              <section className="animate-in fade-in slide-in-from-bottom-3 duration-500">
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="h-6 w-1 rounded-full bg-indigo-600" />
+                  <h4 className="text-xl font-bold uppercase tracking-widest text-neutral-800 dark:text-neutral-200">
+                    Notes
+                  </h4>
+                </div>
+                <NoteMarkdown
+                  content={note.dsa.notes}
+                  resolvedTheme={resolvedTheme}
+                />
+              </section>
+            )}
+          </div>
+        )}
+
+        {/* General/QA Content Body */}
+        {(note.type === "general" || note.type === "qa") && (
+          <section className="min-h-[400px]">
+            <NoteMarkdown
+              content={note.content || note.qa?.content || ""}
+              resolvedTheme={resolvedTheme}
+            />
+          </section>
+        )}
+      </main>
+    </div>
+  );
+}
 
 export default function NoteDetailPage({
   params,
@@ -40,9 +428,6 @@ export default function NoteDetailPage({
   const router = useRouter();
   const [note, setNote] = useState<Note | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [activeLang, setActiveLang] = useState(0);
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
@@ -52,9 +437,12 @@ export default function NoteDetailPage({
   useEffect(() => {
     if (!user || !id) return;
 
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const fetchNote = async () => {
       try {
-        const response = await fetch(`/api/notes/${id}`);
+        const response = await fetch(`/api/notes/${id}`, { signal });
         if (response.ok) {
           const data = await response.json();
           setNote(data.note);
@@ -65,38 +453,26 @@ export default function NoteDetailPage({
           router.push("/dashboard");
         }
       } catch (error) {
-        console.error("Error fetching note:", error);
-        router.push("/dashboard");
+        if (error instanceof Error && error.name !== "AbortError") {
+          console.error("Error fetching note:", error);
+          router.push("/dashboard");
+        }
       } finally {
-        setIsDataLoading(false);
+        if (!signal.aborted) {
+          setIsDataLoading(false);
+        }
       }
     };
 
     fetchNote();
+
+    return () => controller.abort();
   }, [user, id, router]);
-
-  const toggleFavorite = async () => {
-    if (!note) return;
-    try {
-      const newFavoriteStatus = !note.isFavorite;
-      const response = await fetch(`/api/notes/${note!.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isFavorite: newFavoriteStatus }),
-      });
-
-      if (response.ok) {
-        setNote({ ...note, isFavorite: newFavoriteStatus });
-      }
-    } catch (error) {
-      console.error("Error toggling favorite:", error);
-    }
-  };
 
   const handleDelete = async () => {
     if (!note) return;
     try {
-      const response = await fetch(`/api/notes/${note!.id}`, {
+      const response = await fetch(`/api/notes/${note.id}`, {
         method: "DELETE",
       });
 
@@ -111,745 +487,28 @@ export default function NoteDetailPage({
     }
   };
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy:", err);
-    }
-  };
-
   if (loading || isDataLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-neutral-400 dark:border-[#2a2a2a] dark:border-t-[#555555]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-neutral-700 dark:border-neutral-800 dark:border-t-neutral-200" />
       </div>
     );
   }
 
   if (!note) return null;
 
-  // Get unique languages from implementations
-  const languages =
-    note.type === "dsa" && note.dsa
-      ? [...new Set(note.dsa.implementations.map((i) => i.language))]
-      : [];
-  const activeImplementation =
-    note.type === "dsa" && note.dsa
-      ? note.dsa.implementations[activeLang]
-      : null;
-
   return (
     <>
-      {/* Header */}
-      <div className="mb-8 flex items-start justify-between border-b border-neutral-100 pb-6 dark:border-neutral-800">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard/notes"
-            className="flex h-8 w-8 items-center justify-center rounded-[7px] text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Link>
-          <div>
-            <h1
-              className={cn(
-                "text-[22px] tracking-tight text-neutral-900 dark:text-neutral-100",
-                dmSerif.className,
-              )}
-            >
-              {note.title}
-            </h1>
-            <p className="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-500">
-              Updated {format(new Date(note.updatedAt), "MMM d, yyyy")}
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={toggleFavorite}
-            className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-[7px] transition-colors",
-              note.isFavorite
-                ? "text-amber-500 bg-amber-50 dark:bg-amber-950/30"
-                : "text-neutral-400 hover:text-amber-500 hover:bg-amber-50 dark:text-neutral-500 dark:hover:bg-amber-950/30",
-            )}
-          >
-            <Star
-              className={cn("h-4 w-4", note.isFavorite && "fill-amber-500")}
-            />
-          </button>
-          <Link
-            href={`/dashboard/notes/${note.id}/edit`}
-            className="flex items-center gap-1.5 rounded-[7px] border border-neutral-200 px-3 h-9 text-[13.5px] font-medium text-neutral-600 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
-          >
-            <Edit className="h-4 w-4" />
-            Edit
-          </Link>
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="flex items-center gap-1.5 rounded-[7px] border border-neutral-200 px-3 h-9 text-[13.5px] font-medium text-red-400 transition-colors hover:bg-red-50 hover:border-red-200 dark:border-neutral-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:border-red-900"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </button>
-        </div>
-      </div>
-      {/* Blueprint Row 1: Badges & Tags */}
-      <div className="mb-6 flex items-center justify-between dark:border-neutral-800">
-        {/* Left: Type, Difficulty, Platform, Pattern */}
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="blue">{note.type.toUpperCase()}</Badge>
-
-          {note.type === "dsa" && note.dsa && (
-            <>
-              <Badge variant="blue">{note.dsa.platform}</Badge>
-              <span
-                className={cn(
-                  "px-2.5 py-0.5 text-[11.5px] font-medium uppercase tracking-wider rounded-full",
-                  note.dsa.difficulty === "Easy"
-                    ? "bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-400"
-                    : note.dsa.difficulty === "Medium"
-                      ? "bg-yellow-50 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-400"
-                      : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400",
-                )}
-              >
-                {note.dsa.difficulty}
-              </span>
-              {note.dsa.pattern?.split(",").map((p, i) =>
-                p.trim() ? (
-                  <Badge key={i} variant="neutral">
-                    {p.trim()}
-                  </Badge>
-                ) : null,
-              )}
-            </>
-          )}
-
-          {note.type === "qa" && note.qa && note.qa.topic && (
-            <Badge variant="amber">{note.qa.topic}</Badge>
-          )}
-        </div>
-
-        {/* Right: Tags */}
-        {note.tags && note.tags.length > 0 && (
-          <div className="flex items-center gap-2">
-            <Tag className="h-4 w-4 text-neutral-400 dark:text-[#555555]" />
-            {note.tags.map((tag) => (
-              <Link
-                key={tag}
-                href={`/dashboard/notes?search=${encodeURIComponent(tag)}`}
-                className="text-[12.5px] font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 px-2.5 py-0.5 rounded-full transition-colors dark:text-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700"
-              >
-                #{tag}
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-      {note.type === "dsa" && note.dsa && (
-        <div className="space-y-5">
-          {/* Problem Statement - Full Width */}
-          {note.dsa.problemStatement && (
-            <div className="rounded-[10px] border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-              <div className="max-w-none text-[14px] text-neutral-700 dark:text-neutral-300">
-                <ReactMarkdown
-                  // remarkPlugins={[remarkGfm]} // Highly recommended for tables/tasklists
-                  components={{
-                    // --- HEADINGS ---
-                    h1: ({ children }) => (
-                      <h1 className="mb-4 text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                        {children}
-                      </h1>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 className="mb-3 mt-6 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
-                        {children}
-                      </h2>
-                    ),
-                    h3: ({ children }) => (
-                      <h3 className="mb-2 mt-4 text-lg font-semibold text-neutral-800 dark:text-neutral-200">
-                        {children}
-                      </h3>
-                    ),
-
-                    // --- TEXT ELEMENTS ---
-                    p: ({ children }) => (
-                      <p className="mb-4 leading-relaxed">{children}</p>
-                    ),
-                    strong: ({ children }) => (
-                      <strong className="font-semibold text-neutral-900 dark:text-neutral-100">
-                        {children}
-                      </strong>
-                    ),
-                    a: ({ children, href }) => (
-                      <a
-                        href={href}
-                        className="text-blue-600 underline decoration-neutral-400 underline-offset-4 hover:text-blue-500 dark:text-blue-400"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {children}
-                      </a>
-                    ),
-
-                    // --- LISTS ---
-                    ul: ({ children }) => (
-                      <ul className="mb-4 ml-6 list-disc space-y-1">
-                        {children}
-                      </ul>
-                    ),
-                    ol: ({ children }) => (
-                      <ol className="mb-4 ml-6 list-decimal space-y-1">
-                        {children}
-                      </ol>
-                    ),
-                    li: ({ children }) => <li className="pl-1">{children}</li>,
-
-                    // --- BLOCKQUOTES & HR ---
-                    blockquote: ({ children }) => (
-                      <blockquote className="my-4 border-l-4 border-neutral-300 pl-4 italic text-neutral-600 dark:border-neutral-700 dark:text-neutral-400">
-                        {children}
-                      </blockquote>
-                    ),
-                    hr: () => (
-                      <hr className="my-6 border-neutral-200 dark:border-neutral-800" />
-                    ),
-
-                    // --- CODE RENDERING ---
-                    code: ({ node, className, children, ...props }) => {
-                      const match = /language-(\w+)/.exec(className || "");
-                      const language = match ? match[1] : "";
-                      const codeString = String(children).replace(/\n$/, "");
-                      const isInline = !match && !codeString.includes("\n");
-
-                      if (isInline) {
-                        return (
-                          <code
-                            className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[13px] font-medium text-neutral-900 dark:bg-neutral-800 dark:text-neutral-200"
-                            {...props}
-                          >
-                            {children}
-                          </code>
-                        );
-                      }
-
-                      return (
-                        <div className="my-4 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
-                          <CodeBlock
-                            language={language}
-                            theme={resolvedTheme === "light" ? "light" : "dark"}
-                          >
-                            {codeString}
-                          </CodeBlock>
-                        </div>
-                      );
-                    },
-
-                    // --- TABLES (Requires remark-gfm) ---
-                    table: ({ children }) => (
-                      <div className="my-6 overflow-x-auto">
-                        <table className="w-full border-collapse text-left text-sm">
-                          {children}
-                        </table>
-                      </div>
-                    ),
-                    thead: ({ children }) => (
-                      <thead className="bg-neutral-50 dark:bg-neutral-800/50">
-                        {children}
-                      </thead>
-                    ),
-                    th: ({ children }) => (
-                      <th className="border border-neutral-200 p-2 font-semibold dark:border-neutral-700">
-                        {children}
-                      </th>
-                    ),
-                    td: ({ children }) => (
-                      <td className="border border-neutral-200 p-2 dark:border-neutral-700">
-                        {children}
-                      </td>
-                    ),
-                  }}
-                >
-                  {note.dsa.problemStatement}
-                </ReactMarkdown>
-              </div>
-            </div>
-          )}
-
-          {/* Complexity - Two Column Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-[10px] border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-              <p className="mb-1.5 text-[11.5px] font-medium uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
-                Time Complexity
-              </p>
-              <p className="font-mono text-[14px] text-neutral-900 dark:text-neutral-100">
-                {note.dsa.timeComplexity || "O(1)"}
-              </p>
-            </div>
-            <div className="rounded-[10px] border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-              <p className="mb-1.5 text-[11.5px] font-medium uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
-                Space Complexity
-              </p>
-              <p className="font-mono text-[14px] text-neutral-900 dark:text-neutral-100">
-                {note.dsa.spaceComplexity || "O(1)"}
-              </p>
-            </div>
-          </div>
-
-          {/* Implementation Tabs */}
-          {languages.length > 0 && (
-            <div className="space-y-3">
-              {/* Tab Headers */}
-              <div className="flex gap-2">
-                {languages.map((lang, idx) => (
-                  <button
-                    key={lang}
-                    onClick={() => setActiveLang(idx)}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 h-9 text-[13.5px] font-medium rounded-[7px] border transition-colors",
-                      activeLang === idx
-                        ? "border-neutral-200 bg-neutral-100 text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
-                        : "border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-500 dark:hover:bg-neutral-800",
-                    )}
-                  >
-                    <Code2 className="h-4 w-4" />
-                    {lang}
-                  </button>
-                ))}
-              </div>
-
-              {/* Code Editor */}
-              {activeImplementation && (
-                <CodeBlock
-                  language={activeImplementation.language}
-                  theme={resolvedTheme === "light" ? "light" : "dark"}
-                >
-                  {activeImplementation.code}
-                </CodeBlock>
-              )}
-            </div>
-          )}
-
-          {/* Notes / Key Takeaways */}
-          {note.dsa.notes && (
-            <div className="rounded-[10px] border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-              <h3 className="mb-5 text-[12px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                Notes
-              </h3>
-              <div className="text-[14px] leading-relaxed">
-                <ReactMarkdown
-                  components={{
-                    // --- HEADINGS (Added margins for hierarchy) ---
-                    h1: ({ children }) => (
-                      <h1 className="mb-6 mt-2 text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                        {children}
-                      </h1>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 className="mb-4 mt-8 text-xl font-bold text-neutral-900 dark:text-neutral-100">
-                        {children}
-                      </h2>
-                    ),
-                    h3: ({ children }) => (
-                      <h3 className="mb-3 mt-6 text-lg font-semibold text-neutral-800 dark:text-neutral-200">
-                        {children}
-                      </h3>
-                    ),
-
-                    // --- TEXT & LISTS (Added mb-4 for paragraph spacing) ---
-                    p: ({ children }) => (
-                      <p className="mb-4 text-neutral-700 dark:text-neutral-300">
-                        {children}
-                      </p>
-                    ),
-
-                    ul: ({ children }) => (
-                      <ul className="mb-4 ml-6 list-disc space-y-2 text-neutral-700 dark:text-neutral-300">
-                        {children}
-                      </ul>
-                    ),
-                    ol: ({ children }) => (
-                      <ol className="mb-4 ml-6 list-decimal space-y-2 text-neutral-700 dark:text-neutral-300">
-                        {children}
-                      </ol>
-                    ),
-                    li: ({ children }) => <li className="pl-1">{children}</li>,
-
-                    strong: ({ children }) => (
-                      <strong className="font-bold text-neutral-900 dark:text-neutral-100">
-                        {children}
-                      </strong>
-                    ),
-
-                    // --- CODE HANDLING ---
-                    code: ({ node, className, children, ...props }) => {
-                      const match = /language-(\w+)/.exec(className || "");
-                      const language = match ? match[1] : "";
-                      const codeString = String(children).replace(/\n$/, "");
-                      const isInline = !match && !codeString.includes("\n");
-
-                      if (isInline) {
-                        return (
-                          <code
-                            className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[13px] font-semibold text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200"
-                            {...props}
-                          >
-                            {children}
-                          </code>
-                        );
-                      }
-
-                      return (
-                        <div className="my-5">
-                          <CodeBlock
-                            language={language}
-                            theme={resolvedTheme === "light" ? "light" : "dark"}
-                          >
-                            {codeString}
-                          </CodeBlock>
-                        </div>
-                      );
-                    },
-
-                    // --- BLOCKQUOTES & HR ---
-                    blockquote: ({ children }) => (
-                      <blockquote className="my-6 border-l-4 border-neutral-200 pl-4 italic text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
-                        {children}
-                      </blockquote>
-                    ),
-                    hr: () => (
-                      <hr className="my-8 border-neutral-200 dark:border-neutral-800" />
-                    ),
-
-                    // --- TABLES ---
-                    table: ({ children }) => (
-                      <div className="my-6 overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
-                        <table className="w-full border-collapse text-left text-sm">
-                          {children}
-                        </table>
-                      </div>
-                    ),
-                    thead: ({ children }) => (
-                      <thead className="bg-neutral-50 dark:bg-neutral-800/50">
-                        {children}
-                      </thead>
-                    ),
-                    th: ({ children }) => (
-                      <th className="border border-neutral-200 p-2.5 font-semibold text-neutral-900 dark:border-neutral-700 dark:text-neutral-100">
-                        {children}
-                      </th>
-                    ),
-                    td: ({ children }) => (
-                      <td className="border border-neutral-200 p-2.5 text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-                        {children}
-                      </td>
-                    ),
-                  }}
-                >
-                  {note.dsa.notes}
-                </ReactMarkdown>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Q&A Content */}
-
-      {note.type === "qa" && note.qa && (
-        <div className="space-y-8">
-          {/* Main Content Area */}
-          {note.qa.content && (
-            <div className="">
-              <div className="max-w-none text-[14px] leading-relaxed">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    // --- HEADINGS ---
-                    h1: ({ children }) => (
-                      <h1 className="mb-6 mt-2 text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                        {children}
-                      </h1>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 className="mb-4 mt-8 text-xl font-bold text-neutral-900 dark:text-neutral-100">
-                        {children}
-                      </h2>
-                    ),
-                    h3: ({ children }) => (
-                      <h3 className="mb-3 mt-6 text-lg font-semibold text-neutral-800 dark:text-neutral-200">
-                        {children}
-                      </h3>
-                    ),
-
-                    // --- TEXT & LISTS ---
-                    p: ({ children }) => (
-                      <p className="mb-4 text-neutral-700 dark:text-neutral-300">
-                        {children}
-                      </p>
-                    ),
-                    ul: ({ children }) => (
-                      <ul className="mb-4 ml-6 list-disc space-y-2 text-neutral-700 dark:text-neutral-300">
-                        {children}
-                      </ul>
-                    ),
-                    ol: ({ children }) => (
-                      <ol className="mb-4 ml-6 list-decimal space-y-2 text-neutral-700 dark:text-neutral-300">
-                        {children}
-                      </ol>
-                    ),
-                    li: ({ children }) => <li className="pl-1">{children}</li>,
-                    strong: ({ children }) => (
-                      <strong className="font-bold text-neutral-900 dark:text-neutral-100">
-                        {children}
-                      </strong>
-                    ),
-
-                    // --- CODE ---
-                    code: ({ node, className, children, ...props }) => {
-                      const match = /language-(\w+)/.exec(className || "");
-                      const language = match ? match[1] : "";
-                      const codeString = String(children).replace(/\n$/, "");
-                      const isInline = !match && !codeString.includes("\n");
-
-                      if (isInline) {
-                        return (
-                          <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[13px] font-semibold text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">
-                            {children}
-                          </code>
-                        );
-                      }
-
-                      return (
-                        <div className="my-5">
-                          <CodeBlock
-                            language={language}
-                            theme={resolvedTheme === "light" ? "light" : "dark"}
-                          >
-                            {codeString}
-                          </CodeBlock>
-                        </div>
-                      );
-                    },
-
-                    // --- TABLES ---
-                    table: ({ children }) => (
-                      <div className="my-6 overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
-                        <table className="w-full border-collapse text-left text-[13px]">
-                          {children}
-                        </table>
-                      </div>
-                    ),
-                    thead: ({ children }) => (
-                      <thead className="bg-neutral-50 dark:bg-neutral-800/50">
-                        {children}
-                      </thead>
-                    ),
-                    th: ({ children }) => (
-                      <th className="border-b border-neutral-200 p-3 font-bold text-neutral-900 dark:border-neutral-800 dark:text-neutral-100">
-                        {children}
-                      </th>
-                    ),
-                    td: ({ children }) => (
-                      <td className="border-b border-neutral-100 p-3 text-neutral-700 dark:border-neutral-800/50 dark:text-neutral-300">
-                        {children}
-                      </td>
-                    ),
-
-                    blockquote: ({ children }) => (
-                      <blockquote className="my-6 border-l-4 border-neutral-200 pl-4 italic text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
-                        {children}
-                      </blockquote>
-                    ),
-                  }}
-                >
-                  {note.qa.content}
-                </ReactMarkdown>
-              </div>
-            </div>
-          )}
-
-          {/* Key Takeaways Section */}
-          {note.qa.importantPoints &&
-            note.qa.importantPoints.filter((p) => p.trim()).length > 0 && (
-              <div className="rounded-[10px] border border-neutral-200 bg-neutral-50/50 p-5 dark:border-neutral-800 dark:bg-neutral-900/30">
-                <h3 className="mb-4 text-[12px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                  Key Takeaways
-                </h3>
-                <ul className="space-y-3">
-                  {note.qa.importantPoints.map((point, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-3 text-[14px] leading-snug text-neutral-700 dark:text-neutral-300"
-                    >
-                      <div className="mt-1.5 flex h-1.5 w-1.5 flex-shrink-0 items-center justify-center rounded-full bg-neutral-400 dark:bg-neutral-600" />
-                      <span>{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-        </div>
-      )}
-      {/* General Content */}
-      {note.type === "general" && note.content && (
-        <div className="">
-          <div className="max-w-none text-[14px] leading-relaxed">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                // --- FIX: Horizontal Rule (Line Break) ---
-                hr: () => (
-                  <hr className="my-8 border-t border-neutral-200 dark:border-neutral-800" />
-                ),
-
-                // --- TABLE RENDERING ---
-                table: ({ children }) => (
-                  <div className="my-6 overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
-                    <table className="w-full border-collapse text-left text-[13px]">
-                      {children}
-                    </table>
-                  </div>
-                ),
-                thead: ({ children }) => (
-                  <thead className="bg-neutral-50 dark:bg-neutral-800/50">
-                    {children}
-                  </thead>
-                ),
-                th: ({ children }) => (
-                  <th className="border-b border-neutral-200 p-3 font-bold text-neutral-900 dark:border-neutral-800 dark:text-neutral-100">
-                    {children}
-                  </th>
-                ),
-                td: ({ children }) => (
-                  <td className="border-b border-neutral-100 p-3 text-neutral-700 dark:border-neutral-800/50 dark:text-neutral-300">
-                    {children}
-                  </td>
-                ),
-
-                // --- HEADINGS ---
-                h1: ({ children }) => (
-                  <h1 className="mb-6 mt-2 text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                    {children}
-                  </h1>
-                ),
-                h2: ({ children }) => (
-                  <h2 className="mb-4 mt-8 text-xl font-bold text-neutral-900 dark:text-neutral-100">
-                    {children}
-                  </h2>
-                ),
-
-                // --- TEXT & LISTS ---
-                p: ({ children }) => (
-                  <p className="mb-4 text-neutral-700 dark:text-neutral-300">
-                    {children}
-                  </p>
-                ),
-                ul: ({ children }) => (
-                  <ul className="mb-4 ml-6 list-disc space-y-2 text-neutral-700 dark:text-neutral-300">
-                    {children}
-                  </ul>
-                ),
-                li: ({ children }) => <li className="pl-1">{children}</li>,
-
-                // --- CODE HANDLING ---
-                code: ({ node, className, children, ...props }) => {
-                  const match = /language-(\w+)/.exec(className || "");
-                  const language = match ? match[1] : "";
-                  const codeString = String(children).replace(/\n$/, "");
-                  const isInline = !match && !codeString.includes("\n");
-
-                  if (isInline) {
-                    return (
-                      <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[13px] font-semibold text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">
-                        {children}
-                      </code>
-                    );
-                  }
-
-                  return (
-                    <div className="my-5">
-                      <CodeBlock
-                        language={language}
-                        theme={resolvedTheme === "light" ? "light" : "dark"}
-                      >
-                        {codeString}
-                      </CodeBlock>
-                    </div>
-                  );
-                },
-              }}
-            >
-              {note.content}
-            </ReactMarkdown>
-          </div>
-        </div>
-      )}
-      {/* Delete Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm dark:bg-black/60">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-sm mx-4 rounded-[12px] border border-neutral-200 bg-white p-6 shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
-          >
-            <h3
-              className={cn(
-                "text-[18px] text-neutral-900 dark:text-neutral-100",
-                dmSerif.className,
-              )}
-            >
-              Delete note?
-            </h3>
-            <p className="mt-1.5 text-[14px] text-neutral-500 dark:text-neutral-400">
-              This action cannot be undone.
-            </p>
-            <div className="mt-6 flex gap-2">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 h-10 rounded-[7px] border border-neutral-200 text-[14px] font-medium text-neutral-600 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                className="flex-1 h-10 rounded-[7px] bg-red-50 text-[14px] font-medium text-red-600 transition-colors hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-950/50"
-              >
-                Delete
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
+      <NoteDisplay
+        note={note}
+        resolvedTheme={resolvedTheme}
+        onEdit={(id) => {
+          router.push(`/dashboard/notes/${note.id}/edit`);
+        }}
+        onDelete={(id) => {
+          handleDelete();
+        }}
+      />
     </>
-  );
-}
-
-function Badge({
-  children,
-  variant,
-}: {
-  children: React.ReactNode;
-  variant: "blue" | "amber" | "red" | "neutral";
-}) {
-  const styles = {
-    blue: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300",
-    amber:
-      "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300",
-    red: "bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300",
-    neutral:
-      "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300",
-  };
-  return (
-    <span
-      className={cn(
-        "px-2.5 py-0.5 text-[11.5px] font-medium uppercase tracking-wider rounded-full",
-        styles[variant],
-      )}
-    >
-      {children}
-    </span>
   );
 }

@@ -4,11 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LogIn, Shield, Zap, BookOpen, Code2, ArrowRight, MessageSquare } from 'lucide-react';
-import { DM_Sans, DM_Serif_Display } from 'next/font/google';
 import { cn } from '@/lib/utils';
-
-const dmSans = DM_Sans({ subsets: ['latin'], weight: ['300', '400', '500', '700'] });
-const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400' });
 
 type NoteType = 'dsa' | 'general' | 'qa';
 
@@ -18,8 +14,7 @@ export default function LandingPage() {
   return (
     <div
       className={cn(
-        'h-screen overflow-hidden bg-white text-neutral-900 selection:bg-neutral-200',
-        dmSans.className
+        'h-screen overflow-hidden bg-white text-neutral-900 selection:bg-neutral-200 font-sans'
       )}
     >
       {/* Slim Navigation */}
@@ -33,7 +28,7 @@ export default function LandingPage() {
               <div className="w-1.5 h-1.5 bg-white/40 rounded-[1px]" />
             </div>
           </div>
-          <span className={cn('text-lg tracking-tight font-medium', dmSerif.className)}>
+          <span className="text-lg tracking-tight font-medium font-serif">
             NoteVault
           </span>
         </div>
@@ -61,10 +56,7 @@ export default function LandingPage() {
           </div>
 
           <h1
-            className={cn(
-              'text-5xl lg:text-6xl leading-[1.05] tracking-tighter mb-6',
-              dmSerif.className
-            )}
+            className="text-5xl lg:text-6xl leading-[1.05] tracking-tighter mb-6 font-serif"
           >
             Your technical memory, <br />
             <span className="text-neutral-500">
@@ -219,7 +211,7 @@ function DSAMockup() {
 function GeneralMockup() {
   return (
     <div className="space-y-4 px-2">
-      <h2 className={cn('text-xl tracking-tight text-neutral-900', dmSerif.className)}>System Architecture</h2>
+      <h2 className="text-xl tracking-tight text-neutral-900 font-serif">System Architecture</h2>
       <div className="h-[1px] w-full bg-neutral-200" />
       <p className="text-neutral-700 leading-relaxed text-sm font-sans">
         Microservices vs Monolith: Choosing the right pattern for NoteVault&apos;s scaling strategy...
