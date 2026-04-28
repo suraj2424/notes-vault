@@ -213,11 +213,15 @@ const ComplexityCard = ({
 
 function NoteDisplay({
   note,
+  topicTitle,
+  topicId,
   resolvedTheme,
   onDelete,
   onEdit,
 }: {
   note: Note;
+  topicTitle: string | null;
+  topicId: string | null;
   resolvedTheme: string;
   onDelete: (id: string) => void;
   onEdit: (id: string) => void;
@@ -290,6 +294,14 @@ function NoteDisplay({
             #{tag}
           </Link>
         ))}
+        {topicTitle && topicId && (
+          <Link
+            href={`/dashboard/topics/${topicId}`}
+            className="inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-[11px] font-bold tracking-wide text-neutral-700 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+          >
+            {topicTitle}
+          </Link>
+        )}
       </div>
 
       {/* --- CONTENT --- */}
@@ -427,6 +439,7 @@ export default function NoteDetailPage({
   const { user, loading } = useAuth();
   const router = useRouter();
   const [note, setNote] = useState<Note | null>(null);
+  const [topicTitle, setTopicTitle] = useState<string | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(true);
   const { resolvedTheme } = useTheme();
 
@@ -446,6 +459,15 @@ export default function NoteDetailPage({
         if (response.ok) {
           const data = await response.json();
           setNote(data.note);
+          if (data.note.topicId) {
+            const topicResponse = await fetch(`/api/topics/${data.note.topicId}`, { signal });
+            if (topicResponse.ok) {
+              const topicData = await topicResponse.json();
+              setTopicTitle(topicData.topic.title);
+            }
+          } else {
+            setTopicTitle(null);
+          }
         } else if (response.status === 404) {
           router.push("/dashboard");
         } else {
@@ -502,6 +524,8 @@ export default function NoteDetailPage({
       <NoteDisplay
         note={note}
         resolvedTheme={resolvedTheme}
+        topicTitle={topicTitle}
+        topicId={note.topicId || null}
         onEdit={(id) => {
           router.push(`/dashboard/notes/${note.id}/edit`);
         }}

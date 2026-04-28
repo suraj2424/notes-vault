@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import connectToDatabase from '../../../../lib/mongodb';
 import Note from '../../../../models/Note';
+import Topic from '../../../../models/Topic';
 import { auth } from '@clerk/nextjs/server';
+import { syncTopicCounts } from '@/lib/topics';
 
 const updateNoteSchema = z.object({
   type: z.enum(['dsa', 'qa', 'general']).optional(),
   title: z.string().min(1, 'Title is required').optional(),
   isFavorite: z.boolean().optional(),
   tags: z.array(z.string()).optional(),
+  topicId: z.string().trim().nullable().optional(),
   content: z.string().optional(),
   dsa: z.object({
     platform: z.string(),
@@ -61,6 +64,7 @@ export async function GET(
         title: note.title,
         isFavorite: note.isFavorite,
         tags: note.tags,
+        topicId: note.topicId ?? null,
         content: note.content,
         dsa: note.dsa,
         qa: note.qa,
@@ -92,15 +96,25 @@ export async function PUT(
     const body = await request.json();
     const updateData = updateNoteSchema.parse(body);
 
+    const existingNote = await Note.findOne({ _id: id, userId }).lean();
+    if (!existingNote) {
+      return NextResponse.json({ error: 'Note not found' }, { status: 404 });
+    }
+
+    if (updateData.topicId) {
+      const topic = await Topic.findOne({ _id: updateData.topicId, userId }).lean();
+      if (!topic || topic.isArchived) {
+        return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
+      }
+    }
+
     const note = await Note.findOneAndUpdate(
       { _id: id, userId: userId },
       { ...updateData, updatedAt: new Date() },
       { returnDocument: 'after', runValidators: true }
     ).lean();
 
-    if (!note) {
-      return NextResponse.json({ error: 'Note not found' }, { status: 404 });
-    }
+    await syncTopicCounts([existingNote.topicId, note?.topicId]);
 
     return NextResponse.json({
       note: {
@@ -110,6 +124,7 @@ export async function PUT(
         title: note.title,
         isFavorite: note.isFavorite,
         tags: note.tags,
+        topicId: note.topicId ?? null,
         content: note.content,
         dsa: note.dsa,
         qa: note.qa,
@@ -145,14 +160,21 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const result = await Note.findOneAndDelete({
+    const existingNote = await Note.findOne({
+      _id: id,
+      userId: userId,
+    }).lean();
+
+    if (!existingNote) {
+      return NextResponse.json({ error: 'Note not found' }, { status: 404 });
+    }
+
+    await Note.findOneAndDelete({
       _id: id,
       userId: userId,
     });
 
-    if (!result) {
-      return NextResponse.json({ error: 'Note not found' }, { status: 404 });
-    }
+    await syncTopicCounts([existingNote.topicId]);
 
     return NextResponse.json({ message: 'Note deleted successfully' });
 

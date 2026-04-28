@@ -7,6 +7,7 @@ export interface INote extends Document {
   title: string;
   isFavorite: boolean;
   tags: string[];
+  topicId?: string;
   content?: string;
   dsa?: DSAData;
   qa?: QAData;
@@ -58,6 +59,10 @@ const NoteSchema: Schema = new Schema({
     type: String,
     trim: true,
   }],
+  topicId: {
+    type: String,
+    default: null,
+  },
   content: {
     type: String,
   },
@@ -71,6 +76,7 @@ const NoteSchema: Schema = new Schema({
 NoteSchema.index({ userId: 1, updatedAt: -1 }); // For user notes sorted by recent
 NoteSchema.index({ userId: 1, type: 1, updatedAt: -1 }); // For filtered queries
 NoteSchema.index({ userId: 1, isFavorite: 1, updatedAt: -1 }); // For favorites filter
+NoteSchema.index({ userId: 1, topicId: 1, updatedAt: -1 }); // For notes within a topic
 
 // Index for search functionality - covers all note types
 NoteSchema.index({

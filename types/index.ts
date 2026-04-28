@@ -30,11 +30,25 @@ export interface Note {
   title: string;
   isFavorite: boolean;
   tags: string[];
+  topicId?: string | null;
   createdAt: string;
   updatedAt: string;
   content?: string;
   dsa?: DSAData;
   qa?: QAData;
+}
+
+export interface Topic {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  coverImage?: string;
+  color?: string;
+  isArchived: boolean;
+  noteCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UserProfile {

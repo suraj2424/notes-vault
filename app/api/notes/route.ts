@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import connectToDatabase from '../../../lib/mongodb';
 import Note from '../../../models/Note';
+import Topic from '../../../models/Topic';
 import { auth } from '@clerk/nextjs/server';
+import { syncTopicCounts } from '@/lib/topics';
 
 const createNoteSchema = z.object({
   type: z.enum(['dsa', 'qa', 'general']),
   title: z.string().min(1, 'Title is required'),
   isFavorite: z.boolean().optional().default(false),
   tags: z.array(z.string()).optional().default([]),
+  topicId: z.string().trim().optional().nullable(),
   content: z.string().optional(),
   dsa: z.object({
     platform: z.string(),
@@ -44,6 +47,7 @@ export async function GET(request: NextRequest) {
     const tag = searchParams.get('tag');
     const search = searchParams.get('search');
     const favorite = searchParams.get('favorite');
+    const topicId = searchParams.get('topicId');
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('pageSize') || '20');
     const fields = searchParams.get('fields'); // comma-separated list of fields to include
@@ -60,6 +64,10 @@ export async function GET(request: NextRequest) {
 
     if (favorite === 'true') {
       query.isFavorite = true;
+    }
+
+    if (topicId) {
+      query.topicId = topicId;
     }
 
     if (search) {
@@ -92,6 +100,7 @@ export async function GET(request: NextRequest) {
       title: note.title,
       isFavorite: note.isFavorite,
       tags: note.tags,
+      topicId: note.topicId ?? null,
       createdAt: note.createdAt,
       updatedAt: note.updatedAt,
       // Only include dsa/qa/content if explicitly requested
@@ -128,10 +137,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const noteData = createNoteSchema.parse(body);
 
+    if (noteData.topicId) {
+      const topic = await Topic.findOne({ _id: noteData.topicId, userId }).lean();
+      if (!topic || topic.isArchived) {
+        return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
+      }
+    }
+
     const note = await Note.create({
       userId: userId,
       ...noteData,
     });
+
+    await syncTopicCounts([note.topicId]);
 
     return NextResponse.json({
       note: {
@@ -141,6 +159,7 @@ export async function POST(request: NextRequest) {
         title: note.title,
         isFavorite: note.isFavorite,
         tags: note.tags,
+        topicId: note.topicId ?? null,
         content: note.content,
         dsa: note.dsa,
         qa: note.qa,

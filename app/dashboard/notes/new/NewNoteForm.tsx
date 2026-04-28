@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { CodeEditor } from "@/components/CodeEditor";
+import { TopicSelector } from "@/app/dashboard/topics/TopicSelector";
 
 // --- REUSABLE UI SUB-COMPONENTS ---
 
@@ -157,6 +158,7 @@ export function NewNoteForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialType = (searchParams.get("type") as NoteType) || "general";
+  const initialTopicId = searchParams.get("topicId");
 
   // State
   const [type, setType] = useState<NoteType>(initialType);
@@ -165,6 +167,7 @@ export function NewNoteForm() {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [content, setContent] = useState("");
+  const [topicId, setTopicId] = useState<string | null>(initialTopicId);
   const [isSaving, setIsSaving] = useState(false);
 
   const [dsa, setDsa] = useState<DSAData>({
@@ -195,7 +198,7 @@ export function NewNoteForm() {
     if (!user) return;
     setIsSaving(true);
     try {
-      const noteData = { type, title, isFavorite, tags, 
+      const noteData = { type, title, isFavorite, tags, topicId,
         ...(type === "general" && { content }),
         ...(type === "dsa" && { dsa }),
         ...(type === "qa" && { qa })
@@ -260,6 +263,11 @@ export function NewNoteForm() {
 
       <div className="space-y-6">
         <InputField value={title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)} placeholder="Note title..." className="h-12 text-base font-semibold" />
+
+        <div className="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+          <Label>Topic</Label>
+          <TopicSelector value={topicId} onChange={setTopicId} />
+        </div>
 
         {/* Tags Block */}
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">

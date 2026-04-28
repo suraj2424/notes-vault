@@ -6,6 +6,7 @@ import { useUser, UserButton } from '@clerk/nextjs';
 import {
   LayoutDashboard,
   FileText,
+  FolderOpen,
   Tags,
   Clock,
   Settings,
@@ -148,6 +149,7 @@ export function Sidebar() {
         <nav className="space-y-1">
           <NavLink item={{ name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard }} isActive={pathname === '/dashboard'} isCollapsed={isCollapsed} />
           <NavLink item={{ name: 'All Notes', href: '/dashboard/notes', icon: FileText }} isActive={pathname === '/dashboard/notes'} isCollapsed={isCollapsed} />
+          <NavLink item={{ name: 'Topics', href: '/dashboard/topics', icon: FolderOpen }} isActive={pathname === '/dashboard/topics' || pathname.startsWith('/dashboard/topics/')} isCollapsed={isCollapsed} />
         </nav>
 
         <div className="my-6 mx-4 border-t border-neutral-200 dark:border-neutral-800" />

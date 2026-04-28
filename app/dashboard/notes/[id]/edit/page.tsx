@@ -20,6 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { CodeEditor } from '@/components/CodeEditor';
+import { TopicSelector } from '@/app/dashboard/topics/TopicSelector';
 
 export default function EditNotePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -32,6 +33,7 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [content, setContent] = useState('');
+  const [topicId, setTopicId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
@@ -68,6 +70,7 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
           setTitle(note.title);
           setIsFavorite(note.isFavorite);
           setTags(note.tags || []);
+          setTopicId(note.topicId || null);
 
            if (note.type === 'general') setContent(note.content || '');
            if (note.type === 'dsa' && note.dsa) {
@@ -141,7 +144,7 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
 
     setIsSaving(true);
     try {
-      const noteData: any = { title, isFavorite, tags };
+      const noteData: any = { title, isFavorite, tags, topicId };
 
       if (type === 'general') noteData.content = content;
       if (type === 'dsa') noteData.dsa = dsa;
@@ -257,6 +260,13 @@ return (
           placeholder="Note title..."
           className="h-12 w-full rounded-xl border px-4 text-base font-semibold outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
         />
+
+        <div className="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+          <label className="mb-2 block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
+            Topic
+          </label>
+          <TopicSelector value={topicId} onChange={setTopicId} />
+        </div>
 
         {/* Tags */}
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
