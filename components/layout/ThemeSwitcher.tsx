@@ -37,7 +37,7 @@ export function ThemeSwitcher({ isCollapsed, TooltipWrapper }: { isCollapsed: bo
             'flex items-center transition-all duration-200 group',
             isCollapsed ? 'justify-center w-10 h-10 mx-auto rounded-xl' : 'gap-3 px-3 py-2 w-full rounded-lg text-[14px]',
             isOpen
-              ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950'
+              ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-950'
               : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-400 dark:hover:bg-neutral-800/80 dark:hover:text-neutral-50'
           )}
         >

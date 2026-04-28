@@ -28,8 +28,8 @@ interface FormSectionProps {
 }
 
 const FormSection = ({ title, badge, children, action }: FormSectionProps) => (
-  <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
-    <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
+  <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900/50">
+    <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-3 dark:border-neutral-700">
       <div className="flex items-center gap-2">
         <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
           {title}
@@ -53,7 +53,7 @@ const InputField = ({ ...props }) => (
       "h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all",
       "border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400",
       "focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100",
-      "dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50",
+      "dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:bg-neutral-900 dark:focus:ring-neutral-900/50",
       props.className
     )}
   />
@@ -108,7 +108,7 @@ function Dropdown<T extends string>({
           "border-neutral-200 bg-neutral-50 text-neutral-900",
           "hover:bg-white",
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-100",
-          "dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-950 dark:focus-visible:ring-neutral-900/50"
+          "dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-900 dark:focus-visible:ring-neutral-900/50"
         )}
       >
         <span className="flex items-center justify-between gap-3">
@@ -124,7 +124,7 @@ function Dropdown<T extends string>({
           className={cn(
             "absolute z-20 mt-2 w-full overflow-hidden rounded-xl border bg-white shadow-lg",
             "border-neutral-200",
-            "dark:border-neutral-800 dark:bg-neutral-950"
+            "dark:border-neutral-700 dark:bg-neutral-900"
           )}
         >
           {options.map(opt => (
@@ -176,7 +176,7 @@ export function NewNoteForm() {
     notes: "",
   });
 
-  const [qa, setQa] = useState<QAData>({ topic: "", content: "", importantPoints: [""] });
+  const [qa, setQa] = useState<QAData>({ content: "", importantPoints: [""] });
 
   useEffect(() => {
     if (!loading && !user) router.push("/");
@@ -220,14 +220,14 @@ export function NewNoteForm() {
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/dashboard/notes" className="group flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-all hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800">
+          <Link href="/dashboard/notes" className="group flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-all hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800">
             <ChevronLeft className="h-4 w-4 text-neutral-500 group-hover:text-neutral-900 dark:text-neutral-400 dark:group-hover:text-neutral-100" />
           </Link>
           <h1 className="text-2xl font-serif tracking-tight text-neutral-900 dark:text-neutral-100">New Note</h1>
         </div>
 
         <div className="flex items-center gap-2">
-          <button onClick={() => setIsFavorite(!isFavorite)} className={cn("h-9 w-9 flex items-center justify-center rounded-xl border transition-all", isFavorite ? "bg-amber-50 border-amber-200 text-amber-500 dark:bg-amber-500/10 dark:border-amber-500/20" : "bg-white border-neutral-200 text-neutral-400 hover:text-neutral-600 dark:bg-neutral-900 dark:border-neutral-800")}>
+          <button onClick={() => setIsFavorite(!isFavorite)} className={cn("h-9 w-9 flex items-center justify-center rounded-xl border transition-all", isFavorite ? "bg-amber-50 border-amber-200 text-amber-500 dark:bg-amber-500/10 dark:border-amber-500/20" : "bg-white border-neutral-200 text-neutral-400 hover:text-neutral-600 dark:bg-neutral-900 dark:border-neutral-700")}>
             <Star className={cn("h-4 w-4", isFavorite && "fill-current")} />
           </button>
           <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 h-9 px-5 rounded-xl bg-neutral-900 text-white text-[12px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-all disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200">
@@ -237,7 +237,7 @@ export function NewNoteForm() {
       </div>
 
       {/* Type Selector */}
-      <div className="mb-8 flex p-1.5 w-fit rounded-2xl bg-neutral-100/50 border border-neutral-200/50 dark:bg-neutral-900/50 dark:border-neutral-800">
+      <div className="mb-8 flex p-1.5 w-fit rounded-2xl bg-neutral-100/50 border border-neutral-200/50 dark:bg-neutral-900/50 dark:border-neutral-700">
         {(["general", "dsa", "qa"] as const).map((t) => (
           <button
             key={t}
@@ -264,13 +264,13 @@ export function NewNoteForm() {
       <div className="space-y-6">
         <InputField value={title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)} placeholder="Note title..." className="h-12 text-base font-semibold" />
 
-        <div className="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
           <Label>Topic</Label>
           <TopicSelector value={topicId} onChange={setTopicId} />
         </div>
 
         {/* Tags Block */}
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 dark:border-neutral-700 dark:bg-neutral-900">
           <Tag className="h-3.5 w-3.5 text-neutral-400 mr-2" />
           {tags.map((tag) => (
             <span key={tag} className="flex items-center gap-1.5 bg-neutral-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-neutral-600 rounded-lg dark:bg-neutral-800 dark:text-neutral-400">
@@ -313,11 +313,11 @@ export function NewNoteForm() {
 
             <div className="space-y-4">
               <div className="flex items-center justify-between"><Label>Implementations</Label>
-                <button onClick={() => updateDsa({implementations: [...dsa.implementations, { language: "Java", code: "", timeComplexity: "", spaceComplexity: "" }]})} className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-200 text-[11px] font-bold uppercase hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800"><Plus className="h-3 w-3" /> Add Language</button>
+                <button onClick={() => updateDsa({implementations: [...dsa.implementations, { language: "Java", code: "", timeComplexity: "", spaceComplexity: "" }]})} className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-200 text-[11px] font-bold uppercase hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"><Plus className="h-3 w-3" /> Add Language</button>
               </div>
               {dsa.implementations.map((impl, idx) => (
-                <div key={idx} className="rounded-2xl border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-950">
-                   <div className="flex items-center justify-between bg-neutral-50 px-4 py-2 border-b border-neutral-200 dark:bg-neutral-900 dark:border-neutral-800">
+                <div key={idx} className="rounded-2xl border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900">
+                   <div className="flex items-center justify-between bg-neutral-50 px-4 py-2 border-b border-neutral-200 dark:bg-neutral-900 dark:border-neutral-700">
                      <div className="w-[140px]">
                        <Dropdown
                          ariaLabel="Language"
@@ -337,9 +337,9 @@ export function NewNoteForm() {
                      <button onClick={() => { const next = [...dsa.implementations]; next.splice(idx,1); updateDsa({implementations: next}); }}><Trash2 className="h-4 w-4 text-neutral-500 hover:text-red-500 dark:text-neutral-600" /></button>
                    </div>
                    <CodeEditor language={impl.language} value={impl.code} onChange={code => { const next = [...dsa.implementations]; next[idx].code = code; updateDsa({implementations: next}); }} />
-                   <div className="grid grid-cols-2 border-t border-neutral-200 p-4 gap-4 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-                      <div className="flex items-center gap-3"><span className="text-[10px] font-black text-neutral-500 uppercase dark:text-neutral-600">Time</span><input className="bg-transparent border-b border-neutral-200 text-[12px] font-mono text-neutral-700 outline-none focus:border-neutral-400 pb-1 w-full placeholder:text-neutral-400 dark:border-neutral-800 dark:text-neutral-300 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600" placeholder="O(n)" value={impl.timeComplexity} onChange={e => { const next = [...dsa.implementations]; next[idx].timeComplexity = e.target.value; updateDsa({implementations: next}); }} /></div>
-                      <div className="flex items-center gap-3"><span className="text-[10px] font-black text-neutral-500 uppercase dark:text-neutral-600">Space</span><input className="bg-transparent border-b border-neutral-200 text-[12px] font-mono text-neutral-700 outline-none focus:border-neutral-400 pb-1 w-full placeholder:text-neutral-400 dark:border-neutral-800 dark:text-neutral-300 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600" placeholder="O(1)" value={impl.spaceComplexity} onChange={e => { const next = [...dsa.implementations]; next[idx].spaceComplexity = e.target.value; updateDsa({implementations: next}); }} /></div>
+                   <div className="grid grid-cols-2 border-t border-neutral-200 p-4 gap-4 bg-white dark:border-neutral-700 dark:bg-neutral-900">
+                      <div className="flex items-center gap-3"><span className="text-[10px] font-black text-neutral-500 uppercase dark:text-neutral-600">Time</span><input className="bg-transparent border-b border-neutral-200 text-[12px] font-mono text-neutral-700 outline-none focus:border-neutral-400 pb-1 w-full placeholder:text-neutral-400 dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600" placeholder="O(n)" value={impl.timeComplexity} onChange={e => { const next = [...dsa.implementations]; next[idx].timeComplexity = e.target.value; updateDsa({implementations: next}); }} /></div>
+                      <div className="flex items-center gap-3"><span className="text-[10px] font-black text-neutral-500 uppercase dark:text-neutral-600">Space</span><input className="bg-transparent border-b border-neutral-200 text-[12px] font-mono text-neutral-700 outline-none focus:border-neutral-400 pb-1 w-full placeholder:text-neutral-400 dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600" placeholder="O(1)" value={impl.spaceComplexity} onChange={e => { const next = [...dsa.implementations]; next[idx].spaceComplexity = e.target.value; updateDsa({implementations: next}); }} /></div>
                    </div>
                 </div>
               ))}
@@ -358,7 +358,6 @@ export function NewNoteForm() {
 
         {type === "qa" && (
           <div className="space-y-6">
-             <div className="space-y-1"><Label>Topic</Label><InputField placeholder="e.g., System Design" value={qa.topic} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQa({...qa, topic: e.target.value})} /></div>
             <FormSection title="Detailed Answer" badge="Markdown">
               <textarea value={qa.content} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setQa({...qa, content: e.target.value})} className="w-full min-h-[300px] p-6 text-[14px] bg-transparent outline-none resize-none dark:text-neutral-300" />
             </FormSection>
@@ -369,7 +368,7 @@ export function NewNoteForm() {
                  {qa.importantPoints.map((p, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <div className="h-1.5 w-1.5 rounded-full bg-neutral-300 dark:bg-neutral-700 shrink-0" />
-                    <input value={p} onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const next = [...qa.importantPoints]; next[i] = e.target.value; setQa({...qa, importantPoints: next}); }} className="flex-1 bg-transparent border-b border-neutral-100 dark:border-neutral-800 py-1 text-[13px] outline-none focus:border-neutral-400 dark:focus:border-neutral-500 dark:text-neutral-200" placeholder="Point..." />
+                    <input value={p} onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const next = [...qa.importantPoints]; next[i] = e.target.value; setQa({...qa, importantPoints: next}); }} className="flex-1 bg-transparent border-b border-neutral-100 dark:border-neutral-700 py-1 text-[13px] outline-none focus:border-neutral-400 dark:focus:border-neutral-500 dark:text-neutral-200" placeholder="Point..." />
                     <button onClick={() => { const next = [...qa.importantPoints]; next.splice(i,1); setQa({...qa, importantPoints: next}); }}><X className="h-3.5 w-3.5 text-neutral-400 hover:text-red-500" /></button>
                   </div>
                 ))}

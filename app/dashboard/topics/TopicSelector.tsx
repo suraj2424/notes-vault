@@ -88,7 +88,7 @@ export function TopicSelector({ value, onChange, disabled = false }: TopicSelect
             return !current;
           })
         }
-        className="flex h-11 w-full items-center justify-between rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-left text-[13px] font-medium text-neutral-900 outline-none transition-all hover:bg-white focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-950 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+        className="flex h-11 w-full items-center justify-between rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-left text-[13px] font-medium text-neutral-900 outline-none transition-all hover:bg-white focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-900 dark:focus:border-neutral-600 dark:focus:bg-neutral-900 dark:focus:ring-neutral-900/50"
       >
         <span className="flex min-w-0 items-center gap-3">
           <FolderOpen className="h-4 w-4 shrink-0 text-neutral-400" />
@@ -98,8 +98,8 @@ export function TopicSelector({ value, onChange, disabled = false }: TopicSelect
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-950">
-          <div className="border-b border-neutral-200 p-3 dark:border-neutral-800">
+        <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
+          <div className="border-b border-neutral-200 p-3 dark:border-neutral-700">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
               <input
@@ -107,7 +107,7 @@ export function TopicSelector({ value, onChange, disabled = false }: TopicSelect
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search topics..."
-                className="h-10 w-full rounded-xl border border-neutral-200 bg-neutral-50 pl-9 pr-3 text-[13px] text-neutral-900 outline-none transition-all focus:border-neutral-400 focus:bg-white dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-700 dark:focus:bg-neutral-950"
+                className="h-10 w-full rounded-xl border border-neutral-200 bg-neutral-50 pl-9 pr-3 text-[13px] text-neutral-900 outline-none transition-all focus:border-neutral-400 focus:bg-white dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-600 dark:focus:bg-neutral-900"
               />
             </div>
           </div>
@@ -123,8 +123,8 @@ export function TopicSelector({ value, onChange, disabled = false }: TopicSelect
               className={cn(
                 "flex w-full items-center justify-between rounded-xl px-3 py-3 text-left transition-all",
                 value === null
-                  ? "bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-neutral-50"
-                  : "text-neutral-600 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-900/70",
+                  ? "bg-neutral-50 text-neutral-950 dark:bg-neutral-900 dark:text-neutral-50"
+                  : "text-neutral-600 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70",
               )}
             >
               <span className="flex items-center gap-3">
@@ -146,8 +146,8 @@ export function TopicSelector({ value, onChange, disabled = false }: TopicSelect
                 className={cn(
                   "mt-1 flex w-full items-center justify-between rounded-xl px-3 py-3 text-left transition-all",
                   value === topic.id
-                    ? "bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-neutral-50"
-                    : "text-neutral-600 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-900/70",
+                    ? "bg-neutral-50 text-neutral-950 dark:bg-neutral-900 dark:text-neutral-50"
+                    : "text-neutral-600 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70",
                 )}
               >
                 <span className="flex min-w-0 items-center gap-3">

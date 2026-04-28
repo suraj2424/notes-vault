@@ -54,7 +54,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-white p-6 text-center dark:bg-neutral-950">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-white p-6 text-center dark:bg-neutral-900">
           <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border border-neutral-200 text-neutral-400 dark:border-neutral-900 dark:text-neutral-500">
             <AlertCircle className="h-10 w-10" />
           </div>
@@ -66,7 +66,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="flex items-center gap-2 rounded-xl bg-neutral-950 px-6 py-3 text-[14px] font-semibold text-white transition-colors hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200"
+            className="flex items-center gap-2 rounded-xl bg-neutral-900 px-6 py-3 text-[14px] font-semibold text-white transition-colors hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200"
           >
             <RefreshCcw className="h-4 w-4" />
             Reload Application

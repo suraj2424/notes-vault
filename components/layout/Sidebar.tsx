@@ -39,10 +39,10 @@ export const Tooltip = ({ text, children, active }: { text: string; children: Re
             initial={{ opacity: 0, x: 3 }}
             animate={{ opacity: 1, x: 8 }}
             exit={{ opacity: 0, x: 3 }}
-            className="absolute left-full whitespace-nowrap z-[100] px-3 py-1.5 bg-neutral-950 text-white text-[12px] font-bold rounded-md shadow-xl dark:bg-white dark:text-neutral-950 border border-neutral-800 dark:border-neutral-200"
+            className="absolute left-full whitespace-nowrap z-[100] px-3 py-1.5 bg-neutral-900 text-white text-[12px] font-bold rounded-md shadow-xl dark:bg-white dark:text-neutral-950 border border-neutral-800 dark:border-neutral-200"
           >
             {text}
-            <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-neutral-950 rotate-45 dark:bg-white" />
+            <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-neutral-900 rotate-45 dark:bg-white" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -68,7 +68,7 @@ const NavLink = ({ item, isActive, isCollapsed }: NavLinkProps) => {
           'flex items-center transition-all duration-200 group',
           isCollapsed ? 'justify-center w-10 h-10 mx-auto rounded-xl' : 'gap-3 px-3 py-2 w-full rounded-lg text-[14px]',
           isActive
-            ? 'bg-neutral-950 text-white shadow-md hover:bg-neutral-900 hover:shadow-lg dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-50'
+            ? 'bg-neutral-900 text-white shadow-md hover:bg-neutral-900 hover:shadow-lg dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100'
             : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-400 dark:hover:bg-neutral-800/80 dark:hover:text-neutral-50'
         )}
       >
@@ -95,7 +95,7 @@ export function Sidebar() {
   return (
     <motion.aside
       animate={{ width: isCollapsed ? 80 : 260 }}
-      className="sticky top-0 hidden h-screen flex-col lg:flex border-r border-neutral-200 bg-white dark:bg-neutral-950 dark:border-neutral-900 z-40 transition-colors"
+      className="sticky top-0 hidden h-screen flex-col lg:flex border-r border-neutral-200 bg-white dark:bg-neutral-900 dark:border-neutral-800 z-40 transition-colors"
     >
       <div className={cn('relative flex flex-col h-full py-6 transition-all font-sans', isCollapsed ? 'px-0' : 'px-4')}>
         
@@ -109,8 +109,8 @@ export function Sidebar() {
               className={cn(
                 "relative w-[34px] h-[34px] rounded-[9px] flex items-center justify-center shrink-0 transition-all group",
                 isCollapsed 
-                  ? "bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-950 dark:hover:bg-white" 
-                  : "bg-neutral-950 dark:bg-white cursor-default"
+                  ? "bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-900 dark:hover:bg-white" 
+                  : "bg-neutral-900 dark:bg-white cursor-default"
               )}
             >
               <AnimatePresence mode="wait">
@@ -170,7 +170,7 @@ export function Sidebar() {
         </div>
 
         {/* USER PROFILE */}
-        <div className={cn("flex items-center transition-all duration-300", isCollapsed ? "justify-center w-12 h-12 mx-auto rounded-xl" : "gap-3 p-2 w-full rounded-2xl hover:bg-neutral-50 dark:hover:bg-neutral-900/50")}>
+        <div className={cn("flex items-center transition-all duration-300", isCollapsed ? "justify-center w-12 h-12 mx-auto rounded-xl" : "gap-3 p-2 w-full rounded-2xl hover:bg-neutral-100 dark:hover:bg-neutral-800/50")}>
           <div className="shrink-0 overflow-hidden">
             {user ? (
               <UserButton

@@ -80,7 +80,7 @@ export function Navbar() {
 
   return (
     <nav className={cn(
-      'sticky top-0 z-50 border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 font-sans'
+      'sticky top-0 z-50 border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 font-sans'
     )}>
       <div className="flex items-center justify-between px-4 h-[56px]">
 
@@ -115,7 +115,7 @@ export function Navbar() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => searchQuery.length >= 2 && setShowResults(true)}
                 placeholder="Quick search..."
-                className="h-10 w-56 rounded-xl border border-neutral-200 bg-neutral-50 pl-9 pr-10 text-[13.5px] font-medium outline-none transition-all focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                className="h-10 w-56 rounded-xl border border-neutral-200 bg-neutral-50 pl-9 pr-10 text-[13.5px] font-medium outline-none transition-all focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-700 dark:focus:bg-neutral-900 dark:focus:ring-neutral-900/50"
               />
               {searchQuery && (
                 <button
@@ -130,7 +130,7 @@ export function Navbar() {
 
             {/* Dropdown Results */}
             {showResults && (
-              <div className="absolute top-full mt-2 right-0 w-80 rounded-xl border border-neutral-200 bg-white shadow-2xl overflow-hidden z-50 dark:border-neutral-800 dark:bg-neutral-950">
+              <div className="absolute top-full mt-2 right-0 w-80 rounded-xl border border-neutral-200 bg-white shadow-2xl overflow-hidden z-50 dark:border-neutral-800 dark:bg-neutral-900">
                 {isSearching ? (
                   <div className="flex items-center justify-center gap-3 py-8 text-[13px] font-medium text-neutral-500 dark:text-neutral-400">
                     <Loader2 className="h-4 w-4 animate-spin text-neutral-950 dark:text-neutral-50" />
@@ -145,7 +145,7 @@ export function Navbar() {
                           key={note.id}
                           href={`/dashboard/notes/${note.id}`}
                           onClick={() => setShowResults(false)}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all group"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all group"
                         >
                           <div className={cn(
                             'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border transition-colors',
@@ -188,7 +188,7 @@ export function Navbar() {
           {/* New Note Button */}
           <Link
             href="/dashboard/notes/new"
-            className="flex items-center gap-2 h-10 px-5 rounded-xl bg-neutral-950 text-white text-[13.5px] font-bold hover:bg-neutral-800 transition-all active:scale-95 dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-white shadow-sm"
+            className="flex items-center gap-2 h-10 px-5 rounded-xl bg-neutral-900 text-white text-[13.5px] font-bold hover:bg-neutral-800 transition-all active:scale-95 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-white shadow-sm"
           >
             <Plus className="h-4 w-4 stroke-[3]" />
             <span className="hidden sm:inline">New Note</span>

@@ -30,7 +30,6 @@ const DSASchema: Schema = new Schema({
 }, { _id: false });
 
 const QASchema: Schema = new Schema({
-  topic: { type: String, required: true },
   content: { type: String, required: true },
   importantPoints: [{ type: String }],
 }, { _id: false });
@@ -85,8 +84,7 @@ NoteSchema.index({
   tags: 'text',
   'dsa.problemStatement': 'text',
   'dsa.notes': 'text',
-  'qa.content': 'text',
-  'qa.topic': 'text'
+  'qa.content': 'text'
 });
 
 // Handle hot reload in development - delete cached model before redefining

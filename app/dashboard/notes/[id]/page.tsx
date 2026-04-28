@@ -31,7 +31,7 @@ const Badge = ({ children, variant = "default", className }: BadgeProps) => {
     amber:
       "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
     secondary:
-      "border border-neutral-200 text-neutral-600 dark:border-neutral-800 dark:text-neutral-400",
+      "border border-neutral-200 text-neutral-600 dark:border-neutral-700 dark:text-neutral-400",
   };
 
   return (
@@ -63,7 +63,7 @@ const Button = ({
 }: ButtonProps) => {
   const variants = {
     outline:
-      "border border-neutral-200 bg-transparent hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900 dark:text-neutral-300",
+      "border border-neutral-200 bg-transparent hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900 dark:text-neutral-300",
     ghost: "hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500",
   };
 
@@ -92,7 +92,7 @@ const NoteMarkdown = ({ content, resolvedTheme }: NoteMarkdownProps) => (
     remarkPlugins={[remarkGfm, remarkBreaks]}
     components={{
       hr: () => (
-        <hr className="my-10 border-t border-neutral-200 dark:border-neutral-800/60" />
+        <hr className="my-10 border-t border-neutral-200 dark:border-neutral-700/60" />
       ),
 
       // Section Headers
@@ -143,7 +143,7 @@ const NoteMarkdown = ({ content, resolvedTheme }: NoteMarkdownProps) => (
 
         // Full Code Block
         return (
-          <div className="overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800/70 shadow-sm bg-neutral-100 dark:bg-neutral-950 ">
+          <div className="overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700/70 shadow-sm bg-neutral-100 dark:bg-neutral-900 ">
             {/* Optional: Add a "Language Indicator" header like your screenshot */}
             {/* <div className="flex items-center justify-between px-4 py-2 bg-neutral-100 dark:bg-[#161b22] border-b border-neutral-200 dark:border-neutral-800/70">
               <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
@@ -164,19 +164,19 @@ const NoteMarkdown = ({ content, resolvedTheme }: NoteMarkdownProps) => (
 
       // Tables
       table: ({ children }) => (
-        <div className="my-8 overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800/80 shadow-sm">
+        <div className="my-8 overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-700/80 shadow-sm">
           <table className="w-full border-collapse text-left text-sm">
             {children}
           </table>
         </div>
       ),
       th: ({ children }) => (
-        <th className="border-b border-neutral-200 p-4 font-semibold text-neutral-900 dark:border-neutral-800 dark:text-neutral-100 bg-neutral-50/50 dark:bg-neutral-900/50">
+        <th className="border-b border-neutral-200 p-4 font-semibold text-neutral-900 dark:border-neutral-700 dark:text-neutral-100 bg-neutral-50/50 dark:bg-neutral-900/50">
           {children}
         </th>
       ),
       td: ({ children }) => (
-        <td className="border-b border-neutral-100/50 p-4 text-neutral-600 dark:border-neutral-800/50 dark:text-neutral-400">
+        <td className="border-b border-neutral-100/50 p-4 text-neutral-600 dark:border-neutral-700/50 dark:text-neutral-400">
           {children}
         </td>
       ),
@@ -198,7 +198,7 @@ const ComplexityCard = ({
 }) => (
   <div
     className={cn(
-      "rounded-[10px] border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900",
+      "rounded-[10px] border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900",
       className,
     )}
   >
@@ -239,11 +239,11 @@ function NoteDisplay({
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
       {/* --- HEADER --- */}
-      <header className="mb-10 flex items-start justify-between border-b border-neutral-100 pb-8 dark:border-neutral-800/60">
+      <header className="mb-10 flex items-start justify-between border-b border-neutral-100 pb-8 dark:border-neutral-700/60">
         <div className="flex items-center gap-5">
           <Link
             href="/dashboard/notes"
-            className="rounded-xl border border-neutral-200 p-2.5 text-neutral-500 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900 transition-all"
+            className="rounded-xl border border-neutral-200 p-2.5 text-neutral-500 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900 transition-all"
           >
             <ChevronLeft className="h-5 w-5" />
           </Link>
@@ -336,9 +336,9 @@ function NoteDisplay({
                   </h4>
                 </div>
 
-                <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden bg-white dark:bg-neutral-950 shadow-sm">
+                <div className="rounded-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden bg-white dark:bg-neutral-900 shadow-sm">
                   {/* Tab Header */}
-                  <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 px-2">
+                  <div className="flex border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/50 px-2">
                     {note.dsa.implementations.map((impl, idx) => (
                       <button
                         key={idx}
@@ -381,19 +381,17 @@ function NoteDisplay({
                     label="Time Complexity"
                     value={
                       note.dsa.implementations[activeLang]?.timeComplexity ||
-                      note.dsa.timeComplexity ||
                       "O(N)"
                     }
-                    className="bg-neutral-50/30 dark:bg-neutral-900/10 border-neutral-200 dark:border-neutral-800"
+                    className="bg-neutral-50/30 dark:bg-neutral-900/10 border-neutral-200 dark:border-neutral-700"
                   />
                   <ComplexityCard
                     label="Space Complexity"
                     value={
                       note.dsa.implementations[activeLang]?.spaceComplexity ||
-                      note.dsa.spaceComplexity ||
                       "O(1)"
                     }
-                    className="bg-neutral-50/30 dark:bg-neutral-900/10 border-neutral-200 dark:border-neutral-800"
+                    className="bg-neutral-50/30 dark:bg-neutral-900/10 border-neutral-200 dark:border-neutral-700"
                   />
                 </div>
               </section>
@@ -512,7 +510,7 @@ export default function NoteDetailPage({
   if (loading || isDataLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-neutral-700 dark:border-neutral-800 dark:border-t-neutral-200" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-neutral-700 dark:border-neutral-700 dark:border-t-neutral-200" />
       </div>
     );
   }

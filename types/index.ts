@@ -12,13 +12,9 @@ export interface DSAData {
     spaceComplexity: string;
   }[];
   notes: string;
-  // Backward compatibility: old notes may have complexity at top level
-  timeComplexity?: string;
-  spaceComplexity?: string;
 }
 
 export interface QAData {
-  topic: string;
   content: string;
   importantPoints: string[];
 }

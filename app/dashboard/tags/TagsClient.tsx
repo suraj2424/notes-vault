@@ -31,7 +31,7 @@ export default function TagsClient({ initialTags }: TagsClientProps) {
           </p>
         </header>
 
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-200 bg-white py-24 text-center dark:border-neutral-900 dark:bg-neutral-950">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-200 bg-white py-24 text-center dark:border-neutral-700 dark:bg-neutral-900">
           <Hash className="mb-4 h-10 w-10 text-neutral-300 dark:text-neutral-700" />
           <h3 className="font-serif text-[17px] text-neutral-950 dark:text-white">No tags yet</h3>
           <p className="mt-2 max-w-[320px] text-[13px] text-neutral-500 dark:text-neutral-400">
@@ -61,11 +61,11 @@ export default function TagsClient({ initialTags }: TagsClientProps) {
           <Link
             key={tag.name}
             href={`/dashboard/notes?search=${encodeURIComponent(tag.name)}`}
-            className="group rounded-2xl border border-neutral-200 bg-white p-5 transition-colors hover:bg-neutral-50 dark:border-neutral-900 dark:bg-neutral-950 dark:hover:bg-neutral-900/60"
+            className="group rounded-2xl border border-neutral-200 bg-white p-5 transition-colors hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700/60"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-950 transition-colors group-hover:bg-neutral-950 group-hover:text-white dark:bg-neutral-900 dark:text-white dark:group-hover:bg-white dark:group-hover:text-neutral-950">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-950 transition-colors group-hover:bg-neutral-900 group-hover:text-white dark:bg-neutral-900 dark:text-white dark:group-hover:bg-white dark:group-hover:text-neutral-950">
                   <Hash className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">

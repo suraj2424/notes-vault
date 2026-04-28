@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkProvider afterSignOutUrl="/">
       <html lang="en" suppressHydrationWarning>
-        <body suppressHydrationWarning className="bg-[var(--color-bg)] text-[var(--color-text-primary)] antialiased">
+        <body suppressHydrationWarning className="bg-neutral-100 dark:bg-neutral-900 text-[var(--color-text-primary)] antialiased">
           <ThemeProvider>
             <ErrorBoundary>
               {children}

@@ -47,7 +47,6 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
    });
 
   const [qa, setQa] = useState<QAData>({
-    topic: '',
     content: '',
     importantPoints: ['']
   });
@@ -173,7 +172,7 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
 if (loading || isInitialLoading) {
       return (
         <div className="flex h-screen items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-neutral-900 dark:border-neutral-800 dark:border-t-neutral-400" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-neutral-900 dark:border-neutral-700 dark:border-t-neutral-400" />
         </div>
       );
     }
@@ -185,7 +184,7 @@ return (
           <div className="flex items-center gap-4">
             <Link
               href={`/dashboard/notes/${id}`}
-              className="group flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-all hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+              className="group flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-all hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800"
             >
               <ChevronLeft className="h-4 w-4 text-neutral-500 group-hover:text-neutral-900 dark:text-neutral-400 dark:group-hover:text-neutral-100" />
             </Link>
@@ -201,7 +200,7 @@ return (
                 "h-9 w-9 flex items-center justify-center rounded-xl border transition-all",
                 isFavorite
                   ? "bg-amber-50 border-amber-200 text-amber-500 dark:bg-amber-500/10 dark:border-amber-500/20"
-                  : "bg-white border-neutral-200 text-neutral-400 hover:text-neutral-600 dark:bg-neutral-900 dark:border-neutral-800",
+                  : "bg-white border-neutral-200 text-neutral-400 hover:text-neutral-600 dark:bg-neutral-900 dark:border-neutral-700",
               )}
             >
               <Star className={cn("h-4 w-4", isFavorite && "fill-current")} />
@@ -227,7 +226,7 @@ return (
         </div>
 
         {/* Type Selector */}
-        <div className="mb-8 flex p-1.5 w-fit rounded-2xl bg-neutral-100/50 border border-neutral-200/50 dark:bg-neutral-900/50 dark:border-neutral-800">
+        <div className="mb-8 flex p-1.5 w-fit rounded-2xl bg-neutral-100/50 border border-neutral-200/50 dark:bg-neutral-900/50 dark:border-neutral-700">
           {(['general', 'dsa', 'qa'] as const).map((t) => (
             <button
               key={t}
@@ -258,10 +257,10 @@ return (
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Note title..."
-          className="h-12 w-full rounded-xl border px-4 text-base font-semibold outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+          className="h-12 w-full rounded-xl border px-4 text-base font-semibold outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:bg-neutral-900 dark:focus:ring-neutral-900/50"
         />
 
-        <div className="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
           <label className="mb-2 block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
             Topic
           </label>
@@ -269,7 +268,7 @@ return (
         </div>
 
         {/* Tags */}
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 dark:border-neutral-700 dark:bg-neutral-900">
           <Tag className="h-3.5 w-3.5 text-neutral-400 mr-2" />
           {tags.map((tag) => (
             <span
@@ -301,8 +300,8 @@ return (
       <div className="space-y-5">
         {/* General */}
         {type === 'general' && (
-          <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
-            <div className="flex items-center gap-2 border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
+          <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900/50">
+            <div className="flex items-center gap-2 border-b border-neutral-200 px-5 py-3 dark:border-neutral-700">
               <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
                 Content
               </span>
@@ -323,8 +322,8 @@ return (
         {type === 'dsa' && (
           <div className="space-y-5">
             {/* Meta row */}
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
-              <div className="border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
+            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900/50">
+              <div className="border-b border-neutral-200 px-5 py-3 dark:border-neutral-700">
                 <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
                   Problem Info
                 </span>
@@ -339,7 +338,7 @@ return (
                     value={dsa.platform}
                     onChange={(e) => setDsa({ ...dsa, platform: e.target.value })}
                     placeholder="LeetCode"
-                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:bg-neutral-900 dark:focus:ring-neutral-900/50"
                   />
                 </div>
                 <div>
@@ -349,7 +348,7 @@ return (
                   <select
                     value={dsa.difficulty}
                     onChange={(e) => setDsa({ ...dsa, difficulty: e.target.value as 'Easy' | 'Medium' | 'Hard' })}
-                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-600 dark:focus:bg-neutral-900 dark:focus:ring-neutral-900/50"
                   >
                     <option>Easy</option>
                     <option>Medium</option>
@@ -365,15 +364,15 @@ return (
                     value={dsa.pattern}
                     onChange={(e) => setDsa({ ...dsa, pattern: e.target.value })}
                     placeholder="Two Pointers, Sliding Window..."
-                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:bg-neutral-900 dark:focus:ring-neutral-900/50"
                   />
                 </div>
               </div>
             </div>
 
             {/* Problem Statement */}
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
-              <div className="flex items-center gap-2 border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
+            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900/50">
+              <div className="flex items-center gap-2 border-b border-neutral-200 px-5 py-3 dark:border-neutral-700">
                 <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
                   Problem Statement
                 </span>
@@ -398,7 +397,7 @@ return (
                 <button
                   type="button"
                   onClick={handleAddImplementation}
-                  className="flex items-center gap-2 h-9 px-4 rounded-xl border border-neutral-200 bg-white text-[12px] font-black uppercase tracking-wider text-neutral-600 hover:bg-neutral-50 transition-all dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                  className="flex items-center gap-2 h-9 px-4 rounded-xl border border-neutral-200 bg-white text-[12px] font-black uppercase tracking-wider text-neutral-600 hover:bg-neutral-50 transition-all dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
                 >
                   <Plus className="h-4 w-4" /> Add Language
                 </button>
@@ -407,9 +406,9 @@ return (
                 {dsa.implementations.map((impl, index) => (
                   <div
                     key={index}
-                    className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50"
+                    className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900/50"
                   >
-                    <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+                    <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 bg-white dark:border-neutral-700 dark:bg-neutral-900">
                       <select
                         value={impl.language}
                         onChange={(e) => {
@@ -443,7 +442,7 @@ return (
                         setDsa({ ...dsa, implementations: newImpls });
                       }}
                     />
-                    <div className="grid grid-cols-2 gap-4 p-5 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950">
+                    <div className="grid grid-cols-2 gap-4 p-5 border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
                       <div>
                         <label className="block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 mb-2 dark:text-neutral-400">
                           Time
@@ -457,7 +456,7 @@ return (
                             setDsa({ ...dsa, implementations: newImpls });
                           }}
                           placeholder="O(n)"
-                          className="h-10 w-full rounded-xl border px-4 text-[13px] font-mono outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                          className="h-10 w-full rounded-xl border px-4 text-[13px] font-mono outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:bg-neutral-900 dark:focus:ring-neutral-900/50"
                         />
                       </div>
                       <div>
@@ -473,7 +472,7 @@ return (
                             setDsa({ ...dsa, implementations: newImpls });
                           }}
                           placeholder="O(1)"
-                          className="h-10 w-full rounded-xl border px-4 text-[13px] font-mono outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                          className="h-10 w-full rounded-xl border px-4 text-[13px] font-mono outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:bg-neutral-900 dark:focus:ring-neutral-900/50"
                         />
                       </div>
                     </div>
@@ -483,8 +482,8 @@ return (
             </div>
 
             {/* Notes */}
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
-              <div className="border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
+            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900/50">
+              <div className="border-b border-neutral-200 px-5 py-3 dark:border-neutral-700">
                 <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
                   Notes
                 </span>
@@ -502,21 +501,8 @@ return (
         {/* Q&A */}
         {type === 'qa' && (
           <div className="space-y-5">
-            <div>
-              <label className="block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 mb-2 dark:text-neutral-400">
-                Topic
-              </label>
-              <input
-                type="text"
-                value={qa.topic}
-                onChange={(e) => setQa({ ...qa, topic: e.target.value })}
-                placeholder="System Design, React, Node.js..."
-                className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
-              />
-            </div>
-
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
-              <div className="flex items-center gap-2 border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
+            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900/50">
+              <div className="flex items-center gap-2 border-b border-neutral-200 px-5 py-3 dark:border-neutral-700">
                 <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
                   Content
                 </span>
@@ -533,15 +519,15 @@ return (
             </div>
 
             {/* Key Takeaways */}
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
-              <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
+            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-700 dark:bg-neutral-900/50">
+              <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-3 dark:border-neutral-700">
                 <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
                   Key Takeaways
                 </span>
                 <button
                   type="button"
                   onClick={handleAddPoint}
-                  className="flex items-center gap-2 h-9 px-4 rounded-xl border border-neutral-200 bg-white text-[12px] font-black uppercase tracking-wider text-neutral-600 hover:bg-neutral-50 transition-all dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                  className="flex items-center gap-2 h-9 px-4 rounded-xl border border-neutral-200 bg-white text-[12px] font-black uppercase tracking-wider text-neutral-600 hover:bg-neutral-50 transition-all dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
                 >
                   <Plus className="h-4 w-4" /> Add Point
                 </button>
@@ -559,7 +545,7 @@ return (
                         setQa({ ...qa, importantPoints: newPoints });
                       }}
                       placeholder="Important point..."
-                      className="flex-1 h-10 rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                      className="flex-1 h-10 rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:bg-neutral-900 dark:focus:ring-neutral-900/50"
                     />
                     {qa.importantPoints.length > 1 && (
                       <button

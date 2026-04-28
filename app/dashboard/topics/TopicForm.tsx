@@ -98,7 +98,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
         <div className="flex items-center gap-4">
           <Link
             href={mode === "create" ? "/dashboard/topics" : `/dashboard/topics/${topic?.id}`}
-            className="group flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-all hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+            className="group flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-all hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800"
           >
             <ChevronLeft className="h-4 w-4 text-neutral-500 group-hover:text-neutral-900 dark:text-neutral-400 dark:group-hover:text-neutral-100" />
           </Link>
@@ -116,7 +116,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
           type="button"
           onClick={handleSubmit}
           disabled={isSaving}
-          className="flex h-10 items-center gap-2 rounded-xl bg-neutral-950 px-5 text-[12px] font-black uppercase tracking-[0.18em] text-white transition-all hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
+          className="flex h-10 items-center gap-2 rounded-xl bg-neutral-900 px-5 text-[12px] font-black uppercase tracking-[0.18em] text-white transition-all hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
         >
           <Check className="h-4 w-4" />
           {isSaving ? "Saving..." : "Save"}
@@ -125,7 +125,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_0.9fr]">
         <div className="space-y-6">
-          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-900">
             <div className="space-y-5">
               <div>
                 <label className="mb-2 block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
@@ -135,7 +135,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
                   placeholder="System Design, Interview Prep, React Patterns..."
-                  className="h-12 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-[14px] font-medium text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                  className="h-12 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-[14px] font-medium text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:bg-neutral-900 dark:focus:ring-neutral-900/50"
                 />
               </div>
 
@@ -147,13 +147,13 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
                   placeholder="What belongs in this topic?"
-                  className="min-h-[160px] w-full rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4 text-[14px] text-neutral-700 outline-none transition-all placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                  className="min-h-[160px] w-full rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4 text-[14px] text-neutral-700 outline-none transition-all placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:bg-neutral-900 dark:focus:ring-neutral-900/50"
                 />
               </div>
             </div>
           </section>
 
-          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-900">
             <div className="mb-4 flex items-center gap-2">
               <ImageIcon className="h-4 w-4 text-neutral-400" />
               <h2 className="text-sm font-bold text-neutral-950 dark:text-neutral-100">Cover styling</h2>
@@ -168,7 +168,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
                   value={coverImage}
                   onChange={(event) => setCoverImage(event.target.value)}
                   placeholder="https://..."
-                  className="h-11 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-[13px] font-medium text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                  className="h-11 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-[13px] font-medium text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:bg-neutral-900 dark:focus:ring-neutral-900/50"
                 />
               </div>
 
@@ -196,7 +196,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
           </section>
 
           {mode === "edit" && topic && (
-            <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
+            <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-900">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h2 className="text-sm font-bold text-neutral-950 dark:text-neutral-100">Topic status</h2>
@@ -211,7 +211,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
                     "inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-[12px] font-black uppercase tracking-[0.14em] transition-all",
                     isArchived
                       ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300"
-                      : "border-neutral-200 bg-neutral-50 text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300",
+                      : "border-neutral-200 bg-neutral-50 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300",
                   )}
                 >
                   <Archive className="h-4 w-4" />
@@ -219,7 +219,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
                 </button>
               </div>
 
-              <div className="mt-6 border-t border-neutral-200 pt-6 dark:border-neutral-800">
+              <div className="mt-6 border-t border-neutral-200 pt-6 dark:border-neutral-700">
                 <button
                   type="button"
                   onClick={handleDelete}
@@ -235,11 +235,11 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
         </div>
 
         <aside className="space-y-6">
-          <section className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-900">
             <p className="mb-3 text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
               Preview
             </p>
-            <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800">
+            <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-700">
               <div className="h-40 w-full" style={previewStyle} />
               <div className="p-5">
                 <h3 className="text-lg font-bold tracking-tight text-neutral-950 dark:text-neutral-50">

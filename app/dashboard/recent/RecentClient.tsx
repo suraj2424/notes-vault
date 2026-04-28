@@ -49,7 +49,7 @@ export default function RecentClient({ userName, initialNotes }: RecentClientPro
   const getNoteTypeStyles = (type: Note['type']) => {
     switch (type) {
       case 'dsa':
-        return 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950';
+        return 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-950';
       case 'qa':
         return 'bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-white';
       default:
@@ -74,11 +74,11 @@ export default function RecentClient({ userName, initialNotes }: RecentClientPro
       </header>
 
       {notes.length > 0 ? (
-        <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-900 dark:bg-neutral-950">
+        <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
           {notes.map((note) => (
             <div
               key={note.id}
-              className="group flex items-center gap-4 border-b border-neutral-200 px-5 py-4 transition-colors last:border-b-0 hover:bg-neutral-50 dark:border-neutral-900 dark:hover:bg-neutral-900/60"
+              className="group flex items-center gap-4 border-b border-neutral-200 px-5 py-4 transition-colors last:border-b-0 hover:bg-neutral-100 dark:border-neutral-900 dark:hover:bg-neutral-800/60"
             >
               <Link href={`/dashboard/notes/${note.id}`} className="flex min-w-0 flex-1 items-center gap-3.5">
                 <div className={cn('flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl', getNoteTypeStyles(note.type))}>
@@ -104,7 +104,7 @@ export default function RecentClient({ userName, initialNotes }: RecentClientPro
                   className={cn(
                     'rounded-lg p-2 transition-colors',
                     note.isFavorite
-                      ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950'
+                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-950'
                       : 'text-neutral-400 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-white'
                   )}
                 >
@@ -121,7 +121,7 @@ export default function RecentClient({ userName, initialNotes }: RecentClientPro
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-200 bg-white py-24 text-center dark:border-neutral-900 dark:bg-neutral-950">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-200 bg-white py-24 text-center dark:border-neutral-700 dark:bg-neutral-900">
           <Clock className="mb-4 h-12 w-12 text-neutral-300 dark:text-neutral-700" />
           <h3 className="font-serif text-[17px] text-neutral-950 dark:text-white">No recent activity</h3>
           <p className="mt-2 max-w-[320px] text-[13px] text-neutral-500 dark:text-neutral-400">

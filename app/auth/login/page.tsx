@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 export default function LoginPage() {
   return (
-    <div className="flex h-screen bg-white dark:bg-neutral-950 font-sans">
+    <div className="flex h-screen bg-white dark:bg-neutral-900 font-sans">
 
       {/* Left — Branding */}
       <div className="hidden lg:flex lg:w-1/2 h-full flex-col justify-between px-16 py-12 bg-neutral-50 border-r border-neutral-200 dark:bg-neutral-900/30 dark:border-neutral-800">
@@ -58,7 +58,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right — Form */}
-      <div className="flex w-full lg:w-1/2 flex-col items-center justify-center bg-white dark:bg-neutral-950 px-8 relative">
+      <div className="flex w-full lg:w-1/2 flex-col items-center justify-center bg-white dark:bg-neutral-900 px-8 relative">
         
         {/* Back Link - Consistent with Signup */}
         <Link

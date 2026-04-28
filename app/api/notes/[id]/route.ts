@@ -27,7 +27,6 @@ const updateNoteSchema = z.object({
     notes: z.string().optional(),
   }).optional(),
    qa: z.object({
-     topic: z.string(),
      content: z.string(),
      importantPoints: z.array(z.string()).optional().default([]),
    }).optional(),

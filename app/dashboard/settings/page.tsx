@@ -38,9 +38,9 @@ export default function SettingsPage() {
       </header>
 
       <div className="space-y-4">
-        <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-900 dark:bg-neutral-950">
+        <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900">
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-950 text-white dark:bg-white dark:text-neutral-950">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-950">
               <Settings className="h-4 w-4" />
             </div>
             <div>
@@ -53,14 +53,14 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-900 dark:bg-neutral-900/60">
+          <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-700 dark:bg-neutral-900/60">
             <p className="text-[14px] font-semibold text-neutral-950 dark:text-white">{fullName}</p>
             <p className="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400">{email}</p>
           </div>
         </section>
 
         <section className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-900 dark:bg-neutral-950">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900">
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-white">
               <MoonStar className="h-4 w-4" />
             </div>
@@ -74,7 +74,7 @@ export default function SettingsPage() {
 
           <Link
             href="/user"
-            className="group rounded-2xl border border-neutral-200 bg-white p-5 transition-colors hover:bg-neutral-50 dark:border-neutral-900 dark:bg-neutral-950 dark:hover:bg-neutral-900/60"
+            className="group rounded-2xl border border-neutral-200 bg-white p-5 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800/60"
           >
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-white">
               <ShieldCheck className="h-4 w-4" />
