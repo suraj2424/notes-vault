@@ -2,6 +2,8 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import RecentClient from './RecentClient';
 import { redirect } from 'next/navigation';
 
+export const revalidate = 30;
+
 export default async function RecentPage() {
   const { userId } = await auth();
   if (!userId) {

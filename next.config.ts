@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
   },
   output: 'standalone',
   transpilePackages: ['motion'],
-  webpack: (config, {dev}) => {
+  webpack: (config, {dev, isServer}) => {
     // HMR is disabled in AI Studio via DISABLE_HMR env var.
     // Do not modify—file watching is disabled to prevent flickering during agent edits.
     if (dev && process.env.DISABLE_HMR === 'true') {
@@ -62,6 +62,18 @@ const nextConfig: NextConfig = {
       ...(config.infrastructureLogging ?? {}),
       level: 'error',
     };
+
+    // Bundle analyzer (only enabled when ANALYZE environment variable is set)
+    if (process.env.ANALYZE) {
+      const { BundleAnalyzerPlugin } = require('@next/bundle-analyzer');
+      config.plugins.push(
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'static',
+          openAnalyzer: false,
+          generateStatsFile: true,
+        })
+      );
+    }
 
     return config;
   },

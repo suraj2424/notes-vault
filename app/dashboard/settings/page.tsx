@@ -1,23 +1,15 @@
-'use client';
-
+import { currentUser } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
 import { Settings, MoonStar, ShieldCheck, ChevronRight } from 'lucide-react';
 
-export default function SettingsPage() {
-  const router = useRouter();
-  const { user, isLoaded, isSignedIn } = useUser();
+export const revalidate = 60;
 
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push('/auth/login');
-    }
-  }, [isLoaded, isSignedIn, router]);
+export default async function SettingsPage() {
+  const user = await currentUser();
 
-  if (!isLoaded || !isSignedIn) {
-    return null;
+  if (!user) {
+    redirect('/auth/login');
   }
 
   const fullName = user.fullName || user.firstName || 'User';

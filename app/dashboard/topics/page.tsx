@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { TopicsLibraryClient } from "./TopicsLibraryClient";
 import { escapeRegex, formatTopic } from "@/lib/topics";
 
+export const revalidate = 60;
+
 export default async function TopicsPage({
   searchParams,
 }: {

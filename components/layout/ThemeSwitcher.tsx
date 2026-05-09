@@ -41,7 +41,7 @@ export function ThemeSwitcher({ isCollapsed, TooltipWrapper }: { isCollapsed: bo
               : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-400 dark:hover:bg-neutral-800/80 dark:hover:text-neutral-50'
           )}
         >
-          <Icon className={cn("h-[18px] w-[18px] shrink-0 transition-opacity", isOpen ? "opacity-100" : "opacity-60 group-hover:opacity-100")} />
+          <Icon className={cn("h-[18px] w-[18px] shrink-0 transition-opacity", isOpen ? "" : "")} />
           {!isCollapsed && <span className="font-semibold tracking-tight flex-1 text-left">Theme</span>}
         </button>
       </TooltipWrapper>

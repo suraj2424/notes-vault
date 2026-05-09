@@ -1,19 +1,15 @@
-'use client';
-
-import { useAuth } from '@/hooks/use-auth';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { auth } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
 import { HelpCircle, Book, MessageCircle, ExternalLink, Code2, BookOpen, FileText } from 'lucide-react';
 
-export default function HelpPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+export const revalidate = 60;
 
-  useEffect(() => {
-    if (!loading && !user) router.push('/');
-  }, [user, loading, router]);
+export default async function HelpPage() {
+  const { userId } = await auth();
 
-  if (loading || !user) return null;
+  if (!userId) {
+    redirect('/auth/login');
+  }
 
   return (
     <div className="font-sans">

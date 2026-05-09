@@ -2,6 +2,8 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import { NotesLibraryClient } from './NotesLibraryClient';
 import { redirect } from 'next/navigation';
 
+export const revalidate = 30;
+
 export default async function NotesLibraryPage({
   searchParams,
 }: {

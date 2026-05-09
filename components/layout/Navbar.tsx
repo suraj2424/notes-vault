@@ -80,7 +80,7 @@ export function Navbar() {
 
   return (
     <nav className={cn(
-      'sticky top-0 z-50 border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 font-sans'
+      'sticky top-0 z-50 border-b border-neutral-300 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 font-sans'
     )}>
       <div className="flex items-center justify-between px-4 h-[56px]">
 
@@ -115,7 +115,7 @@ export function Navbar() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => searchQuery.length >= 2 && setShowResults(true)}
                 placeholder="Quick search..."
-                className="h-10 w-56 rounded-xl border border-neutral-200 bg-neutral-50 pl-9 pr-10 text-[13.5px] font-medium outline-none transition-all focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                className="h-10 w-56 rounded-xl border border-neutral-300 bg-neutral-100 pl-9 pr-10 text-[13.5px] font-medium outline-none transition-all focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
               />
               {searchQuery && (
                 <button

@@ -2,6 +2,8 @@ import { auth } from '@clerk/nextjs/server';
 import TagsClient from './TagsClient';
 import { redirect } from 'next/navigation';
 
+export const revalidate = 60;
+
 export default async function TagsPage() {
   const { userId } = await auth();
   if (!userId) {

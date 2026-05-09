@@ -72,7 +72,7 @@ const NavLink = ({ item, isActive, isCollapsed }: NavLinkProps) => {
             : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-400 dark:hover:bg-neutral-800/80 dark:hover:text-neutral-50'
         )}
       >
-        <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100")} />
+        <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "" : "")} />
         {!isCollapsed && (
           <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-semibold tracking-tight">
             {item.name}
@@ -95,7 +95,7 @@ export function Sidebar() {
   return (
     <motion.aside
       animate={{ width: isCollapsed ? 80 : 260 }}
-      className="sticky top-0 hidden h-screen flex-col lg:flex border-r border-neutral-200 bg-white dark:bg-neutral-950 dark:border-neutral-900 z-40 transition-colors"
+      className="sticky top-0 hidden h-screen flex-col lg:flex border-r border-neutral-300 bg-neutral-50 dark:bg-neutral-900 dark:border-neutral-700 z-40 transition-colors"
     >
       <div className={cn('relative flex flex-col h-full py-6 transition-all font-sans', isCollapsed ? 'px-0' : 'px-4')}>
         
@@ -109,7 +109,7 @@ export function Sidebar() {
               className={cn(
                 "relative w-[34px] h-[34px] rounded-[9px] flex items-center justify-center shrink-0 transition-all group",
                 isCollapsed 
-                  ? "bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-950 dark:hover:bg-white" 
+                  ? "bg-neutral-200/50 dark:bg-neutral-700/50 hover:bg-neutral-950 dark:hover:bg-white" 
                   : "bg-neutral-950 dark:bg-white cursor-default"
               )}
             >
@@ -139,7 +139,7 @@ export function Sidebar() {
           </div>
 
           {!isCollapsed && (
-             <button onClick={() => setIsCollapsed(true)} className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+             <button onClick={() => setIsCollapsed(true)} className="p-1.5 rounded-lg text-neutral-500 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
                 <PanelLeftClose className="h-4 w-4" />
              </button>
           )}
@@ -152,7 +152,7 @@ export function Sidebar() {
           <NavLink item={{ name: 'Topics', href: '/dashboard/topics', icon: FolderOpen }} isActive={pathname === '/dashboard/topics' || pathname.startsWith('/dashboard/topics/')} isCollapsed={isCollapsed} />
         </nav>
 
-        <div className="my-6 mx-4 border-t border-neutral-200 dark:border-neutral-800" />
+        <div className="my-6 mx-4 border-t border-neutral-300 dark:border-neutral-700" />
 
         <nav className="space-y-1">
           <p className={cn("px-4 mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400", isCollapsed && "text-center px-0")}>
