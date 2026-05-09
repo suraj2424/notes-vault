@@ -103,7 +103,7 @@ export default function NoteDisplayClient({
                 <label className="block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 mb-2 dark:text-neutral-400">
                   Difficulty
                 </label>
-                <div className="h-10 rounded-xl border border-neutral-200 bg-neutral-50 px-4 flex items-center">
+                <div className="h-10 rounded-xl border border-neutral-200 bg-neutral-50 dark:bg-neutral-900 dark:border-neutral-800 px-4 flex items-center">
                   <span
                     className={cn(
                       'rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider',
@@ -286,7 +286,7 @@ export default function NoteDisplayClient({
   const TypeIcon = note.type === 'dsa' ? Code2 : note.type === 'qa' ? BookOpen : FileText;
 
   return (
-    <div className="max-w-5xl mx-auto pb-20">
+    <div className="mx-auto pb-20">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Link

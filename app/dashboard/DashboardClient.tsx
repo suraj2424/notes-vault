@@ -66,7 +66,7 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
   return (
     <div className="min-h-screen font-sans">
       {/* Header */}
-      <header className="mb-10 flex items-end justify-between border-b border-neutral-200 pb-8 dark:border-neutral-800 transition-colors">
+      <header className="flex items-end justify-between pb-8 transition-colors">
         <div className="flex items-center gap-5">
           <div className="hidden sm:flex w-12 h-12 rounded-2xl bg-neutral-100 items-center justify-center text-[13px] font-bold text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
             {initials}
@@ -103,7 +103,7 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
         {/* Recent Activity */}
         <div className="lg:col-span-2">
-          <div className="rounded-2xl border border-neutral-200/60 bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] dark:border-neutral-800/60 dark:bg-neutral-950 dark:shadow-none overflow-hidden">
+          <div className="rounded-2xl border border-neutral-300 bg-neutral-50 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-none overflow-hidden">
              <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-5 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/30">
                <h2 className="text-[15px] font-bold text-neutral-950 dark:text-neutral-50">Recent Activity</h2>
                <Link href="/dashboard/notes" className="text-[12px] font-bold text-neutral-500 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-neutral-100">
@@ -112,15 +112,15 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
              </div>
 
             {recentNotesState.length > 0 ? (
-              <div className="divide-y divide-neutral-50 dark:divide-neutral-900">
+              <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
                 {recentNotesState.map((note) => (
-                  <div key={note.id} className="group flex items-center gap-4 px-6 py-4 hover:bg-neutral-50/50 dark:hover:bg-neutral-900/40 transition-colors">
+                  <div key={note.id} className="group flex items-center gap-4 px-6 py-4 bg-white dark:bg-neutral-950 hover:bg-neutral-50/50 dark:hover:bg-neutral-900/40 transition-colors">
                     <Link href={`/dashboard/notes/${note.id}`} className="flex flex-1 items-center gap-4 min-w-0">
                       <div className={cn(
-                        'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all',
-                        note.type === 'dsa' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' :
-                        note.type === 'qa'  ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' :
-                                              'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
+                        'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all border',
+                        note.type === 'dsa' ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-950' :
+                        note.type === 'qa'  ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border-amber-200 dark:border-amber-950' :
+                                              'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 border-neutral-300 dark:border-neutral-700'
                       )}>
                         {note.type === 'dsa' ? <Code2 className="h-5 w-5" /> :
                          note.type === 'qa'  ? <BookOpen className="h-5 w-5" /> :
@@ -173,7 +173,7 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
 
 function StatCard({ label, value, icon }: { label: string; value: number; icon: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-neutral-200 p-6 bg-white dark:border-neutral-800 dark:bg-neutral-950 transition-all hover:border-neutral-300 dark:hover:border-neutral-600 group shadow-sm">
+    <div className="rounded-2xl border border-neutral-300 p-6 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 transition-all hover:border-neutral-300 dark:hover:border-neutral-600 group shadow-sm">
       <div className="flex flex-col gap-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100 text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 group-hover:scale-110 transition-transform">
           {icon}

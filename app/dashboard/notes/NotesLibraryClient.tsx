@@ -89,7 +89,7 @@ function NoteCard({
     // Fixed: Standardized border-neutral-200 and dark:border-neutral-800
     <div
       className={cn(
-        "group relative flex h-full flex-col rounded-xl border border-neutral-200 bg-white transition-all dark:border-neutral-800 dark:bg-neutral-950 shadow-sm",
+        "group relative flex h-full flex-col rounded-xl border border-neutral-300 bg-linear-to-b from-neutral-50/50 to-neutral-100 transition-all dark:border-neutral-700 dark:from-neutral-900/50 dark:to-neutral-800 shadow-sm",
         NOTE_TYPE_STYLES[note.type].accentBorder,
       )}
     >
@@ -148,7 +148,7 @@ function NoteCard({
             {note.tags.slice(0, 4).map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-black tracking-wider text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300"
+                className="rounded-full bg-neutral-200/50 px-2 py-0.5 text-[10px] font-black tracking-wider text-neutral-600 dark:bg-neutral-700/50 dark:text-neutral-300"
               >
                 {tag}
               </span>
@@ -174,7 +174,7 @@ function NoteCard({
         )}
 
         <div className="flex-1 mt-4" />
-        <div className="border-t border-neutral-100 dark:border-neutral-900" />
+        <div className="border-t border-neutral-100 dark:border-neutral-800" />
         <div className="flex items-center justify-between pt-3 text-[10px] font-black uppercase tracking-[0.15em] text-neutral-400 dark:text-neutral-500">
           <div className="flex items-center gap-2">
             <span
@@ -456,7 +456,7 @@ export function NotesLibraryClient({
         </div>
         <div className="flex items-center gap-3">
           <div className="relative flex-1 sm:w-64 group">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 pointer-events-none transition-colors group-focus-within:text-neutral-900 dark:group-focus-within:text-neutral-100" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-400 pointer-events-none transition-colors group-focus-within:text-neutral-900 dark:group-focus-within:text-neutral-100" />
             <input
               type="text"
               placeholder="Search vault..."
@@ -465,11 +465,11 @@ export function NotesLibraryClient({
               className={cn(
                 "h-11 w-full rounded-xl border pl-10 pr-4 text-[13.5px] font-medium outline-none transition-all",
                 // Light Mode: Matches your verified "Quick search" logic
-                "bg-neutral-50 border-neutral-200 text-neutral-900 placeholder:text-neutral-400",
+                "bg-neutral-50 border-neutral-300 text-neutral-900 placeholder:text-neutral-500",
                 "focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100",
                 // Dark Mode: Matches your verified "Quick search" logic
-                "dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500",
-                "dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50",
+                "dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-400",
+                "dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50 font-medium",
               )}
             />
           </div>
@@ -477,7 +477,7 @@ export function NotesLibraryClient({
       </header>
 
       {/* Filters Bar - Fixed Border Contrast */}
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950 shadow-sm">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-neutral-300 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900 shadow-sm">
         <div className="flex flex-wrap items-center gap-2">
           <div className="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-50 text-neutral-400 dark:bg-neutral-900 dark:text-neutral-500">
             <Filter className="h-4 w-4" />
@@ -500,7 +500,7 @@ export function NotesLibraryClient({
                         NOTE_TYPE_STYLES[t].filterChipActive,
                         "border-transparent",
                       )
-                    : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:bg-neutral-200 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-800 dark:hover:bg-neutral-800",
+                    : "bg-neutral-50 text-neutral-600 border-neutral-300 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-800",
               )}
             >
               {t}
@@ -532,7 +532,7 @@ export function NotesLibraryClient({
         <div className="relative">
           <button
             onClick={() => setShowSortDropdown(!showSortDropdown)}
-            className="flex h-10 items-center gap-2 rounded-xl border border-neutral-200 px-4 text-[12.5px] font-bold text-neutral-800 transition-all hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-900"
+            className="flex h-10 items-center gap-2 rounded-xl border border-neutral-300 px-4 text-[12.5px] font-bold text-neutral-800 transition-all hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
           >
             <ArrowUpDown className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
             <span>{sortOptions.find((o) => o.value === sortBy)?.label}</span>
@@ -556,7 +556,7 @@ export function NotesLibraryClient({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full z-20 mt-2 w-44 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-950 dark:shadow-2xl"
+                  className="absolute right-0 top-full z-20 mt-2 w-44 overflow-hidden rounded-xl border border-neutral-300 bg-neutral-50 shadow-xl dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-2xl"
                 >
                   <div className="p-1.5">
                     {sortOptions.map((option) => (
@@ -569,8 +569,8 @@ export function NotesLibraryClient({
                         className={cn(
                           "w-full px-3 py-2.5 text-left text-[13px] rounded-lg transition-colors",
                           sortBy === option.value
-                            ? "bg-neutral-100 font-bold text-neutral-950 dark:bg-neutral-900 dark:text-neutral-50"
-                            : "text-neutral-500 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-900/50 hover:text-neutral-950 dark:hover:text-neutral-50",
+                            ? "bg-neutral-200 font-bold text-neutral-950 dark:bg-neutral-800 dark:text-neutral-50"
+                            : "text-neutral-500 hover:bg-neutral-200/50 dark:text-neutral-400 dark:hover:bg-neutral-800/50 hover:text-neutral-950 dark:hover:text-neutral-50",
                         )}
                       >
                         {option.label}
