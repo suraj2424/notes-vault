@@ -62,13 +62,13 @@ export function CodeBlock({ language = 'text', children, theme = 'dark', minimal
 
   if (minimal) {
     return (
-      <div className="relative group bg-white dark:bg-neutral-900 ">
+      <div className="relative group bg-white dark:bg-neutral-900">
         <button
           onClick={copyToClipboard}
           className={cn(
             'absolute right-4 top-4 z-10 rounded-md border p-2 opacity-0 transition-opacity group-hover:opacity-100',
             theme === 'light'
-              ? 'border-neutral-200 bg-white/80 text-neutral-600 shadow-sm hover:text-neutral-900'
+              ? 'border-neutral-300 bg-white/80 text-neutral-600 shadow-sm hover:text-neutral-900'
               : 'border-neutral-700 bg-neutral-900/50 text-neutral-400 hover:text-white',
           )}
         >
@@ -97,9 +97,9 @@ export function CodeBlock({ language = 'text', children, theme = 'dark', minimal
   }
 
   return (
-    <div className="group relative overflow-hidden bg-white dark:bg-neutral-900">
+    <div className="group relative overflow-hidden bg-white dark:bg-neutral-900 rounded-md">
       {/* Header bar: Consistent Neutral Scale */}
-      <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-50 px-4 py-2 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="flex items-center justify-between border-b border-neutral-300 bg-neutral-50 px-4 py-2 dark:border-neutral-700 dark:bg-neutral-800/50">
         <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
           {lang || 'Code'}
         </span>
@@ -146,7 +146,7 @@ export function CodeBlock({ language = 'text', children, theme = 'dark', minimal
 // Inline code component for markdown
 export function InlineCode({ children }: { children: React.ReactNode }) {
   return (
-    <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[13px] font-semibold text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">
+    <code className="rounded-md bg-neutral-100 px-1.5 py-0.5 font-mono text-[13px] font-semibold text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">
       {children}
     </code>
   );

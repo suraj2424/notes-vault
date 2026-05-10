@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const favorite = searchParams.get('favorite');
     const topicId = searchParams.get('topicId');
+    const sort = searchParams.get('sort') || 'recent';
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('pageSize') || '20');
     const fields = searchParams.get('fields'); // comma-separated list of fields to include
@@ -83,9 +84,25 @@ export async function GET(request: NextRequest) {
       fieldList.forEach(f => projection[f] = 1);
     }
 
+    // Build sort object
+    let sortOptions: any = {};
+    switch (sort) {
+      case 'recent':
+        sortOptions = { updatedAt: -1 };
+        break;
+      case 'oldest':
+        sortOptions = { updatedAt: 1 };
+        break;
+      case 'title':
+        sortOptions = { title: 1 };
+        break;
+      default:
+        sortOptions = { updatedAt: -1 };
+    }
+
     const [notes, total] = await Promise.all([
       Note.find(query, projection)
-        .sort({ updatedAt: -1 })
+        .sort(sortOptions)
         .skip(skip)
         .limit(pageSize)
         .lean(),

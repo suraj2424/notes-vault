@@ -103,8 +103,8 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
         {/* Recent Activity */}
         <div className="lg:col-span-2">
-          <div className="rounded-2xl border border-neutral-300 bg-neutral-50 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-none overflow-hidden">
-             <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-5 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/30">
+          <div className="rounded-2xl border border-neutral-300 bg-neutral-50 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] dark:border-neutral-700 dark:bg-neutral-800/50 dark:shadow-none overflow-hidden">
+             <div className="flex items-center justify-between border-b border-neutral-300 px-6 py-5 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/30">
                <h2 className="text-[15px] font-bold text-neutral-950 dark:text-neutral-50">Recent Activity</h2>
                <Link href="/dashboard/notes" className="text-[12px] font-bold text-neutral-500 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-neutral-100">
                  View all →
@@ -112,9 +112,9 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
              </div>
 
             {recentNotesState.length > 0 ? (
-              <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
+              <div className="divide-y divide-neutral-300 dark:divide-neutral-700">
                 {recentNotesState.map((note) => (
-                  <div key={note.id} className="group flex items-center gap-4 px-6 py-4 bg-white dark:bg-neutral-950 hover:bg-neutral-50/50 dark:hover:bg-neutral-900/40 transition-colors">
+                  <div key={note.id} className="group flex items-center gap-4 px-6 py-4 bg-white dark:bg-neutral-900 hover:bg-neutral-50/50 dark:hover:bg-neutral-900/40 transition-colors">
                     <Link href={`/dashboard/notes/${note.id}`} className="flex flex-1 items-center gap-4 min-w-0">
                       <div className={cn(
                         'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all border',
@@ -156,7 +156,7 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
 
         {/* Quick Actions */}
         <div className="space-y-6">
-           <div className="rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 p-6 shadow-sm">
+           <div className="rounded-2xl border border-neutral-300 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800/50 p-6 shadow-sm">
              <h3 className="mb-4 text-[14px] font-bold text-neutral-950 dark:text-neutral-50 tracking-tight">Quick Actions</h3>
              <div className="grid grid-cols-2 gap-3">
                <QuickActionBtn icon={<Code2 className="h-5 w-5" />}    label="DSA"  href="/dashboard/notes/new?type=dsa" />
@@ -189,7 +189,7 @@ function StatCard({ label, value, icon }: { label: string; value: number; icon: 
 
 function QuickActionBtn({ icon, label, href }: { icon: ReactNode; label: string; href: string }) {
   return (
-    <Link href={href} className="flex flex-col items-center justify-center gap-3 rounded-xl border border-neutral-200 py-5 hover:border-neutral-400 hover:bg-neutral-50 transition-all dark:border-neutral-800 dark:hover:border-neutral-600 dark:hover:bg-neutral-900 group shadow-sm">
+    <Link href={href} className="flex flex-col items-center justify-center gap-3 rounded-xl border border-neutral-300 py-5 hover:border-neutral-400 hover:bg-neutral-50 transition-all dark:border-neutral-700 dark:hover:border-neutral-600 dark:hover:bg-neutral-800 group shadow-sm bg-white dark:bg-neutral-900">
       <div className="text-neutral-500 group-hover:text-neutral-950 dark:text-neutral-400 dark:group-hover:text-neutral-100 transition-colors">{icon}</div>
       <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-950 dark:group-hover:text-neutral-100">{label}</span>
     </Link>

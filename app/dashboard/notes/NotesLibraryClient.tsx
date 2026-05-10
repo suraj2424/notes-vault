@@ -51,7 +51,7 @@ const NOTE_TYPE_STYLES: Record<
     filterChip:
       "bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/15",
     filterChipActive:
-      "bg-blue-600 text-white dark:bg-blue-500/25 dark:text-blue-100",
+      "bg-linear-to-b from-blue-400 to-blue-600 text-white dark:bg-blue-500/25 dark:text-blue-100",
   },
   qa: {
     iconWrap: "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400",
@@ -62,7 +62,7 @@ const NOTE_TYPE_STYLES: Record<
     filterChip:
       "bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/15",
     filterChipActive:
-      "bg-amber-600 text-white dark:bg-amber-500/25 dark:text-amber-100",
+      "bg-linear-to-b from-amber-400 to-amber-600 text-white dark:bg-amber-500/25 dark:text-amber-100",
   },
   general: {
     iconWrap:
@@ -74,7 +74,7 @@ const NOTE_TYPE_STYLES: Record<
     filterChip:
       "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:bg-emerald-500/15",
     filterChipActive:
-      "bg-emerald-600 text-white dark:bg-emerald-500/25 dark:text-emerald-100",
+      "bg-linear-to-b from-emerald-400 to-emerald-600 text-white dark:bg-emerald-500/25 dark:text-emerald-100",
   },
 };
 
@@ -89,7 +89,7 @@ function NoteCard({
     // Fixed: Standardized border-neutral-200 and dark:border-neutral-800
     <div
       className={cn(
-        "group relative flex h-full flex-col rounded-xl border border-neutral-300 bg-linear-to-b from-neutral-50/50 to-neutral-100 transition-all dark:border-neutral-700 dark:from-neutral-900/50 dark:to-neutral-800 shadow-sm",
+        "group relative flex h-full flex-col rounded-xl border border-neutral-300 bg-white dark:bg-neutral-900 transition-all dark:border-neutral-700 dark:from-neutral-900/50 dark:to-neutral-800 shadow-sm",
         NOTE_TYPE_STYLES[note.type].accentBorder,
       )}
     >
@@ -174,7 +174,7 @@ function NoteCard({
         )}
 
         <div className="flex-1 mt-4" />
-        <div className="border-t border-neutral-100 dark:border-neutral-800" />
+        <div className="border-t border-neutral-100 dark:border-neutral-700" />
         <div className="flex items-center justify-between pt-3 text-[10px] font-black uppercase tracking-[0.15em] text-neutral-400 dark:text-neutral-500">
           <div className="flex items-center gap-2">
             <span
@@ -229,6 +229,9 @@ export function NotesLibraryClient({
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get("search") || "",
   );
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(
+    searchParams.get("search") || "",
+  );
   const [typeFilter, setTypeFilter] = useState<NoteType | "all">(
     (searchParams.get("type") as any) || "all",
   );
@@ -243,11 +246,12 @@ export function NotesLibraryClient({
   // Sync URL params to local state on mount and URL changes
   useEffect(() => {
     const params = searchParams;
-    const search = params.get("search");
+    const search = params.get("search") || "";
     const type = params.get("type") as NoteType | null;
     const filter = params.get("filter");
 
-    if (search) setSearchQuery(search);
+    setSearchQuery(search);
+    setDebouncedSearchQuery(search);
     if (type && ["dsa", "qa", "general"].includes(type)) setTypeFilter(type);
     if (filter) setShowFavoritesOnly(filter === "favorites");
   }, [searchParams]);
@@ -273,7 +277,7 @@ export function NotesLibraryClient({
       const query = params.toString();
       router.push(`/dashboard/notes?${query}`);
     },
-    [page, searchQuery, typeFilter, showFavoritesOnly, router],
+    [page, debouncedSearchQuery, typeFilter, showFavoritesOnly, router],
   );
 
   const fetchNotes = useCallback(
@@ -282,6 +286,7 @@ export function NotesLibraryClient({
       search: string,
       type: NoteType | "all",
       favOnly: boolean,
+      sort: "recent" | "oldest" | "title" = "recent",
     ) => {
       let url = "/api/notes?";
       const params = new URLSearchParams();
@@ -291,6 +296,7 @@ export function NotesLibraryClient({
         "fields",
         "id,userId,type,title,isFavorite,tags,createdAt,updatedAt",
       );
+      params.append("sort", sort);
 
       if (type !== "all") params.append("type", type);
       if (favOnly) params.append("favorite", "true");
@@ -302,31 +308,14 @@ export function NotesLibraryClient({
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
-          let fetchedNotes = data.notes as Note[];
-
-          fetchedNotes.sort((a, b) => {
-            if (sortBy === "recent")
-              return (
-                new Date(b.updatedAt).getTime() -
-                new Date(a.updatedAt).getTime()
-              );
-            if (sortBy === "oldest")
-              return (
-                new Date(a.updatedAt).getTime() -
-                new Date(b.updatedAt).getTime()
-              );
-            if (sortBy === "title") return a.title.localeCompare(b.title);
-            return 0;
-          });
-
-          setNotes(fetchedNotes);
+          setNotes(data.notes as Note[]);
           setTotalPages(data.pagination.totalPages);
         }
       } catch (error) {
         console.error("Error fetching notes:", error);
       }
     },
-    [sortBy],
+    [],
   );
 
   const handleToggleFavorite = useCallback(
@@ -357,10 +346,10 @@ export function NotesLibraryClient({
       } catch (error) {
         console.error("Error toggling favorite:", error);
         // Rollback: refetch current page
-        fetchNotes(page, searchQuery, typeFilter, showFavoritesOnly);
+        fetchNotes(page, debouncedSearchQuery, typeFilter, showFavoritesOnly, sortBy);
       }
     },
-    [showFavoritesOnly, page, searchQuery, typeFilter, fetchNotes],
+    [showFavoritesOnly, page, debouncedSearchQuery, typeFilter, sortBy, fetchNotes],
   );
 
   const handleTypeFilterChange = (newType: NoteType | "all") => {
@@ -369,7 +358,7 @@ export function NotesLibraryClient({
       setPage(1);
       updateURL(
         1,
-        searchQuery,
+        debouncedSearchQuery,
         newType,
         showFavoritesOnly ? "favorites" : undefined,
       );
@@ -385,7 +374,7 @@ export function NotesLibraryClient({
     setShowFavoritesOnly(newState);
     startTransition(() => {
       setPage(1);
-      updateURL(1, searchQuery, typeFilter, newState ? "favorites" : undefined);
+      updateURL(1, debouncedSearchQuery, typeFilter, newState ? "favorites" : undefined);
     });
   };
 
@@ -394,7 +383,7 @@ export function NotesLibraryClient({
     startTransition(() => {
       updateURL(
         newPage,
-        searchQuery,
+        debouncedSearchQuery,
         typeFilter,
         showFavoritesOnly ? "favorites" : undefined,
       );
@@ -403,34 +392,32 @@ export function NotesLibraryClient({
 
   // Fetch notes when page/sort/filters change
   useEffect(() => {
-    fetchNotes(page, searchQuery, typeFilter, showFavoritesOnly);
-  }, [page, typeFilter, showFavoritesOnly, sortBy, fetchNotes, searchQuery]);
+    fetchNotes(page, debouncedSearchQuery, typeFilter, showFavoritesOnly, sortBy);
+  }, [page, typeFilter, showFavoritesOnly, sortBy, debouncedSearchQuery, fetchNotes]);
 
+  // Debounce search query
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (searchQuery !== (searchParams.get("search") || "")) {
-        startTransition(() => {
-          setPage(1);
-          updateURL(
-            1,
-            searchQuery,
-            typeFilter,
-            showFavoritesOnly ? "favorites" : undefined,
-          );
-          fetchNotes(1, searchQuery, typeFilter, showFavoritesOnly);
-        });
-      }
+      setDebouncedSearchQuery(searchQuery);
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [
-    searchQuery,
-    fetchNotes,
-    typeFilter,
-    showFavoritesOnly,
-    searchParams,
-    updateURL,
-  ]);
+  }, [searchQuery]);
+
+  // Update URL when debounced search changes
+  useEffect(() => {
+    if (debouncedSearchQuery !== (searchParams.get("search") || "")) {
+      startTransition(() => {
+        setPage(1);
+        updateURL(
+          1,
+          debouncedSearchQuery,
+          typeFilter,
+          showFavoritesOnly ? "favorites" : undefined,
+        );
+      });
+    }
+  }, [debouncedSearchQuery, searchParams, typeFilter, showFavoritesOnly, updateURL]);
 
   if (!user) {
     return null;
@@ -439,8 +426,8 @@ export function NotesLibraryClient({
   if (!user) return null;
 
   return (
-    <div className="max-w-7xl mx-auto font-sans">
-      <header className="mb-8 flex flex-col justify-between gap-6 sm:flex-row sm:items-end border-b border-neutral-200 pb-8 dark:border-neutral-800">
+    <div className="mx-auto">
+      <header className="mb-8 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
         <div>
           <h1
             className={cn(
@@ -490,7 +477,7 @@ export function NotesLibraryClient({
                 setPage(1);
               }}
               className={cn(
-                "rounded-xl px-5 py-2 text-[11px] font-black uppercase tracking-[0.1em] transition-all border",
+                "rounded-4xl px-5 py-2 text-[11px] font-black uppercase tracking-[0.1em] transition-all border",
                 t === "all"
                   ? typeFilter === "all"
                     ? "bg-neutral-950 text-white border-neutral-950 dark:bg-neutral-50 dark:text-neutral-950 dark:border-neutral-50"
@@ -498,7 +485,7 @@ export function NotesLibraryClient({
                   : typeFilter === t
                     ? cn(
                         NOTE_TYPE_STYLES[t].filterChipActive,
-                        "border-transparent",
+                        NOTE_TYPE_STYLES[t].accentBorder,
                       )
                     : "bg-neutral-50 text-neutral-600 border-neutral-300 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-800",
               )}
@@ -587,7 +574,7 @@ export function NotesLibraryClient({
       {/* Notes Grid */}
       {isPending || (notes.length === 0 && totalPagesState > 0) ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+          {[1, 2, 3].map((i) => (
             <div
               key={i}
               className="h-48 animate-pulse rounded-2xl bg-neutral-100 border border-neutral-200 dark:bg-neutral-900 dark:border-neutral-800"
@@ -627,14 +614,15 @@ export function NotesLibraryClient({
           <p className="mt-2 max-w-[320px] text-[14px] font-medium text-neutral-500 dark:text-neutral-400">
             Try adjusting your search terms or clearing your filters.
           </p>
-          <button
-            onClick={() => {
-              setSearchQuery("");
-              setTypeFilter("all");
-              setShowFavoritesOnly(false);
-              setPage(1);
-              router.push("/dashboard/notes");
-            }}
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setDebouncedSearchQuery("");
+                setTypeFilter("all");
+                setShowFavoritesOnly(false);
+                setPage(1);
+                router.push("/dashboard/notes");
+              }}
             className="mt-8 rounded-xl bg-neutral-950 px-6 py-2 text-[13px] font-bold text-white transition-all hover:bg-neutral-800 dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-white"
           >
             Clear all filters
