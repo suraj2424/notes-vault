@@ -82,10 +82,10 @@ export default function SignupPage() {
                 card: "shadow-none border-none bg-transparent p-0",
                 headerTitle: "font-serif text-2xl text-neutral-900 dark:text-neutral-50",
                 headerSubtitle: "text-neutral-500 dark:text-neutral-400",
-                socialButtonsBlockButton: "border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all",
+                socialButtonsBlockButton: "border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors",
                 formButtonPrimary: "bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200 shadow-none normal-case text-sm",
                 formFieldLabel: "text-neutral-700 dark:text-neutral-300 font-semibold",
-                formFieldInput: "border-neutral-200 dark:border-neutral-800 focus:ring-1 focus:ring-neutral-400 transition-all",
+                formFieldInput: "border-neutral-200 dark:border-neutral-800 focus:ring-1 focus:ring-neutral-400 transition-colors",
                 footer: "hidden", // We hide Clerk's footer to use your custom one below
               }
             }}

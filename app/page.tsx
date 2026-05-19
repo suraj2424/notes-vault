@@ -72,7 +72,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-4 mb-12">
             <Link
               href="/auth/login"
-              className="group flex items-center gap-2 h-11 px-6 rounded-[8px] bg-neutral-900 text-sm font-medium text-white transition-all hover:bg-neutral-800 active:scale-95"
+              className="group flex items-center gap-2 h-11 px-6 rounded-[8px] bg-neutral-900 text-sm font-medium text-white transition-colors transition-transform hover:bg-neutral-800 active:scale-95"
             >
               Start Your Vault
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -130,7 +130,7 @@ export default function LandingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
+                  transition
                 >
                   {activeTab === 'dsa' && <DSAMockup />}
                   {activeTab === 'general' && <GeneralMockup />}
@@ -169,7 +169,7 @@ function TaskButton({
     <button
       onClick={onClick}
       className={cn(
-        'flex flex-col items-center justify-center gap-2 py-3 rounded-lg border transition-all duration-200',
+        'flex flex-col items-center justify-center gap-2 py-3 rounded-lg border transition-colors duration-200',
         active
           ? 'border-neutral-900 bg-neutral-900 text-white shadow-lg'
           : 'border-neutral-200 hover:border-neutral-400 bg-transparent text-neutral-700'

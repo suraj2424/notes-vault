@@ -185,7 +185,7 @@ return (
           <div className="flex items-center gap-4">
             <Link
               href={`/dashboard/notes/${id}`}
-              className="group flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-all hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+              className="group flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800"
             >
               <ChevronLeft className="h-4 w-4 text-neutral-500 group-hover:text-neutral-900 dark:text-neutral-400 dark:group-hover:text-neutral-100" />
             </Link>
@@ -198,7 +198,7 @@ return (
               type="button"
               onClick={() => setIsFavorite(!isFavorite)}
               className={cn(
-                "h-9 w-9 flex items-center justify-center rounded-xl border transition-all",
+                "h-9 w-9 flex items-center justify-center rounded-xl border transition-colors",
                 isFavorite
                   ? "bg-amber-50 border-amber-200 text-amber-500 dark:bg-amber-500/10 dark:border-amber-500/20"
                   : "bg-white border-neutral-200 text-neutral-400 hover:text-neutral-600 dark:bg-neutral-900 dark:border-neutral-800",
@@ -210,7 +210,7 @@ return (
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center gap-2 h-9 px-5 rounded-xl bg-neutral-900 text-white text-[12px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-all disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
+              className="flex items-center gap-2 h-9 px-5 rounded-xl bg-neutral-900 text-white text-[12px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-colors disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
             >
               {isSaving ? (
                 <span className="flex items-center gap-2">
@@ -234,7 +234,7 @@ return (
               type="button"
               onClick={() => setType(t)}
               className={cn(
-                "flex items-center gap-2 px-6 h-9 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all",
+                "flex items-center gap-2 px-6 h-9 rounded-xl text-[11px] font-black uppercase tracking-wider transition-colors",
                 "border border-transparent",
                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                 "dark:focus-visible:ring-neutral-700 dark:focus-visible:ring-offset-neutral-900",
@@ -258,7 +258,7 @@ return (
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Note title..."
-          className="h-12 w-full rounded-xl border px-4 text-base font-semibold outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+          className="h-12 w-full rounded-xl border px-4 text-base font-semibold outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
         />
 
         <div className="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
@@ -339,7 +339,7 @@ return (
                     value={dsa.platform}
                     onChange={(e) => setDsa({ ...dsa, platform: e.target.value })}
                     placeholder="LeetCode"
-                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
                   />
                 </div>
                 <div>
@@ -349,7 +349,7 @@ return (
                   <select
                     value={dsa.difficulty}
                     onChange={(e) => setDsa({ ...dsa, difficulty: e.target.value as 'Easy' | 'Medium' | 'Hard' })}
-                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
                   >
                     <option>Easy</option>
                     <option>Medium</option>
@@ -365,7 +365,7 @@ return (
                     value={dsa.pattern}
                     onChange={(e) => setDsa({ ...dsa, pattern: e.target.value })}
                     placeholder="Two Pointers, Sliding Window..."
-                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
                   />
                 </div>
               </div>
@@ -398,7 +398,7 @@ return (
                 <button
                   type="button"
                   onClick={handleAddImplementation}
-                  className="flex items-center gap-2 h-9 px-4 rounded-xl border border-neutral-200 bg-white text-[12px] font-black uppercase tracking-wider text-neutral-600 hover:bg-neutral-50 transition-all dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                  className="flex items-center gap-2 h-9 px-4 rounded-xl border border-neutral-200 bg-white text-[12px] font-black uppercase tracking-wider text-neutral-600 hover:bg-neutral-50 transition-colors dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
                 >
                   <Plus className="h-4 w-4" /> Add Language
                 </button>
@@ -457,7 +457,7 @@ return (
                             setDsa({ ...dsa, implementations: newImpls });
                           }}
                           placeholder="O(n)"
-                          className="h-10 w-full rounded-xl border px-4 text-[13px] font-mono outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                          className="h-10 w-full rounded-xl border px-4 text-[13px] font-mono outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
                         />
                       </div>
                       <div>
@@ -473,7 +473,7 @@ return (
                             setDsa({ ...dsa, implementations: newImpls });
                           }}
                           placeholder="O(1)"
-                          className="h-10 w-full rounded-xl border px-4 text-[13px] font-mono outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                          className="h-10 w-full rounded-xl border px-4 text-[13px] font-mono outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
                         />
                       </div>
                     </div>
@@ -511,7 +511,7 @@ return (
                 value={qa.topic}
                 onChange={(e) => setQa({ ...qa, topic: e.target.value })}
                 placeholder="System Design, React, Node.js..."
-                className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
               />
             </div>
 
@@ -541,7 +541,7 @@ return (
                 <button
                   type="button"
                   onClick={handleAddPoint}
-                  className="flex items-center gap-2 h-9 px-4 rounded-xl border border-neutral-200 bg-white text-[12px] font-black uppercase tracking-wider text-neutral-600 hover:bg-neutral-50 transition-all dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                  className="flex items-center gap-2 h-9 px-4 rounded-xl border border-neutral-200 bg-white text-[12px] font-black uppercase tracking-wider text-neutral-600 hover:bg-neutral-50 transition-colors dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
                 >
                   <Plus className="h-4 w-4" /> Add Point
                 </button>
@@ -559,7 +559,7 @@ return (
                         setQa({ ...qa, importantPoints: newPoints });
                       }}
                       placeholder="Important point..."
-                      className="flex-1 h-10 rounded-xl border px-4 text-[13px] font-medium outline-none transition-all border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                      className="flex-1 h-10 rounded-xl border px-4 text-[13px] font-medium outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
                     />
                     {qa.importantPoints.length > 1 && (
                       <button

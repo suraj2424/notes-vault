@@ -38,9 +38,7 @@ export function TopicSelector({ value, onChange, disabled = false }: TopicSelect
   }, []);
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    if (!open) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -82,37 +80,35 @@ export function TopicSelector({ value, onChange, disabled = false }: TopicSelect
         disabled={disabled}
         onClick={() =>
           setOpen((current) => {
-            if (current) {
-              setSearch("");
-            }
+            if (current) setSearch("");
             return !current;
           })
         }
-        className="flex h-11 w-full items-center justify-between rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-left text-[13px] font-medium text-neutral-900 outline-none transition-all hover:bg-white focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-950 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+        className="flex h-9 w-full items-center justify-between rounded border border-[#E6E8EB] bg-[#F4F7F6] px-3 text-left text-xs font-medium text-[#1A1D1E] outline-none transition-colors duration-100 hover:bg-[#E6E8EB]/50 focus:border-[#00A3A3] focus:bg-[#FFFFFF] disabled:opacity-50 dark:border-[#2D2D2D] dark:bg-[#111111] dark:text-[#E4E6EB] dark:hover:bg-[#2D2D2D]/50 dark:focus:border-[#00E0E0] dark:focus:bg-[#1A1A1A]"
       >
-        <span className="flex min-w-0 items-center gap-3">
-          <FolderOpen className="h-4 w-4 shrink-0 text-neutral-400" />
+        <span className="flex min-w-0 items-center gap-2.5">
+          <FolderOpen className="h-3.5 w-3.5 shrink-0 text-[#687076]/60 dark:text-[#A0A0A0]/60" />
           <span className="truncate">{selectedTopic?.title || "No Topic"}</span>
         </span>
-        <ChevronDown className={cn("h-4 w-4 shrink-0 text-neutral-400 transition-transform", open && "rotate-180")} />
+        <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 text-[#687076]/60 transition-transform duration-100 dark:text-[#A0A0A0]/60", open && "rotate-180")} />
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-950">
-          <div className="border-b border-neutral-200 p-3 dark:border-neutral-800">
+        <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded border border-[#E6E8EB] bg-[#FFFFFF] shadow-md dark:border-[#2D2D2D] dark:bg-[#1A1A1A]">
+          <div className="border-b border-[#E6E8EB] p-2 dark:border-[#2D2D2D]">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#687076]/50 dark:text-[#A0A0A0]/40" />
               <input
                 autoFocus
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search topics..."
-                className="h-10 w-full rounded-xl border border-neutral-200 bg-neutral-50 pl-9 pr-3 text-[13px] text-neutral-900 outline-none transition-all focus:border-neutral-400 focus:bg-white dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-700 dark:focus:bg-neutral-950"
+                className="h-8 w-full rounded border border-[#E6E8EB] bg-[#F4F7F6] pl-8 pr-2.5 text-xs text-[#1A1D1E] outline-none transition-colors duration-100 focus:border-[#00A3A3] focus:bg-[#FFFFFF] dark:border-[#2D2D2D] dark:bg-[#111111] dark:text-[#E4E6EB] dark:focus:border-[#00E0E0] dark:focus:bg-[#1A1A1A]"
               />
             </div>
           </div>
 
-          <div className="max-h-72 overflow-y-auto p-2">
+          <div className="max-h-60 overflow-y-auto p-1.5 space-y-0.5">
             <button
               type="button"
               onClick={() => {
@@ -121,17 +117,17 @@ export function TopicSelector({ value, onChange, disabled = false }: TopicSelect
                 setOpen(false);
               }}
               className={cn(
-                "flex w-full items-center justify-between rounded-xl px-3 py-3 text-left transition-all",
+                "flex w-full items-center justify-between rounded px-2.5 py-2 text-left transition-colors duration-100 text-xs",
                 value === null
-                  ? "bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-neutral-50"
-                  : "text-neutral-600 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-900/70",
+                  ? "bg-[#F4F7F6] font-bold text-[#00A3A3] dark:bg-[#111111] dark:text-[#00E0E0]"
+                  : "text-[#687076] hover:bg-[#F4F7F6]/60 dark:text-[#A0A0A0] dark:hover:bg-[#111111]/50",
               )}
             >
-              <span className="flex items-center gap-3">
-                <FolderOpen className="h-4 w-4 text-neutral-400" />
-                <span className="font-medium">No Topic</span>
+              <span className="flex items-center gap-2.5">
+                <FolderOpen className="h-3.5 w-3.5 text-[#687076]/60 dark:text-[#A0A0A0]/60" />
+                <span>No Topic</span>
               </span>
-              {value === null && <Check className="h-4 w-4" />}
+              {value === null && <Check className="h-3.5 w-3.5 text-[#00A3A3] dark:text-[#00E0E0]" />}
             </button>
 
             {filteredTopics.map((topic) => (
@@ -144,29 +140,29 @@ export function TopicSelector({ value, onChange, disabled = false }: TopicSelect
                   setOpen(false);
                 }}
                 className={cn(
-                  "mt-1 flex w-full items-center justify-between rounded-xl px-3 py-3 text-left transition-all",
+                  "flex w-full items-center justify-between rounded px-2.5 py-2 text-left transition-colors duration-100 text-xs",
                   value === topic.id
-                    ? "bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-neutral-50"
-                    : "text-neutral-600 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-900/70",
+                    ? "bg-[#F4F7F6] font-bold text-[#00A3A3] dark:bg-[#111111] dark:text-[#00E0E0]"
+                    : "text-[#687076] hover:bg-[#F4F7F6]/60 dark:text-[#A0A0A0] dark:hover:bg-[#111111]/50",
                 )}
               >
-                <span className="flex min-w-0 items-center gap-3">
-                  <span className="h-3.5 w-3.5 shrink-0 rounded-full" style={{ backgroundColor: topic.color || "#64748b" }} />
+                <span className="flex min-w-0 items-center gap-2.5">
+                  <span className="h-2 w-2 shrink-0 rounded-full border border-black/5 dark:border-white/5" style={{ backgroundColor: topic.color || "#687076" }} />
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{topic.title}</span>
                     {topic.description && (
-                      <span className="block truncate text-xs text-neutral-400 dark:text-neutral-500">
+                      <span className="block truncate text-[10px] text-[#687076]/70 dark:text-[#A0A0A0]/60 mt-0.5">
                         {topic.isArchived ? `${topic.description} • archived` : topic.description}
                       </span>
                     )}
                   </span>
                 </span>
-                {value === topic.id && <Check className="h-4 w-4 shrink-0" />}
+                {value === topic.id && <Check className="h-3.5 w-3.5 text-[#00A3A3] dark:text-[#00E0E0] shrink-0" />}
               </button>
             ))}
 
             {filteredTopics.length === 0 && (
-              <div className="px-3 py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
+              <div className="px-3 py-4 text-center text-xs text-[#687076]/70 dark:text-[#A0A0A0]/60">
                 No topics match that search.
               </div>
             )}

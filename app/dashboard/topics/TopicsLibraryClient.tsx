@@ -22,7 +22,7 @@ function TopicCard({
   onToggleArchive: (topic: Topic) => Promise<void>;
 }) {
   return (
-    <div className="group overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition-all hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:border-neutral-700">
+    <div className="group overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition-colors hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:border-neutral-700">
       <Link href={`/dashboard/topics/${topic.id}`} className="block">
         <div
           className="h-32 w-full"
@@ -56,7 +56,7 @@ function TopicCard({
             type="button"
             onClick={() => onToggleArchive(topic)}
             className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all",
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors",
               topic.isArchived
                 ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
                 : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800",
@@ -190,7 +190,7 @@ export function TopicsLibraryClient({
 
         <Link
           href="/dashboard/topics/new"
-          className="inline-flex h-11 items-center gap-2 rounded-xl bg-neutral-950 px-5 text-[13px] font-black uppercase tracking-[0.14em] text-white transition-all hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
+          className="inline-flex h-11 items-center gap-2 rounded-xl bg-neutral-950 px-5 text-[13px] font-black uppercase tracking-[0.14em] text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
         >
           <Plus className="h-4 w-4" />
           New Topic
@@ -204,7 +204,7 @@ export function TopicsLibraryClient({
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search topics..."
-            className="h-11 w-full rounded-xl border border-neutral-200 bg-neutral-50 pl-10 pr-4 text-[13px] font-medium text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+            className="h-11 w-full rounded-xl border border-neutral-200 bg-neutral-50 pl-10 pr-4 text-[13px] font-medium text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
           />
         </div>
 
@@ -216,7 +216,7 @@ export function TopicsLibraryClient({
             setPage(1);
           }}
           className={cn(
-            "inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-4 text-[12px] font-black uppercase tracking-[0.14em] transition-all",
+            "inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-4 text-[12px] font-black uppercase tracking-[0.14em] transition-colors",
             showArchived
               ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300"
               : "border-neutral-200 bg-neutral-50 text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300",
@@ -244,7 +244,7 @@ export function TopicsLibraryClient({
           </p>
           <Link
             href="/dashboard/topics/new"
-            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-neutral-950 px-6 py-2.5 text-[13px] font-bold text-white transition-all hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
+            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-neutral-950 px-6 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
           >
             <Plus className="h-4 w-4" />
             Create Topic
@@ -264,7 +264,7 @@ export function TopicsLibraryClient({
                 startTransition(() => updateUrl(pageNumber, search, showArchived));
               }}
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-bold transition-all",
+                "flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-bold transition-colors",
                 page === pageNumber
                   ? "border-neutral-950 bg-neutral-950 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-950"
                   : "border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900",

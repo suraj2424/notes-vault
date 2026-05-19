@@ -289,7 +289,7 @@ export function CodeEditor({ language, value, onChange, placeholder = '// Your c
     }
 
   return (
-    <div className="relative h-[300px] w-full transition-all duration-300 bg-white dark:bg-neutral-900 overflow-hidden">
+    <div className="relative h-[300px] w-full transition-colors bg-white dark:bg-neutral-900 overflow-hidden">
       {/* Line Numbers Column */}
       <div
         className="absolute left-0 top-0 bottom-0 w-12 overflow-hidden bg-white dark:bg-neutral-900 select-none pointer-events-none z-0"
@@ -314,7 +314,7 @@ export function CodeEditor({ language, value, onChange, placeholder = '// Your c
               <div
                 key={lineNum}
                 className={cn(
-                  "transition-colors duration-75",
+                  "transition-colors",
                   isCurrentLine
                     ? isDark
                       ? 'text-neutral-100'

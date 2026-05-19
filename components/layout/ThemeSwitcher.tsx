@@ -12,14 +12,22 @@ const themeOptions = [
   { value: 'system', label: 'System', icon: Monitor },
 ] as const;
 
-export function ThemeSwitcher({ isCollapsed, TooltipWrapper }: { isCollapsed: boolean; TooltipWrapper: any }) {
+export function ThemeSwitcher({ 
+  isCollapsed, 
+  TooltipWrapper 
+}: { 
+  isCollapsed: boolean; 
+  TooltipWrapper: any; 
+}) {
   const { theme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -34,37 +42,63 @@ export function ThemeSwitcher({ isCollapsed, TooltipWrapper }: { isCollapsed: bo
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            'flex items-center transition-all duration-200 group',
-            isCollapsed ? 'justify-center w-10 h-10 mx-auto rounded-xl' : 'gap-3 px-3 py-2 w-full rounded-lg text-[14px]',
+            'flex items-center group transition-colors duration-100 outline-none',
+            isCollapsed 
+              ? 'justify-center w-9 h-9 mx-auto rounded-md' 
+              : 'gap-2.5 px-2.5 py-1.5 w-full rounded-md text-xs',
             isOpen
-              ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950'
-              : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-400 dark:hover:bg-neutral-800/80 dark:hover:text-neutral-50'
+              ? 'bg-[#F4F7F6] text-[#1A1D1E] dark:bg-[#2D2D2D] dark:text-[#E4E6EB]'
+              : 'text-[#687076] hover:bg-[#F4F7F6] hover:text-[#1A1D1E] dark:text-[#A0A0A0] dark:hover:bg-[#2D2D2D] dark:hover:text-[#E4E6EB]'
           )}
         >
-          <Icon className={cn("h-[18px] w-[18px] shrink-0 transition-opacity", isOpen ? "" : "")} />
-          {!isCollapsed && <span className="font-semibold tracking-tight flex-1 text-left">Theme</span>}
+          <Icon className="h-4 w-4 shrink-0" suppressHydrationWarning />
+          {!isCollapsed && (
+            <span className="font-medium tracking-tight flex-1 text-left truncate">
+              Theme
+            </span>
+          )}
         </button>
       </TooltipWrapper>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div 
-            initial={{ opacity: 0, y: 8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.96 }}
-            className="absolute bottom-full left-0 right-0 mb-3 min-w-[140px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-1.5 z-50"
+            initial={isCollapsed ? { opacity: 0, x: 3 } : { opacity: 0, y: 4 }} 
+            animate={isCollapsed ? { opacity: 1, x: 8 } : { opacity: 1, y: 0 }} 
+            exit={isCollapsed ? { opacity: 0, x: 3 } : { opacity: 0, y: 4 }}
+            transition={{ duration: 0.1, ease: 'easeOut' }}
+            className={cn(
+              "absolute z-[100] p-1 bg-[#FFFFFF] dark:bg-[#1A1A1A] border border-[#E6E8EB] dark:border-[#2D2D2D] rounded-md shadow-md",
+              isCollapsed 
+                ? "left-full bottom-0 w-32" 
+                : "bottom-full left-0 right-0 mb-1.5 w-full"
+            )}
           >
-            {themeOptions.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => { setTheme(option.value); setIsOpen(false); }}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-2 w-full text-[13px] rounded-xl transition-all font-bold group',
-                  theme === option.value ? 'bg-neutral-100 text-neutral-950 dark:bg-neutral-800 dark:text-white' : 'text-neutral-500 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800/50'
-                )}
-              >
-                <option.icon className="h-4 w-4 opacity-70 group-hover:opacity-100" />
-                <span>{option.label}</span>
-              </button>
-            ))}
+            <div className="flex flex-col gap-0.5">
+              {themeOptions.map((option) => {
+                const OptionIcon = option.icon;
+                const isSelected = theme === option.value;
+                
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => { 
+                      setTheme(option.value); 
+                      setIsOpen(false); 
+                    }}
+                    className={cn(
+                      'flex items-center gap-2.5 px-2 py-1.5 w-full text-xs rounded-md transition-colors duration-100 font-medium outline-none text-left',
+                      isSelected 
+                        ? 'bg-[#00A3A3]/10 text-[#00A3A3] dark:bg-[#00E0E0]/10 dark:text-[#00E0E0]' 
+                        : 'text-[#687076] hover:bg-[#F4F7F6] hover:text-[#1A1D1E] dark:text-[#A0A0A0] dark:hover:bg-[#2D2D2D] dark:hover:text-[#E4E6EB]'
+                    )}
+                  >
+                    <OptionIcon className="h-4 w-4 shrink-0" />
+                    <span className="tracking-tight truncate">{option.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

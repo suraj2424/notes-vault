@@ -98,7 +98,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
         <div className="flex items-center gap-4">
           <Link
             href={mode === "create" ? "/dashboard/topics" : `/dashboard/topics/${topic?.id}`}
-            className="group flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-all hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+            className="group flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800"
           >
             <ChevronLeft className="h-4 w-4 text-neutral-500 group-hover:text-neutral-900 dark:text-neutral-400 dark:group-hover:text-neutral-100" />
           </Link>
@@ -116,7 +116,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
           type="button"
           onClick={handleSubmit}
           disabled={isSaving}
-          className="flex h-10 items-center gap-2 rounded-xl bg-neutral-950 px-5 text-[12px] font-black uppercase tracking-[0.18em] text-white transition-all hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
+          className="flex h-10 items-center gap-2 rounded-xl bg-neutral-950 px-5 text-[12px] font-black uppercase tracking-[0.18em] text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
         >
           <Check className="h-4 w-4" />
           {isSaving ? "Saving..." : "Save"}
@@ -135,7 +135,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
                   placeholder="System Design, Interview Prep, React Patterns..."
-                  className="h-12 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-[14px] font-medium text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                  className="h-12 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-[14px] font-medium text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
                 />
               </div>
 
@@ -147,7 +147,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
                   placeholder="What belongs in this topic?"
-                  className="min-h-[160px] w-full rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4 text-[14px] text-neutral-700 outline-none transition-all placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                  className="min-h-[160px] w-full rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4 text-[14px] text-neutral-700 outline-none transition-colors placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
                 />
               </div>
             </div>
@@ -168,7 +168,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
                   value={coverImage}
                   onChange={(event) => setCoverImage(event.target.value)}
                   placeholder="https://..."
-                  className="h-11 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-[13px] font-medium text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                  className="h-11 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-[13px] font-medium text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
                 />
               </div>
 
@@ -184,7 +184,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
                       aria-label={`Choose ${swatch}`}
                       onClick={() => setColor(swatch)}
                       className={cn(
-                        "h-10 w-10 rounded-xl border-2 transition-all",
+                        "h-10 w-10 rounded-xl border-2 transition-colors transition-transform",
                         color === swatch ? "scale-105 border-neutral-950 dark:border-white" : "border-transparent",
                       )}
                       style={{ backgroundColor: swatch }}
@@ -208,7 +208,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
                   type="button"
                   onClick={() => setIsArchived((current) => !current)}
                   className={cn(
-                    "inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-[12px] font-black uppercase tracking-[0.14em] transition-all",
+                    "inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-[12px] font-black uppercase tracking-[0.14em] transition-colors",
                     isArchived
                       ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300"
                       : "border-neutral-200 bg-neutral-50 text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300",
@@ -224,7 +224,7 @@ export function TopicForm({ mode, topic }: TopicFormProps) {
                   type="button"
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-[12px] font-black uppercase tracking-[0.14em] text-red-700 transition-all hover:bg-red-100 disabled:opacity-50 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/15"
+                  className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-[12px] font-black uppercase tracking-[0.14em] text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/15"
                 >
                   <Trash2 className="h-4 w-4" />
                   {isDeleting ? "Deleting..." : "Delete topic"}

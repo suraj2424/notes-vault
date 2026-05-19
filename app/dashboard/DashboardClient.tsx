@@ -60,111 +60,110 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
     }
   };
 
-  const firstName = userName.split(' ')[0];
   const initials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <div className="min-h-screen font-sans">
+    <div className="w-full bg-[#F4F7F6] text-[#1A1D1E] antialiased transition-colors duration-100 dark:bg-[#111111] dark:text-[#E4E6EB]">
       {/* Header */}
-      <header className="flex items-end justify-between pb-8 transition-colors">
-        <div className="flex items-center gap-5">
-          <div className="hidden sm:flex w-12 h-12 rounded-2xl bg-neutral-100 items-center justify-center text-[13px] font-bold text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
+      <header className="flex items-end justify-between pb-6">
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex h-11 w-11 rounded-lg bg-[#FFFFFF] items-center justify-center text-xs font-bold text-[#1A1D1E] border border-[#E6E8EB] dark:bg-[#1A1A1A] dark:text-[#E4E6EB] dark:border-[#2D2D2D]">
             {initials}
           </div>
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-neutral-500 dark:text-neutral-400 mb-2">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#687076] dark:text-[#A0A0A0] mb-1">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
-            <h1 className="text-[34px] tracking-tight text-neutral-950 dark:text-neutral-50 leading-none font-serif">
+            <h1 className="text-2xl font-bold tracking-tight text-[#1A1D1E] dark:text-[#E4E6EB] leading-tight">
               Welcome back, {userName.split(' ')[0]}
             </h1>
-            <p className="mt-2 text-[14px] font-medium text-neutral-500 dark:text-neutral-400">
+            <p className="text-xs text-[#687076] dark:text-[#A0A0A0]">
               Your vault is synced and up to date.
             </p>
           </div>
         </div>
         <Link
           href="/dashboard/notes/new"
-          className="hidden sm:flex items-center gap-2 h-11 px-5 rounded-xl bg-neutral-950 text-white text-[14px] font-bold hover:bg-neutral-800 transition-all dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-white shadow-sm"
+          className="hidden sm:flex items-center gap-2 h-9 px-4 rounded-md bg-[#00A3A3] text-white text-xs font-medium hover:bg-[#008B8B] transition-colors duration-100 dark:bg-[#00E0E0] dark:text-[#111111] dark:hover:bg-[#00C2C2]"
         >
-          <Plus className="h-4 w-4 stroke-[3]" />
+          <Plus className="h-4 w-4" />
           New Note
         </Link>
       </header>
 
       {/* Stats Grid */}
-      <div className="mb-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Total Notes" value={stats.total} icon={<TrendingUp className="h-5 w-5" />} />
-        <StatCard label="DSA Solved"  value={stats.dsa}   icon={<Code2 className="h-5 w-5" />} />
-        <StatCard label="Topic Q&A"   value={stats.qa}    icon={<BookOpen className="h-5 w-5" />} />
-        <StatCard label="Favorites"   value={stats.favorites} icon={<Star className="h-5 w-5" />} />
+      <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard label="Total Notes" value={stats.total} icon={<TrendingUp className="h-4 w-4" />} />
+        <StatCard label="DSA Solved"  value={stats.dsa}   icon={<Code2 className="h-4 w-4" />} />
+        <StatCard label="Topic Q&A"   value={stats.qa}    icon={<BookOpen className="h-4 w-4" />} />
+        <StatCard label="Favorites"   value={stats.favorites} icon={<Star className="h-4 w-4" />} />
       </div>
 
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Recent Activity */}
         <div className="lg:col-span-2">
-          <div className="rounded-2xl border border-neutral-300 bg-neutral-50 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] dark:border-neutral-700 dark:bg-neutral-800/50 dark:shadow-none overflow-hidden">
-             <div className="flex items-center justify-between border-b border-neutral-300 px-6 py-5 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/30">
-               <h2 className="text-[15px] font-bold text-neutral-950 dark:text-neutral-50">Recent Activity</h2>
-               <Link href="/dashboard/notes" className="text-[12px] font-bold text-neutral-500 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-neutral-100">
-                 View all →
-               </Link>
-             </div>
+          <div className="rounded-lg border border-[#E6E8EB] bg-[#FFFFFF] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] overflow-hidden">
+            <div className="flex items-center justify-between border-b border-[#E6E8EB] px-4 py-3.5 dark:border-[#2D2D2D]">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[#687076] dark:text-[#A0A0A0]">Recent Activity</h2>
+              <Link href="/dashboard/notes" className="text-xs text-[#00A3A3] hover:underline dark:text-[#00E0E0]">
+                View all
+              </Link>
+            </div>
 
             {recentNotesState.length > 0 ? (
-              <div className="divide-y divide-neutral-300 dark:divide-neutral-700">
+              <div className="divide-y divide-[#E6E8EB] dark:divide-[#2D2D2D]">
                 {recentNotesState.map((note) => (
-                  <div key={note.id} className="group flex items-center gap-4 px-6 py-4 bg-white dark:bg-neutral-900 hover:bg-neutral-50/50 dark:hover:bg-neutral-900/40 transition-colors">
-                    <Link href={`/dashboard/notes/${note.id}`} className="flex flex-1 items-center gap-4 min-w-0">
+                  <div key={note.id} className="group flex items-center gap-3 px-4 py-3 hover:bg-[#F4F7F6]/50 dark:hover:bg-[#111111]/30 transition-colors duration-100">
+                    <Link href={`/dashboard/notes/${note.id}`} className="flex flex-1 items-center gap-3 min-w-0">
                       <div className={cn(
-                        'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all border',
-                        note.type === 'dsa' ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-950' :
-                        note.type === 'qa'  ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border-amber-200 dark:border-amber-950' :
-                                              'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 border-neutral-300 dark:border-neutral-700'
+                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-colors duration-100',
+                        note.type === 'dsa' ? 'bg-blue-500/5 text-blue-500 border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20' :
+                        note.type === 'qa'  ? 'bg-amber-500/5 text-amber-500 border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20' :
+                                              'bg-[#F4F7F6] text-[#687076] border-[#E6E8EB] dark:bg-[#111111] dark:text-[#A0A0A0] dark:border-[#2D2D2D]'
                       )}>
-                        {note.type === 'dsa' ? <Code2 className="h-5 w-5" /> :
-                         note.type === 'qa'  ? <BookOpen className="h-5 w-5" /> :
-                                               <FileText className="h-5 w-5" />}
+                        {note.type === 'dsa' ? <Code2 className="h-4 w-4" /> :
+                         note.type === 'qa'  ? <BookOpen className="h-4 w-4" /> :
+                                               <FileText className="h-4 w-4" />}
                       </div>
-                       <div className="min-w-0 flex-1">
-                         <p className="truncate text-[14px] font-bold text-neutral-950 group-hover:text-neutral-700 dark:text-neutral-100 dark:group-hover:text-white transition-colors">
-                           {note.title}
-                         </p>
-                         <p className="mt-1 text-[11px] font-bold text-neutral-400 uppercase tracking-tight dark:text-neutral-500">
-                           {note.type} • {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}
-                         </p>
-                       </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-semibold text-[#1A1D1E] dark:text-[#E4E6EB]">
+                          {note.title}
+                        </p>
+                        <p className="mt-0.5 text-[10px] text-[#687076] uppercase tracking-wide dark:text-[#A0A0A0]">
+                          {note.type} • {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}
+                        </p>
+                      </div>
                     </Link>
-                    <div className="flex items-center gap-1">
-                       <button onClick={() => toggleFavorite(note.id, note.isFavorite)} className={cn('p-2 rounded-lg transition-all', note.isFavorite ? 'text-amber-500' : 'text-neutral-300 hover:text-neutral-500 dark:text-neutral-700 dark:hover:text-neutral-400')}>
-                         <Star className={cn('h-4 w-4 transition-all', note.isFavorite && 'fill-amber-500')} />
-                       </button>
-                       <Link href={`/dashboard/notes/${note.id}`} className="p-2 rounded-lg text-neutral-300 hover:text-neutral-950 dark:text-neutral-700 dark:hover:text-neutral-200">
-                         <ArrowRight className="h-4 w-4" />
-                       </Link>
+                    <div className="flex items-center gap-0.5">
+                      <button onClick={() => toggleFavorite(note.id, note.isFavorite)} className={cn('p-1.5 rounded transition-colors duration-100', note.isFavorite ? 'text-amber-500' : 'text-[#687076] hover:text-[#1A1D1E] dark:text-[#A0A0A0] dark:hover:text-[#E4E6EB]')}>
+                        <Star className={cn('h-3.5 w-3.5 transition-colors duration-100', note.isFavorite && 'fill-amber-500')} />
+                      </button>
+                      <Link href={`/dashboard/notes/${note.id}`} className="p-1.5 rounded text-[#687076] hover:text-[#1A1D1E] dark:text-[#A0A0A0] dark:hover:text-[#E4E6EB] transition-colors duration-100">
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
                     </div>
                   </div>
                 ))}
               </div>
-             ) : (
-               <div className="py-24 text-center">
-                 <p className="text-sm text-neutral-400 dark:text-neutral-500">No recent notes found.</p>
-               </div>
-             )}
+            ) : (
+              <div className="py-12 text-center">
+                <p className="text-xs text-[#687076] dark:text-[#A0A0A0]">No recent notes found.</p>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="space-y-6">
-           <div className="rounded-2xl border border-neutral-300 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800/50 p-6 shadow-sm">
-             <h3 className="mb-4 text-[14px] font-bold text-neutral-950 dark:text-neutral-50 tracking-tight">Quick Actions</h3>
-             <div className="grid grid-cols-2 gap-3">
-               <QuickActionBtn icon={<Code2 className="h-5 w-5" />}    label="DSA"  href="/dashboard/notes/new?type=dsa" />
-               <QuickActionBtn icon={<BookOpen className="h-5 w-5" />} label="Q&A"  href="/dashboard/notes/new?type=qa" />
-               <QuickActionBtn icon={<Star className="h-5 w-5" />}     label="Favs" href="/dashboard/notes?filter=favorites" />
-               <QuickActionBtn icon={<Tags className="h-5 w-5" />}     label="Tags" href="/dashboard/tags" />
-             </div>
-           </div>
+        <div className="space-y-4">
+          <div className="rounded-lg border border-[#E6E8EB] bg-[#FFFFFF] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] p-4">
+            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-[#687076] dark:text-[#A0A0A0]">Quick Actions</h3>
+            <div className="grid grid-cols-2 gap-2">
+              <QuickActionBtn icon={<Code2 className="h-4 w-4" />}    label="DSA"  href="/dashboard/notes/new?type=dsa" />
+              <QuickActionBtn icon={<BookOpen className="h-4 w-4" />} label="Q&A"  href="/dashboard/notes/new?type=qa" />
+              <QuickActionBtn icon={<Star className="h-4 w-4" />}     label="Favs" href="/dashboard/notes?filter=favorites" />
+              <QuickActionBtn icon={<Tags className="h-4 w-4" />}     label="Tags" href="/dashboard/tags" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -173,14 +172,14 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
 
 function StatCard({ label, value, icon }: { label: string; value: number; icon: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-neutral-300 p-6 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 transition-all hover:border-neutral-300 dark:hover:border-neutral-600 group shadow-sm">
-      <div className="flex flex-col gap-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100 text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 group-hover:scale-110 transition-transform">
+    <div className="rounded-lg border border-[#E6E8EB] p-4 bg-[#FFFFFF] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] transition-colors duration-100 hover:border-[#00A3A3] dark:hover:border-[#00E0E0] group">
+      <div className="flex flex-col gap-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#F4F7F6] text-[#687076] dark:bg-[#111111] dark:text-[#A0A0A0] border border-[#E6E8EB] dark:border-[#2D2D2D] group-hover:scale-105 transition-transform duration-100">
           {icon}
         </div>
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">{label}</p>
-          <p className="mt-1 text-3xl font-bold text-neutral-950 dark:text-neutral-100 tracking-tighter">{value}</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-[#687076] dark:text-[#A0A0A0]">{label}</p>
+          <p className="mt-0.5 text-2xl font-bold tracking-tight text-[#1A1D1E] dark:text-[#E4E6EB]">{value}</p>
         </div>
       </div>
     </div>
@@ -189,9 +188,9 @@ function StatCard({ label, value, icon }: { label: string; value: number; icon: 
 
 function QuickActionBtn({ icon, label, href }: { icon: ReactNode; label: string; href: string }) {
   return (
-    <Link href={href} className="flex flex-col items-center justify-center gap-3 rounded-xl border border-neutral-300 py-5 hover:border-neutral-400 hover:bg-neutral-50 transition-all dark:border-neutral-700 dark:hover:border-neutral-600 dark:hover:bg-neutral-800 group shadow-sm bg-white dark:bg-neutral-900">
-      <div className="text-neutral-500 group-hover:text-neutral-950 dark:text-neutral-400 dark:group-hover:text-neutral-100 transition-colors">{icon}</div>
-      <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-950 dark:group-hover:text-neutral-100">{label}</span>
+    <Link href={href} className="flex flex-col items-center justify-center gap-2 rounded-md border border-[#E6E8EB] py-3.5 bg-[#FFFFFF] hover:border-[#00A3A3] hover:bg-[#F4F7F6]/30 transition-colors duration-100 dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:hover:border-[#00E0E0] dark:hover:bg-[#111111]/30 group">
+      <div className="text-[#687076] group-hover:text-[#00A3A3] dark:text-[#A0A0A0] dark:group-hover:text-[#00E0E0] transition-colors duration-100">{icon}</div>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-[#687076] dark:text-[#A0A0A0] group-hover:text-[#1A1D1E] dark:group-hover:text-[#E4E6EB] transition-colors duration-100">{label}</span>
     </Link>
   );
 }

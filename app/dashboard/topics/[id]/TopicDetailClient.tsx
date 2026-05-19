@@ -37,7 +37,7 @@ export default function TopicDetailClient({
             <div className="flex items-start gap-4">
               <Link
                 href="/dashboard/topics"
-                className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-500 transition-all hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-500 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Link>
@@ -68,14 +68,14 @@ export default function TopicDetailClient({
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href={`/dashboard/notes/new?topicId=${topic.id}`}
-                className="inline-flex h-11 items-center gap-2 rounded-xl bg-neutral-950 px-5 text-[12px] font-black uppercase tracking-[0.14em] text-white transition-all hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
+                className="inline-flex h-11 items-center gap-2 rounded-xl bg-neutral-950 px-5 text-[12px] font-black uppercase tracking-[0.14em] text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
               >
                 <Plus className="h-4 w-4" />
                 New Note
               </Link>
               <Link
                 href={`/dashboard/topics/${topic.id}/edit`}
-                className="inline-flex h-11 items-center rounded-xl border border-neutral-200 px-5 text-[12px] font-black uppercase tracking-[0.14em] text-neutral-700 transition-all hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
+                className="inline-flex h-11 items-center rounded-xl border border-neutral-200 px-5 text-[12px] font-black uppercase tracking-[0.14em] text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
               >
                 Edit Topic
               </Link>
@@ -110,7 +110,7 @@ export default function TopicDetailClient({
                 <button
                   type="button"
                   onClick={() => onRemoveNote(note.id)}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-500 transition-all hover:bg-neutral-200 hover:text-neutral-900 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-neutral-900 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
                 >
                   <Unlink className="h-4 w-4" />
                 </button>
@@ -150,7 +150,7 @@ export default function TopicDetailClient({
           </p>
           <Link
             href={`/dashboard/notes/new?topicId=${topic.id}`}
-            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-neutral-950 px-6 py-2.5 text-[13px] font-bold text-white transition-all hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
+            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-neutral-950 px-6 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
           >
             <Plus className="h-4 w-4" />
             Create First Note
