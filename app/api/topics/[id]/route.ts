@@ -9,8 +9,6 @@ import { formatTopic } from "@/lib/topics";
 const updateTopicSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(120, "Title is too long").optional(),
   description: z.string().trim().max(500, "Description is too long").optional().or(z.literal("")),
-  coverImage: z.string().trim().url("Cover image must be a valid URL").optional().or(z.literal("")),
-  color: z.string().trim().optional().or(z.literal("")),
   isArchived: z.boolean().optional(),
 });
 
@@ -61,8 +59,6 @@ export async function PUT(
       {
         ...parsed,
         ...(parsed.description === "" ? { description: undefined } : {}),
-        ...(parsed.coverImage === "" ? { coverImage: undefined } : {}),
-        ...(parsed.color === "" ? { color: undefined } : {}),
         updatedAt: new Date(),
       },
       { returnDocument: "after", runValidators: true },

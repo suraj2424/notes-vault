@@ -41,6 +41,7 @@ interface NotesLibraryClientProps {
   initialNotes: Note[];
   totalPages: number;
   currentPage: number;
+  initialTag?: string;
 }
 
 const NOTE_TYPE_STYLES: Record<
@@ -351,6 +352,7 @@ export function NotesLibraryClient({
   initialNotes,
   totalPages,
   currentPage,
+  initialTag,
 }: NotesLibraryClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -366,6 +368,7 @@ export function NotesLibraryClient({
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(
     searchParams.get("filter") === "favorites"
   );
+  const [tagFilter, setTagFilter] = useState(searchParams.get("tag") || initialTag || "");
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [page, setPage] = useState(currentPage);
   const [totalPagesState, setTotalPages] = useState(totalPages);
@@ -374,30 +377,34 @@ export function NotesLibraryClient({
     const search = searchParams.get("search") || "";
     const type = searchParams.get("type") as NoteType | null;
     const filter = searchParams.get("filter");
+    const tag = searchParams.get("tag") || "";
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchQuery(search);
     setDebouncedSearchQuery(search);
     setTypeFilter(type && ["dsa", "qa", "general"].includes(type) ? type : "all");
     setShowFavoritesOnly(filter === "favorites");
+    setTagFilter(tag);
   }, [searchParams]);
 
   const updateURL = useCallback(
-    (newPage?: number, newSearch?: string, newType?: TypeFilter, newFilter?: string) => {
+    (newPage?: number, newSearch?: string, newType?: TypeFilter, newFilter?: string, newTag?: string) => {
       const params = new URLSearchParams();
       params.set("page", (newPage ?? page).toString());
 
       const search = newSearch ?? searchQuery;
       const type = newType ?? typeFilter;
+      const tag = newTag ?? tagFilter;
 
       if (search) params.set("search", search);
       if (type !== "all") params.set("type", type);
       if (newFilter !== undefined || showFavoritesOnly) params.set("filter", "favorites");
+      if (tag) params.set("tag", tag);
 
       const query = params.toString();
       router.push(query ? `/dashboard/notes?${query}` : "/dashboard/notes");
     },
-    [page, router, searchQuery, showFavoritesOnly, typeFilter]
+    [page, router, searchQuery, showFavoritesOnly, typeFilter, tagFilter]
   );
 
   const fetchNotes = useCallback(
@@ -406,7 +413,8 @@ export function NotesLibraryClient({
       search: string,
       type: TypeFilter,
       favOnly: boolean,
-      sort: SortValue = "recent"
+      sort: SortValue = "recent",
+      tag?: string
     ) => {
       const params = new URLSearchParams();
       params.append("page", pageNum.toString());
@@ -417,6 +425,7 @@ export function NotesLibraryClient({
       if (type !== "all") params.append("type", type);
       if (favOnly) params.append("favorite", "true");
       if (search) params.append("search", search);
+      if (tag) params.append("tag", tag);
 
       try {
         const response = await fetch(`/api/notes?${params.toString()}`);
@@ -456,7 +465,7 @@ export function NotesLibraryClient({
         if (!response.ok) throw new Error("Failed to update");
       } catch (error) {
         console.error("Error toggling favorite:", error);
-        fetchNotes(page, debouncedSearchQuery, typeFilter, showFavoritesOnly, sortBy);
+fetchNotes(page, debouncedSearchQuery, typeFilter, showFavoritesOnly, sortBy, tagFilter);
       }
     },
     [debouncedSearchQuery, fetchNotes, page, showFavoritesOnly, sortBy, typeFilter]
@@ -466,7 +475,7 @@ export function NotesLibraryClient({
     startTransition(() => {
       setTypeFilter(newType);
       setPage(1);
-      updateURL(1, debouncedSearchQuery, newType, showFavoritesOnly ? "favorites" : undefined);
+      updateURL(1, debouncedSearchQuery, newType, showFavoritesOnly ? "favorites" : undefined, tagFilter);
     });
   };
 
@@ -475,14 +484,14 @@ export function NotesLibraryClient({
     setShowFavoritesOnly(newState);
     startTransition(() => {
       setPage(1);
-      updateURL(1, debouncedSearchQuery, typeFilter, newState ? "favorites" : undefined);
+      updateURL(1, debouncedSearchQuery, typeFilter, newState ? "favorites" : undefined, tagFilter);
     });
   };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     startTransition(() => {
-      updateURL(newPage, debouncedSearchQuery, typeFilter, showFavoritesOnly ? "favorites" : undefined);
+      updateURL(newPage, debouncedSearchQuery, typeFilter, showFavoritesOnly ? "favorites" : undefined, tagFilter);
     });
   };
 
@@ -491,14 +500,15 @@ export function NotesLibraryClient({
     setDebouncedSearchQuery("");
     setTypeFilter("all");
     setShowFavoritesOnly(false);
+    setTagFilter("");
     setPage(1);
     router.push("/dashboard/notes");
   };
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchNotes(page, debouncedSearchQuery, typeFilter, showFavoritesOnly, sortBy);
-  }, [page, typeFilter, showFavoritesOnly, sortBy, debouncedSearchQuery, fetchNotes]);
+    fetchNotes(page, debouncedSearchQuery, typeFilter, showFavoritesOnly, sortBy, tagFilter);
+  }, [page, typeFilter, showFavoritesOnly, sortBy, debouncedSearchQuery, fetchNotes, tagFilter]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -512,23 +522,24 @@ export function NotesLibraryClient({
     if (debouncedSearchQuery !== (searchParams.get("search") || "")) {
       startTransition(() => {
         setPage(1);
-        updateURL(1, debouncedSearchQuery, typeFilter, showFavoritesOnly ? "favorites" : undefined);
+        updateURL(1, debouncedSearchQuery, typeFilter, showFavoritesOnly ? "favorites" : undefined, tagFilter);
       });
     }
-  }, [debouncedSearchQuery, searchParams, showFavoritesOnly, typeFilter, updateURL]);
+  }, [debouncedSearchQuery, searchParams, showFavoritesOnly, typeFilter, updateURL, tagFilter]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (debouncedSearchQuery) count += 1;
     if (typeFilter !== "all") count += 1;
     if (showFavoritesOnly) count += 1;
+    if (tagFilter) count += 1;
     return count;
-  }, [debouncedSearchQuery, showFavoritesOnly, typeFilter]);
+  }, [debouncedSearchQuery, showFavoritesOnly, typeFilter, tagFilter]);
 
   if (!user) return null;
 
   return (
-    <div className="w-full px-5 pb-16 font-sans">
+    <div className="mx-auto max-w-7xl px-8 py-6 font-sans">
       <header className="sticky top-0 z-30 -mx-5 border-b border-default px-5 ">
         <div className="flex flex-col gap-4 py-4">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">

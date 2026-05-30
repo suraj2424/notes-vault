@@ -3,6 +3,7 @@ import { z } from 'zod';
 import connectToDatabase from '../../../lib/mongodb';
 import Note from '../../../models/Note';
 import Topic from '../../../models/Topic';
+import UserNoteProgress from '../../../models/UserNoteProgress';
 import { auth } from '@clerk/nextjs/server';
 import { syncTopicCounts } from '@/lib/topics';
 
@@ -84,21 +85,25 @@ export async function GET(request: NextRequest) {
       fieldList.forEach(f => projection[f] = 1);
     }
 
-    // Build sort object
-    let sortOptions: any = {};
-    switch (sort) {
-      case 'recent':
-        sortOptions = { updatedAt: -1 };
-        break;
-      case 'oldest':
-        sortOptions = { updatedAt: 1 };
-        break;
-      case 'title':
-        sortOptions = { title: 1 };
-        break;
-      default:
-        sortOptions = { updatedAt: -1 };
-    }
+// Build sort object
+let sortOptions: any = {};
+if (topicId) {
+sortOptions = { sequence: 1 };
+} else {
+switch (sort) {
+case 'recent':
+sortOptions = { updatedAt: -1 };
+break;
+case 'oldest':
+sortOptions = { updatedAt: 1 };
+break;
+case 'title':
+sortOptions = { title: 1 };
+break;
+default:
+sortOptions = { updatedAt: -1 };
+}
+}
 
     const [notes, total] = await Promise.all([
       Note.find(query, projection)
@@ -110,21 +115,22 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Convert _id to id and format dates
-    const formattedNotes = notes.map(note => ({
-      id: note._id.toString(),
-      userId: note.userId,
-      type: note.type,
-      title: note.title,
-      isFavorite: note.isFavorite,
-      tags: note.tags,
-      topicId: note.topicId ?? null,
-      createdAt: note.createdAt,
-      updatedAt: note.updatedAt,
-      // Only include dsa/qa/content if explicitly requested
-      ...(projection.dsa !== undefined && { dsa: note.dsa }),
-      ...(projection.qa !== undefined && { qa: note.qa }),
-      ...(projection.content !== undefined && { content: note.content }),
-    }));
+const formattedNotes = notes.map(note => ({
+id: note._id.toString(),
+userId: note.userId,
+type: note.type,
+title: note.title,
+isFavorite: note.isFavorite,
+tags: note.tags,
+topicId: note.topicId ?? null,
+sequence: note.sequence ?? null,
+createdAt: note.createdAt,
+updatedAt: note.updatedAt,
+// Only include dsa/qa/content if explicitly requested
+...(projection.dsa !== undefined && { dsa: note.dsa }),
+...(projection.qa !== undefined && { qa: note.qa }),
+...(projection.content !== undefined && { content: note.content }),
+}));
 
     return NextResponse.json({ 
       notes: formattedNotes,
@@ -161,29 +167,49 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const note = await Note.create({
-      userId: userId,
-      ...noteData,
-    });
+let sequence: number | undefined; 
+if (noteData.topicId) { 
+const maxSeq = await Note.findOne({ topicId: noteData.topicId, sequence: { $ne: null } }) 
+.sort({ sequence: -1 }) 
+.select('sequence') 
+.lean(); 
+sequence = maxSeq?.sequence !== undefined ? maxSeq.sequence + 1 : 0; 
+} 
 
-    await syncTopicCounts([note.topicId]);
+const note = await Note.create({ 
+userId, 
+...noteData, 
+...(sequence !== undefined && { sequence }), 
+}); 
 
-    return NextResponse.json({
-      note: {
-        id: note._id.toString(),
-        userId: note.userId,
-        type: note.type,
-        title: note.title,
-        isFavorite: note.isFavorite,
-        tags: note.tags,
-        topicId: note.topicId ?? null,
-        content: note.content,
-        dsa: note.dsa,
-        qa: note.qa,
-        createdAt: note.createdAt,
-        updatedAt: note.updatedAt,
-      },
-    }, { status: 201 });
+if (noteData.topicId) { 
+await UserNoteProgress.create({ 
+userId, 
+noteId: note._id.toString(), 
+topicId: noteData.topicId, 
+completed: false, 
+}); 
+}
+
+await syncTopicCounts([note.topicId]);
+
+return NextResponse.json({
+note: {
+id: note._id.toString(),
+userId: note.userId,
+type: note.type,
+title: note.title,
+isFavorite: note.isFavorite,
+tags: note.tags,
+topicId: note.topicId ?? null,
+sequence: note.sequence ?? null,
+content: note.content,
+dsa: note.dsa,
+qa: note.qa,
+createdAt: note.createdAt,
+updatedAt: note.updatedAt,
+},
+}, { status: 201 });
 
    } catch (error) {
      if (error instanceof z.ZodError) {

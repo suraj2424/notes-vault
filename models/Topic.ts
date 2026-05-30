@@ -4,8 +4,6 @@ export interface ITopic extends Document {
   userId: string;
   title: string;
   description?: string;
-  coverImage?: string;
-  color?: string;
   isArchived: boolean;
   noteCount: number;
   createdAt: Date;
@@ -25,14 +23,6 @@ const TopicSchema = new Schema<ITopic>(
       trim: true,
     },
     description: {
-      type: String,
-      trim: true,
-    },
-    coverImage: {
-      type: String,
-      trim: true,
-    },
-    color: {
       type: String,
       trim: true,
     },

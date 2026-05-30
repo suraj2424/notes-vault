@@ -34,5 +34,5 @@ export default async function RecentPage() {
     updatedAt: note.updatedAt instanceof Date ? note.updatedAt.toISOString() : String(note.updatedAt),
   }));
 
-  return <RecentClient userName={user.name} initialNotes={formattedNotes} />;
+  return <RecentClient userName={userName} initialNotes={formattedNotes} />;
 }

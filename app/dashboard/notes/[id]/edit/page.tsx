@@ -175,13 +175,14 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
 
   const [type, setType] = useState<NoteType>('general');
   const [title, setTitle] = useState('');
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
-  const [content, setContent] = useState('');
-  const [topicId, setTopicId] = useState<string | null>(initialTopicId);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+const [isFavorite, setIsFavorite] = useState(false); 
+const [tags, setTags] = useState<string[]>([]); 
+const [tagInput, setTagInput] = useState(''); 
+const [content, setContent] = useState(''); 
+const [topicId, setTopicId] = useState<string | null>(initialTopicId); 
+const [sequence, setSequence] = useState<number | null>(null); 
+const [isSaving, setIsSaving] = useState(false); 
+const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const [dsa, setDsa] = useState<DSAData>({
     platform: '',
@@ -219,17 +220,18 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
     const fetchNote = async () => {
       try {
         const response = await fetch(`/api/notes/${id}`);
-        if (response.ok) {
-          const data = await response.json();
-          const note = data.note;
+if (response.ok) {
+const data = await response.json();
+const note = data.note;
 
-          setType(note.type);
-          setTitle(note.title);
-          setIsFavorite(note.isFavorite);
-          setTags(note.tags || []);
-          setTopicId(note.topicId || null);
+setType(note.type);
+setTitle(note.title);
+setIsFavorite(note.isFavorite);
+setTags(note.tags || []);
+setTopicId(note.topicId || null);
+setSequence(note.sequence ?? null);
 
-           if (note.type === 'general') setContent(note.content || '');
+if (note.type === 'general') setContent(note.content || '');
            if (note.type === 'dsa' && note.dsa) {
               // Normalize old DSA data to include per-implementation complexity fields
               const normalizedDsa = {
@@ -292,36 +294,40 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
     setQa({ ...qa, importantPoints: next });
   };
 
-  const handleSave = async () => {
-    if (!title.trim()) return alert("Title is required");
-    if (!user) return;
-    setIsSaving(true);
-    try {
-      const noteData: any = { title, isFavorite, tags, topicId };
+const handleSave = async () => { 
+if (!title.trim()) return alert("Title is required"); 
+if (!user) return; 
+setIsSaving(true); 
+try { 
+const noteData: any = { title, isFavorite, tags, topicId, sequence }; 
 
-      if (type === 'general') noteData.content = content;
-      if (type === 'dsa') noteData.dsa = dsa;
-      if (type === 'qa') noteData.qa = qa;
+if (type === 'general') noteData.content = content; 
+if (type === 'dsa') noteData.dsa = dsa; 
+if (type === 'qa') noteData.qa = qa; 
 
-      const response = await fetch(`/api/notes/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(noteData),
-      });
+const response = await fetch(`/api/notes/${id}`, { 
+method: 'PUT', 
+headers: { 'Content-Type': 'application/json' }, 
+body: JSON.stringify(noteData), 
+}); 
 
-      if (response.ok) {
-        router.push(`/dashboard/notes/${id}`);
-      } else {
-        const error = await response.json();
-        alert(`Failed to save note: ${error.error}`);
-      }
-    } catch (error) {
-      console.error('Error saving note:', error);
-      alert('Failed to save note.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
+if (response.ok) {
+router.push(`/dashboard/notes/${id}`);
+} else {
+const error = await response.json();
+let errorMessage = `Failed to save note: ${error.error}`;
+if (error.details && Array.isArray(error.details)) {
+errorMessage += ` (${error.details.map((d: any) => d.message).join(', ')})`;
+}
+alert(errorMessage);
+} 
+} catch (error) { 
+console.error('Error saving note:', error); 
+alert('Failed to save note.'); 
+} finally { 
+setIsSaving(false); 
+} 
+};
 
   if (loading || isInitialLoading) return null;
 
@@ -428,43 +434,57 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
           className="w-full bg-transparent text-3xl font-bold tracking-tight text-[#1A1D1E] dark:text-[#E4E6EB] placeholder:text-[#687076]/40 dark:placeholder:text-[#A0A0A0]/30 outline-none border-b border-[#E6E8EB] dark:border-[#2D2D2D] pb-3"
         />
 
-        {/* Global Metadata Matrix Grid Alignment */}
-        <div className="flex flex-col md:flex-row md:items-start gap-6">
-          {/* Linked Topic Anchor */}
-          <div className="w-full md:w-64 shrink-0 space-y-1.5">
-            <InlineLabel>Topic</InlineLabel>
-            <TopicSelector value={topicId} onChange={setTopicId} onCreate={handleCreateTopic} />
-          </div>
+{/* Global Metadata Matrix Grid Alignment */}
+<div className="flex flex-col md:flex-row md:items-start gap-6">
+{/* Linked Topic Anchor */}
+<div className="w-full md:w-64 shrink-0 space-y-1.5">
+<InlineLabel>Topic</InlineLabel>
+<TopicSelector value={topicId} onChange={setTopicId} onCreate={handleCreateTopic} />
+</div>
 
-          {/* Managed Functional Meta Tags Input */}
-          <div className="flex-1 space-y-1.5">
-            <InlineLabel>Tags</InlineLabel>
-            <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-[#E6E8EB] bg-[#FFFFFF] px-3 py-[5px] transition-colors duration-100 focus-within:border-[#687076]/40 dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:focus-within:border-[#A0A0A0]/40">
-              <Tag className="h-3.5 w-3.5 text-[#687076]/40 dark:text-[#A0A0A0]/40 shrink-0" />
-              {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="flex items-center gap-1 bg-[#F4F7F6] dark:bg-[#111111] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#687076] dark:text-[#A0A0A0] rounded border border-[#E6E8EB] dark:border-[#2D2D2D]"
-                >
-                  #{tag}
-                  <button
-                    onClick={() => setTags(tags.filter((t) => t !== tag))}
-                    className="text-[#687076] hover:text-red-500 dark:text-[#A0A0A0] dark:hover:text-red-400 transition-colors duration-100"
-                  >
-                    <X className="h-2.5 w-2.5" />
-                  </button>
-                </span>
-              ))}
-              <input
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleAddTag}
-                placeholder="Add tag..."
-                className="flex-1 min-w-[100px] bg-transparent outline-none text-sm text-[#1A1D1E] placeholder:text-[#687076]/50 dark:text-[#E4E6EB] dark:placeholder:text-[#A0A0A0]/40 py-0.5"
-              />
-            </div>
-          </div>
-        </div>
+{/* Sequence position for topic-linked notes */}
+<div className="w-full md:w-64 shrink-0 space-y-1.5">
+<InlineLabel>Sequence Position</InlineLabel>
+<input 
+type="number" 
+min={0} 
+value={sequence ?? ""} 
+onChange={(e) => setSequence(e.target.value ? Number.parseInt(e.target.value, 10) : null)} 
+disabled={!topicId} 
+placeholder="Auto-assigned" 
+className={cn("h-9 w-full rounded-md border px-3 text-sm font-medium outline-none transition-colors duration-100", "border-[#E6E8EB] bg-[#FFFFFF] text-[#1A1D1E] placeholder:text-[#687076]/50", "focus:border-[#687076]/40 focus:bg-[#FFFFFF] disabled:opacity-60", "dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:text-[#E4E6EB] dark:placeholder:text-[#A0A0A0]/40 dark:focus:border-[#A0A0A0]/40 dark:focus:bg-[#1A1A1A]")} 
+/>
+</div>
+
+{/* Managed Functional Meta Tags Input */}
+<div className="flex-1 space-y-1.5">
+<InlineLabel>Tags</InlineLabel>
+<div className="flex flex-wrap items-center gap-1.5 rounded-md border border-[#E6E8EB] bg-[#FFFFFF] px-3 py-[5px] transition-colors duration-100 focus-within:border-[#687076]/40 dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:focus-within:border-[#A0A0A0]/40">
+<Tag className="h-3.5 w-3.5 text-[#687076]/40 dark:text-[#A0A0A0]/40 shrink-0" />
+{tags.map((tag) => (
+<span 
+key={tag} 
+className="flex items-center gap-1 bg-[#F4F7F6] dark:bg-[#111111] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#687076] dark:text-[#A0A0A0] rounded border border-[#E6E8EB] dark:border-[#2D2D2D]"
+>
+#{tag}
+<button 
+onClick={() => setTags(tags.filter((t) => t !== tag))} 
+className="text-[#687076] hover:text-red-500 dark:text-[#A0A0A0] dark:hover:text-red-400 transition-colors duration-100"
+>
+<X className="h-2.5 w-2.5" />
+</button>
+</span>
+))}
+<input 
+value={tagInput} 
+onChange={(e) => setTagInput(e.target.value)} 
+onKeyDown={handleAddTag} 
+placeholder="Add tag..." 
+className="flex-1 min-w-[100px] bg-transparent outline-none text-sm text-[#1A1D1E] placeholder:text-[#687076]/50 dark:text-[#E4E6EB] dark:placeholder:text-[#A0A0A0]/40 py-0.5" 
+/>
+</div>
+</div>
+</div>
 
         {/* Workspace Panels Strategy Layer */}
         <div className="pt-2">

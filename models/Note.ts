@@ -2,17 +2,18 @@ import mongoose, { Document, Schema } from 'mongoose';
 import { NoteType, DSAData, QAData } from '../types';
 
 export interface INote extends Document {
-  userId: string;
-  type: NoteType;
-  title: string;
-  isFavorite: boolean;
-  tags: string[];
-  topicId?: string;
-  content?: string;
-  dsa?: DSAData;
-  qa?: QAData;
-  createdAt: Date;
-  updatedAt: Date;
+userId: string;
+type: NoteType;
+title: string;
+isFavorite: boolean;
+tags: string[];
+topicId?: string;
+sequence?: number;
+content?: string;
+dsa?: DSAData;
+qa?: QAData;
+createdAt: Date;
+updatedAt: Date;
 }
 
 const DSASchema: Schema = new Schema({
@@ -59,11 +60,15 @@ const NoteSchema: Schema = new Schema({
     type: String,
     trim: true,
   }],
-  topicId: {
-    type: String,
-    default: null,
-  },
-  content: {
+topicId: {
+type: String,
+default: null,
+},
+sequence: {
+type: Number,
+index: true,
+},
+content: {
     type: String,
   },
   dsa: DSASchema,
@@ -77,6 +82,7 @@ NoteSchema.index({ userId: 1, updatedAt: -1 }); // For user notes sorted by rece
 NoteSchema.index({ userId: 1, type: 1, updatedAt: -1 }); // For filtered queries
 NoteSchema.index({ userId: 1, isFavorite: 1, updatedAt: -1 }); // For favorites filter
 NoteSchema.index({ userId: 1, topicId: 1, updatedAt: -1 }); // For notes within a topic
+NoteSchema.index({ userId: 1, topicId: 1, sequence: 1 }); // For sequential notes within a topic
 
 NoteSchema.index({ userId: 1, tags: 1, updatedAt: -1 }); // For tag filter sorting
 // Index for search functionality - covers all note types

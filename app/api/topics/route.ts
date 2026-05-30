@@ -4,13 +4,10 @@ import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/mongodb";
 import Topic from "@/models/Topic";
 import { formatTopic } from "@/lib/topics";
-import { TOPIC_COLOR_PALETTE } from "@/lib/topic-constants";
 
 const createTopicSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(120, "Title is too long"),
   description: z.string().trim().max(500, "Description is too long").optional().or(z.literal("")),
-  coverImage: z.string().trim().url("Cover image must be a valid URL").optional().or(z.literal("")),
-  color: z.string().trim().optional().or(z.literal("")),
 });
 
 export async function GET(request: NextRequest) {
@@ -52,9 +49,6 @@ const skip = (page - 1) * pageSize;
         total,
         totalPages: Math.ceil(total / pageSize),
       },
-      meta: {
-        colors: TOPIC_COLOR_PALETTE,
-      },
     });
   } catch (error) {
     console.error("Get topics error:", error);
@@ -78,8 +72,6 @@ export async function POST(request: NextRequest) {
       userId,
       title: topicData.title,
       description: topicData.description || undefined,
-      coverImage: topicData.coverImage || undefined,
-      color: topicData.color || TOPIC_COLOR_PALETTE[0],
     });
 
     return NextResponse.json({ topic: formatTopic(topic) }, { status: 201 });

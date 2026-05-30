@@ -24,18 +24,28 @@ export interface QAData {
 }
 
 export interface Note {
-  id: string;
-  userId: string;
-  type: NoteType;
-  title: string;
-  isFavorite: boolean;
-  tags: string[];
-  topicId?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  content?: string;
-  dsa?: DSAData;
-  qa?: QAData;
+id: string;
+userId: string;
+type: NoteType;
+title: string;
+isFavorite: boolean;
+tags: string[];
+topicId?: string | null;
+sequence?: number | null;
+createdAt: string;
+updatedAt: string;
+content?: string;
+dsa?: DSAData;
+qa?: QAData;
+}
+
+export interface UserNoteProgress {
+id: string;
+userId: string;
+noteId: string;
+topicId: string;
+completed: boolean;
+completedAt?: string;
 }
 
 export interface Topic {
@@ -43,8 +53,6 @@ export interface Topic {
   userId: string;
   title: string;
   description?: string;
-  coverImage?: string;
-  color?: string;
   isArchived: boolean;
   noteCount: number;
   createdAt: string;

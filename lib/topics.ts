@@ -1,19 +1,16 @@
 import Note from "@/models/Note";
 import Topic, { ITopic } from "@/models/Topic";
 import { Topic as TopicType } from "@/types";
-import { TOPIC_COLOR_PALETTE } from "@/lib/topic-constants";
 
 export function formatTopic(topic: Pick<
   ITopic,
-  "_id" | "userId" | "title" | "description" | "coverImage" | "color" | "isArchived" | "noteCount" | "createdAt" | "updatedAt"
+  "_id" | "userId" | "title" | "description" | "isArchived" | "noteCount" | "createdAt" | "updatedAt"
 >): TopicType {
   return {
     id: topic._id.toString(),
     userId: topic.userId,
     title: topic.title,
     description: topic.description,
-    coverImage: topic.coverImage,
-    color: topic.color,
     isArchived: topic.isArchived,
     noteCount: topic.noteCount,
     createdAt: topic.createdAt instanceof Date ? topic.createdAt.toISOString() : String(topic.createdAt),
@@ -49,5 +46,22 @@ export async function syncTopicCounts(topicIds: Array<string | null | undefined>
 }
 
 export function escapeRegex(input: string) {
-  return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export async function renumberTopicSequences(topicId: string) {
+const notes = await Note.find({ topicId, sequence: { $ne: null } })
+.sort({ sequence: 1 })
+.lean();
+
+const bulkOps = notes.map((note, index) => ({
+  updateOne: {
+    filter: { _id: note._id },
+    update: { $set: { sequence: index + 1 } },
+  },
+}));
+
+if (bulkOps.length > 0) {
+  await Note.bulkWrite(bulkOps);
+}
 }

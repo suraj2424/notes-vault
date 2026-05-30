@@ -24,21 +24,11 @@ function TopicCard({
   return (
     <Link
       href={`/dashboard/topics/${topic.id}`}
-      className="group flex h-full min-h-64 flex-col overflow-hidden rounded-lg border border-default bg-surface transition-colors duration-100 hover:border-[#00A3A3]/40 dark:hover:border-[#00E0E0]/30"
+      className="group flex h-full flex-col overflow-hidden rounded-lg border border-default bg-surface transition-colors duration-100 hover:border-[#00A3A3]/40 dark:hover:border-[#00E0E0]/30"
     >
-      <div
-        className="h-32 w-full shrink-0"
-        style={{
-          backgroundColor: topic.color || "#1d4ed8",
-          ...(topic.coverImage
-            ? {
-                backgroundImage: `linear-gradient(180deg, rgba(17,24,39,0.08), rgba(17,24,39,0.48)), url(${topic.coverImage})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }
-            : {}),
-        }}
-      />
+      {/* <div
+        className="h-32 w-full shrink-0 bg-[#F4F7F6] dark:bg-[#111111]"
+      /> */}
 
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-3">
@@ -94,7 +84,7 @@ function SkeletonGrid() {
       {[1, 2, 3, 4, 5, 6].map((item) => (
         <div
           key={item}
-          className="h-64 rounded-lg border border-default bg-surface dark:bg-[#161616]"
+          className="h-[157px] rounded-lg border border-default bg-surface dark:bg-[#161616]"
         />
       ))}
     </div>
@@ -198,7 +188,7 @@ export function TopicsLibraryClient({
   };
 
   return (
-    <div className="w-full px-5 pb-16 font-sans">
+    <div className="mx-auto max-w-7xl px-8 py-6 font-sans">
       <header className="sticky top-0 z-30 -mx-5 border-b border-default px-5">
         <div className="flex flex-col gap-4 py-4">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">

@@ -16,6 +16,7 @@ export default async function NotesLibraryPage({
     type: typeParam,
     search: searchParam,
     filter: filterParam,
+    tag: tagParam,
   } = resolvedSearchParams;
 
   const { userId } = await auth();
@@ -38,11 +39,13 @@ export default async function NotesLibraryPage({
   const type = typeParam as 'dsa' | 'qa' | 'general' | undefined;
   const search = searchParam as string | undefined;
   const favorite = filterParam === 'favorites';
+  const tag = tagParam as string | undefined;
 
   const query: any = { userId: userId };
   if (type) query.type = type;
   if (favorite) query.isFavorite = true;
   if (search) query.$text = { $search: search };
+  if (tag) query.tags = { $in: [tag] };
 
   const projection = {
     _id: 1,
@@ -83,6 +86,7 @@ export default async function NotesLibraryPage({
       initialNotes={formattedNotes}
       totalPages={totalPages}
       currentPage={page}
+      initialTag={tag}
     />
   );
 }

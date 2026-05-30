@@ -62,13 +62,13 @@ export function ThemeSwitcher({
       {isOpen && (
         <div 
           className={cn(
-            "absolute z-[100] p-1 bg-[#FFFFFF] dark:bg-[#1A1A1A] border border-[#E6E8EB] dark:border-[#2D2D2D] rounded-md shadow-md",
+            "absolute z-[100] p-1 bg-[#FFFFFF] dark:bg-[#1A1A1A] border border-[#E6E8EB] dark:border-[#2D2D2D] rounded-md shadow-sm",
             isCollapsed 
               ? "left-full bottom-0 w-32" 
               : "bottom-full left-0 right-0 mb-1.5 w-full"
           )}
         >
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-0.5">
             {themeOptions.map((option) => {
               const OptionIcon = option.icon;
               const isSelected = theme === option.value;
@@ -81,13 +81,13 @@ export function ThemeSwitcher({
                     setIsOpen(false); 
                   }}
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 w-full text-sm rounded-lg transition-colors duration-100 font-normal outline-none text-left',
+                    'flex items-center gap-2 px-3 py-1.5 w-full text-sm rounded-md transition-colors duration-100 font-normal outline-none text-left',
                     isSelected 
                       ? 'bg-[#00A3A3]/10 text-[#00A3A3] dark:bg-[#00E0E0]/10 dark:text-[#00E0E0]' 
                       : 'text-secondary hover:bg-surface-hover hover:text-primary'
                   )}
                 >
-                    <OptionIcon className="h-5 w-5 shrink-0" />
+                    <OptionIcon className="h-4 w-4 shrink-0" />
                   <span className="tracking-tight truncate">{option.label}</span>
                 </button>
               );

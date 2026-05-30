@@ -1,8 +1,22 @@
 "use client";
 
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Archive, BookOpen, ChevronLeft, Code2, FileText, FolderOpen, Plus, Unlink } from "lucide-react";
+import {
+  Archive,
+  BookOpen,
+  Check,
+  ChevronLeft,
+  ChevronDown,
+  ChevronUp,
+  Code2,
+  FileText,
+  FolderOpen,
+  Lock,
+  Plus,
+  Unlink,
+} from "lucide-react";
 import { Note, Topic } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +28,9 @@ function notePreview(note: Note) {
         ? note.qa?.content
         : note.dsa?.problemStatement || note.dsa?.notes;
 
-  return (content || `${note.type === "qa" ? "Q&A" : note.type.toUpperCase()} note`)
+  return (
+    content || `${note.type === "qa" ? "Q&A" : note.type.toUpperCase()} note`
+  )
     .replace(/[#*_`>[\]()]/g, "")
     .replace(/\s+/g, " ")
     .trim();
@@ -29,7 +45,7 @@ function NoteTypeBadge({ type }: { type: Note["type"] }) {
           ? "border-[#00A3A3]/20 bg-[#00A3A3]/5 text-[#00A3A3] dark:border-[#00E0E0]/20 dark:bg-[#00E0E0]/5 dark:text-[#00E0E0]"
           : type === "qa"
             ? "border-amber-500/20 bg-amber-500/5 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
-            : "border-default bg-bg-muted text-secondary"
+            : "border-default bg-bg-muted text-secondary",
       )}
     >
       {type === "qa" ? "Q&A" : type}
@@ -44,41 +60,150 @@ function NoteIcon({ type }: { type: Note["type"] }) {
       ? "border-[#00A3A3]/15 bg-[#00A3A3]/5 text-[#00A3A3] dark:border-[#00E0E0]/15 dark:bg-[#00E0E0]/5 dark:text-[#00E0E0]"
       : type === "qa"
         ? "border-amber-500/15 bg-amber-500/5 text-amber-600 dark:text-amber-400"
-        : "border-default bg-bg-muted text-secondary"
+        : "border-default bg-bg-muted text-secondary",
   );
 
-  if (type === "dsa") return <div className={className}><Code2 className="h-4 w-4" /></div>;
-  if (type === "qa") return <div className={className}><BookOpen className="h-4 w-4" /></div>;
-  return <div className={className}><FileText className="h-4 w-4" /></div>;
+  if (type === "dsa")
+    return (
+      <div className={className}>
+        <Code2 className="h-4 w-4" />
+      </div>
+    );
+  if (type === "qa")
+    return (
+      <div className={className}>
+        <BookOpen className="h-4 w-4" />
+      </div>
+    );
+  return (
+    <div className={className}>
+      <FileText className="h-4 w-4" />
+    </div>
+  );
 }
 
 export default function TopicDetailClient({
   topic,
-  notes,
+  notes: serverNotes,
   onRemoveNote,
+  onReorder,
+  onToggleComplete,
+  lockedNotes = {},
+  completedNotes = new Set<string>(),
+  completedCount = 0,
+  totalCount = 0,
 }: {
   topic: Topic;
   notes: Note[];
   onRemoveNote: (noteId: string) => void;
+  onReorder?: (noteId: string, direction: "up" | "down") => void;
+  onToggleComplete?: (noteId: string) => Promise<void>;
+  lockedNotes?: Record<string, boolean>;
+  completedNotes?: Set<string>;
+  completedCount?: number;
+  totalCount?: number;
 }) {
-  return (
-    <div className="w-full px-5 pb-16 font-sans">
-      <header className="sticky top-0 z-30 -mx-5 border-b border-default px-5">
-        <div className="flex flex-col gap-4 py-4">
-          <div
-            className="h-36 overflow-hidden rounded-lg border border-default sm:h-44"
-            style={{
-              backgroundColor: topic.color || "#2563eb",
-              ...(topic.coverImage
-                ? {
-                    backgroundImage: `linear-gradient(180deg, rgba(17,24,39,0.08), rgba(17,24,39,0.58)), url(${topic.coverImage})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }
-                : {}),
-            }}
-          />
+  const [notes, setNotes] = useState(serverNotes);
+  const [isReordering, setIsReordering] = useState<string | null>(null);
+  const [completingNotes, setCompletingNotes] = useState<Set<string>>(new Set());
+  const [completedNotesState, setCompletedNotesState] = useState(completedNotes);
+  const [completedCountState, setCompletedCountState] = useState(completedCount);
 
+  const sorted = useMemo(() => {
+    return [...notes].sort(
+      (a, b) => (a.sequence ?? 9999) - (b.sequence ?? 9999),
+    );
+  }, [notes]);
+
+  const displayCount = sorted.length;
+  const hasSequenced = sorted.some((n) => n.sequence != null);
+
+  const handleToggleComplete = useCallback(
+    async (noteId: string) => {
+      if (!onToggleComplete) return;
+      if (lockedNotes[noteId]) return;
+      if (completingNotes.has(noteId)) return;
+
+      const isCurrentlyCompleted = completedNotesState.has(noteId);
+      setCompletedNotesState((prev) => {
+        const next = new Set(prev);
+        if (isCurrentlyCompleted) {
+          next.delete(noteId);
+        } else {
+          next.add(noteId);
+        }
+        return next;
+      });
+      setCompletedCountState((prev) =>
+        isCurrentlyCompleted ? prev - 1 : prev + 1,
+      );
+      setCompletingNotes((prev) => new Set(prev).add(noteId));
+
+      try {
+        await onToggleComplete(noteId);
+      } catch {
+        setCompletedNotesState((prev) => {
+          const next = new Set(prev);
+          if (isCurrentlyCompleted) {
+            next.add(noteId);
+          } else {
+            next.delete(noteId);
+          }
+          return next;
+        });
+        setCompletedCountState((prev) =>
+          isCurrentlyCompleted ? prev + 1 : prev - 1,
+        );
+      } finally {
+        setCompletingNotes((prev) => {
+          const next = new Set(prev);
+          next.delete(noteId);
+          return next;
+        });
+      }
+    },
+    [completedNotesState, completingNotes, lockedNotes, onToggleComplete],
+  );
+
+  const handleMove = useCallback(
+    async (noteId: string, direction: "up" | "down") => {
+      if (!onReorder) return;
+
+      const currentIndex = sorted.findIndex((n) => n.id === noteId);
+      if (currentIndex < 0) return;
+      const targetIndex =
+        direction === "up" ? currentIndex - 1 : currentIndex + 1;
+      if (targetIndex < 0 || targetIndex >= sorted.length) return;
+
+      const next = sorted[targetIndex];
+      const curr = sorted[currentIndex];
+
+      const currSeq = curr.sequence ?? currentIndex;
+      const nextSeq = next.sequence ?? targetIndex;
+      setNotes((prev) =>
+        prev.map((n) =>
+          n.id === curr.id
+            ? { ...n, sequence: nextSeq }
+            : n.id === next.id
+              ? { ...n, sequence: currSeq }
+              : n,
+        ),
+      );
+      setIsReordering(noteId);
+
+      try {
+        await onReorder(noteId, direction);
+      } finally {
+        setIsReordering(null);
+      }
+    },
+    [sorted, onReorder],
+  );
+
+  return (
+    <div className="mx-auto max-w-7xl px-5 p-8 font-sans">
+      <header className="sticky top-0 z-30 -mx-5 border-b border-default px-5 pb-2">
+        <div className="flex flex-col gap-4 py-4">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div className="flex min-w-0 items-start gap-3">
               <Link
@@ -103,12 +228,18 @@ export default function TopicDetailClient({
                   )}
                 </div>
                 <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-secondary">
-                  {topic.description || "A focused topic collection for grouping notes that belong together."}
+                  {topic.description ||
+                    "A focused topic collection for grouping notes that belong together."}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] font-bold uppercase tracking-wide text-secondary">
                   <span>{topic.noteCount} notes</span>
                   <span>/</span>
-                  <span>Updated {formatDistanceToNow(new Date(topic.updatedAt), { addSuffix: true })}</span>
+                  <span>
+                    Updated{" "}
+                    {formatDistanceToNow(new Date(topic.updatedAt), {
+                      addSuffix: true,
+                    })}
+                  </span>
                 </div>
               </div>
             </div>
@@ -129,53 +260,141 @@ export default function TopicDetailClient({
               </Link>
             </div>
           </div>
+          {totalCount > 0 && (
+            <div className="flex items-center gap-3">
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-bg-muted">
+                <div
+                  className="h-full rounded-full bg-[#00A3A3] transition-all duration-300"
+                  style={{
+                    width: `${totalCount > 0 ? (completedCountState / totalCount) * 100 : 0}%`,
+                  }}
+                />
+              </div>
+              <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-secondary">
+                {completedCountState} / {totalCount} completed
+              </span>
+            </div>
+          )}
         </div>
       </header>
 
       <main className="mt-5">
-        {notes.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-            {notes.map((note) => (
-              <article
-                key={note.id}
-                className="group rounded-lg border border-default bg-surface p-4 transition-colors duration-100 hover:border-[#00A3A3]/35 dark:hover:border-[#00E0E0]/30"
-              >
-                <div className="flex items-start gap-3">
-                  <NoteIcon type={note.type} />
-                  <Link href={`/dashboard/notes/${note.id}`} className="min-w-0 flex-1">
-                    <h2 className="truncate text-[15px] font-bold tracking-tight text-primary transition-colors duration-100 group-hover:text-secondary">
-                      {note.title}
-                    </h2>
-                    <p className="mt-2 line-clamp-2 text-xs font-medium leading-6 text-secondary">
-                      {notePreview(note)}
-                    </p>
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => onRemoveNote(note.id)}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
-                    aria-label="Remove note from topic"
-                    title="Remove note from topic"
-                  >
-                    <Unlink className="h-4 w-4" />
-                  </button>
+        {sorted.length > 0 ? (
+          <div className="space-y-3 ">
+            {sorted.map((note, index) => (
+              <div key={note.id} className="relative flex items-center gap-4">
+                {(index > 0 || sorted.length > 1) && (
+                  <div className="absolute left-5 top-9 h-full w-px bg-border -z-10" />
+                )}
+                <div className="z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-default bg-surface text-xs font-bold text-secondary">
+                  {note.sequence ?? index + 1}
                 </div>
-
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-default pt-3">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <NoteTypeBadge type={note.type} />
-                    <span className="truncate text-[11px] font-medium text-secondary">
-                      {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}
-                    </span>
+                <article
+                  className={cn(
+                    "group flex-1 rounded-lg border border-default bg-surface p-4 transition-colors duration-100",
+                    lockedNotes[note.id]
+                      ? "opacity-70"
+                      : "hover:border-[#00A3A3]/35 dark:hover:border-[#00E0E0]/30",
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <Link
+                      href={`/dashboard/notes/${note.id}`}
+                      className="flex flex-1 items-start gap-3"
+                    >
+                      {lockedNotes[note.id] ? (
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-500/20 bg-amber-500/5 text-amber-600 dark:text-amber-400">
+                          <Lock className="h-4 w-4" />
+                        </div>
+                      ) : (
+                        <NoteIcon type={note.type} />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h2 className="truncate text-base font-bold tracking-tight text-primary transition-colors duration-100 hover:text-secondary">
+                            {note.title}
+                          </h2>
+                        </div>
+                        <p className="mt-1.5 line-clamp-2 text-sm font-medium leading-6 text-secondary">
+                          {notePreview(note)}
+                        </p>
+                      </div>
+                    </Link>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {onToggleComplete && (
+                        <button
+                          type="button"
+                          onClick={() => handleToggleComplete(note.id)}
+                          disabled={!!lockedNotes[note.id] || completingNotes.has(note.id)}
+                          className={cn(
+                            "flex h-8 w-8 items-center justify-center rounded-lg border transition-colors duration-100 disabled:opacity-40 disabled:hover:bg-surface",
+                            completedNotesState.has(note.id)
+                              ? "border-[#00A3A3] bg-[#00A3A3]/10 text-[#00A3A3] dark:border-[#00E0E0] dark:bg-[#00E0E0]/10 dark:text-[#00E0E0]"
+                              : "border-default bg-surface text-secondary hover:bg-bg-muted hover:text-primary",
+                          )}
+                          aria-label={completedNotesState.has(note.id) ? "Mark as incomplete" : "Mark as complete"}
+                          title={completedNotesState.has(note.id) ? "Mark as incomplete" : "Mark as complete"}
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        disabled={
+                          index === 0 ||
+                          isReordering === note.id ||
+                          !!lockedNotes[note.id]
+                        }
+                        onClick={() => handleMove(note.id, "up")}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary disabled:opacity-40 disabled:hover:bg-surface"
+                        aria-label="Move up"
+                      >
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={
+                          index === sorted.length - 1 ||
+                          isReordering === note.id ||
+                          !!lockedNotes[note.id]
+                        }
+                        onClick={() => handleMove(note.id, "down")}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary disabled:opacity-40 disabled:hover:bg-surface"
+                        aria-label="Move down"
+                      >
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      </button>
+                      <Link
+                        href={`/dashboard/notes/${note.id}`}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
+                        aria-label="Open note"
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => onRemoveNote(note.id)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
+                        aria-label="Remove note from topic"
+                        title="Remove note from topic"
+                        disabled={!!lockedNotes[note.id]}
+                      >
+                        <Unlink className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
-                  <Link
-                    href={`/dashboard/notes/${note.id}`}
-                    className="text-[11px] font-medium text-secondary transition-colors duration-100 hover:text-primary"
-                  >
-                    Open
-                  </Link>
-                </div>
-              </article>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-default pt-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <NoteTypeBadge type={note.type} />
+                      <span className="truncate text-[11px] font-medium text-secondary">
+                        {formatDistanceToNow(new Date(note.updatedAt), {
+                          addSuffix: true,
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              </div>
             ))}
           </div>
         ) : (
@@ -183,9 +402,12 @@ export default function TopicDetailClient({
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-default bg-bg-muted text-secondary">
               <FolderOpen className="h-5 w-5" />
             </div>
-            <h2 className="text-base font-bold text-primary">No notes in this topic yet</h2>
+            <h2 className="text-base font-bold text-primary">
+              No notes in this topic yet
+            </h2>
             <p className="mt-1 max-w-sm text-sm font-medium text-secondary">
-              Start the collection by creating a note directly inside this topic.
+              Start the collection by creating a note directly inside this
+              topic.
             </p>
             <Link
               href={`/dashboard/notes/new?topicId=${topic.id}`}

@@ -164,13 +164,8 @@ export function TopicSelector({ value, onChange, onCreate, disabled = false }: T
                 )}
               >
                 <span className="flex min-w-0 items-center gap-2.5">
-                  <span
-                    className="h-2 w-2 shrink-0 rounded-full border border-black/5 dark:border-white/5"
-                    style={{ backgroundColor: topic.color || "#687076" }}
-                  />
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{topic.title}</span>
-                    
                   </span>
                 </span>
                 {value === topic.id && <Check className="h-3.5 w-3.5 text-[#00A3A3] dark:text-[#00E0E0] shrink-0" />}
