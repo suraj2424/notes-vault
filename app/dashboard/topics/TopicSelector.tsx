@@ -200,12 +200,12 @@ export function TopicSelector({ value, onChange, onCreate, disabled = false }: T
                     placeholder="New topic name..."
                     className="h-8 flex-1 rounded border border-[#E6E8EB] bg-[#F4F7F6] px-2.5 text-xs text-[#1A1D1E] outline-none focus:border-[#00A3A3] focus:bg-[#FFFFFF] dark:border-[#2D2D2D] dark:bg-[#111111] dark:text-[#E4E6EB] dark:focus:border-[#00E0E0] dark:focus:bg-[#1A1A1A]"
                   />
-                  <button
-                    type="button"
-                    onClick={handleCreate}
-                    disabled={creating || !newTitle.trim()}
-                    className="h-8 w-8 flex items-center justify-center rounded border border-[#00A3A3]/40 bg-[#FFFFFF] text-[#00A3A3] transition-colors duration-100 hover:border-[#00A3A3] hover:bg-[#F4F7F6] disabled:opacity-40 dark:border-[#00E0E0]/40 dark:bg-[#1A1A1A] dark:text-[#00E0E0] dark:hover:border-[#00E0E0] dark:hover:bg-[#111111]"
-                  >
+<button
+          type="button"
+          onClick={handleCreate}
+          disabled={!newTitle.trim()}
+          className="h-8 w-8 flex items-center justify-center rounded border border-[#00A3A3]/40 bg-[#FFFFFF] text-[#00A3A3] transition-colors duration-100 hover:border-[#00A3A3] hover:bg-[#F4F7F6] disabled:opacity-40 dark:border-[#00E0E0]/40 dark:bg-[#1A1A1A] dark:text-[#00E0E0] dark:hover:border-[#00E0E0] dark:hover:bg-[#111111]"
+        >
                     <Plus className="h-3.5 w-3.5" />
                   </button>
                   <button
