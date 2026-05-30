@@ -4,53 +4,210 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Note, NoteType, DSAData, QAData } from '@/types';
-import { 
-  Save, 
-  X, 
-  Plus, 
-  Trash2, 
+import {
+  X,
+  Plus,
+  Trash2,
   ChevronLeft,
   Code2,
   BookOpen,
   FileText,
   Star,
   Tag,
-  Check
+  Check,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { CodeEditor } from '@/components/CodeEditor';
 import { TopicSelector } from '@/app/dashboard/topics/TopicSelector';
 
+const TYPE_PILL_STYLES: Record<
+  NoteType,
+  { active: string; inactive: string; icon: typeof FileText }
+> = {
+  general: {
+    active: "bg-[#FFFFFF] text-[#1A1D1E] border-[#687076]/30 shadow-sm dark:bg-[#1A1A1A] dark:text-[#E4E6EB] dark:border-[#A0A0A0]/30",
+    inactive: "bg-transparent text-[#687076] hover:text-[#1A1D1E] border-transparent dark:text-[#A0A0A0] dark:hover:text-[#E4E6EB]",
+    icon: FileText,
+  },
+  dsa: {
+    active: "bg-[#FFFFFF] text-[#00A3A3] border-[#00A3A3]/30 shadow-sm dark:bg-[#1A1A1A] dark:text-[#00E0E0] dark:border-[#00E0E0]/30",
+    inactive: "bg-transparent text-[#687076] hover:text-[#1A1D1E] border-transparent dark:text-[#A0A0A0] dark:hover:text-[#E4E6EB]",
+    icon: Code2,
+  },
+  qa: {
+    active: "bg-[#FFFFFF] text-amber-600 border-amber-500/30 shadow-sm dark:bg-[#1A1A1A] dark:text-amber-400 dark:border-amber-500/30",
+    inactive: "bg-transparent text-[#687076] hover:text-[#1A1D1E] border-transparent dark:text-[#A0A0A0] dark:hover:text-[#E4E6EB]",
+    icon: BookOpen,
+  },
+};
+
+const InlineLabel = ({ children }: { children: React.ReactNode }) => (
+  <span className="text-[12px] font-bold uppercase tracking-wider text-[#687076] dark:text-[#A0A0A0]">
+    {children}
+  </span>
+);
+
+const SectionDivider = ({ children }: { children: React.ReactNode }) => (
+  <div className="pt-6 pb-3 border-b border-[#E6E8EB] dark:border-[#2D2D2D] mb-4">
+    <span className="text-[12px] font-bold uppercase tracking-wider text-[#687076] dark:text-[#A0A0A0]">
+      {children}
+    </span>
+  </div>
+);
+
+const InputField = ({ ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
+  <input
+    {...props}
+    className={cn(
+      "h-9 w-full rounded-md border px-3 text-sm font-medium outline-none transition-colors duration-100",
+      "border-[#E6E8EB] bg-[#FFFFFF] hover:bg-[#E6E8EB]/50 text-[#1A1D1E] placeholder:text-[#687076]/50",
+      "focus:border-[#687076]/40 focus:bg-[#FFFFFF]",
+      "dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:text-[#E4E6EB] dark:placeholder:text-[#A0A0A0]/40 dark:focus:border-[#A0A0A0]/40 dark:focus:bg-[#1A1A1A] dark:hover:bg-[#2D2D2D]/50",
+      props.className
+    )}
+  />
+);
+
+type DropdownOption<T extends string> = { label: string; value: T };
+
+function Dropdown<T extends string>({
+  value,
+  options,
+  onChange,
+  ariaLabel,
+}: {
+  value: T;
+  options: DropdownOption<T>[];
+  onChange: (next: T) => void;
+  ariaLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const root = target.closest("[data-dropdown-root='true']");
+      if (!root) setOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  const current = options.find((o) => o.value === value)?.label ?? value;
+
+  return (
+    <div className="relative w-full" data-dropdown-root="true">
+      <button
+        type="button"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          "h-9 w-full rounded-md border px-3 text-sm font-medium outline-none text-left transition-colors duration-100",
+          "border-[#E6E8EB] bg-[#FFFFFF] text-[#1A1D1E]",
+          "hover:bg-[#E6E8EB]/50 focus:border-[#687076]/40 focus:bg-[#FFFFFF]",
+          "dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:text-[#E4E6EB] dark:hover:bg-[#2D2D2D]/50 dark:focus:border-[#A0A0A0]/40 dark:focus:bg-[#1A1A1A]"
+        )}
+      >
+        <span className="flex items-center justify-between gap-3">
+          <span className="truncate">{current}</span>
+          <ChevronLeft
+            className={cn(
+              "h-3.5 w-3.5 rotate-[-90deg] text-[#687076]/60 transition-transform duration-100 shrink-0",
+              open && "rotate-[90deg]"
+            )}
+          />
+        </span>
+      </button>
+
+      {open && (
+        <div
+          role="listbox"
+          tabIndex={-1}
+          className={cn(
+            "absolute z-20 mt-1 w-full overflow-hidden rounded-md border shadow-md",
+            "bg-[#FFFFFF] border-[#E6E8EB]",
+            "dark:border-[#2D2D2D] dark:bg-[#1A1A1A]"
+          )}
+        >
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              role="option"
+              aria-selected={opt.value === value}
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
+              className={cn(
+                "w-full px-3 py-2 text-left text-sm font-medium transition-colors duration-100",
+                opt.value === value
+                  ? "bg-[#F4F7F6] font-bold text-[#1A1D1E] dark:bg-[#111111] dark:text-[#E4E6EB]"
+                  : "text-[#687076] hover:bg-[#F4F7F6]/60 dark:text-[#A0A0A0] dark:hover:bg-[#111111]/50"
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function EditNotePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { user, loading } = useAuth();
   const router = useRouter();
-  
+  const initialTopicId = null;
+
   const [type, setType] = useState<NoteType>('general');
   const [title, setTitle] = useState('');
   const [isFavorite, setIsFavorite] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [content, setContent] = useState('');
-  const [topicId, setTopicId] = useState<string | null>(null);
+  const [topicId, setTopicId] = useState<string | null>(initialTopicId);
   const [isSaving, setIsSaving] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-   const [dsa, setDsa] = useState<DSAData>({
-     platform: '',
-     difficulty: 'Medium',
-     pattern: '',
-     problemStatement: '',
-     implementations: [{ language: 'Java', code: '', timeComplexity: '', spaceComplexity: '' }],
-     notes: ''
-   });
+  const [dsa, setDsa] = useState<DSAData>({
+    platform: '',
+    difficulty: 'Medium',
+    pattern: '',
+    problemStatement: '',
+    implementations: [{ language: 'Java', code: '', timeComplexity: '', spaceComplexity: '' }],
+    notes: ''
+  });
 
   const [qa, setQa] = useState<QAData>({
     topic: '',
     content: '',
     importantPoints: ['']
   });
+
+  const handleCreateTopic = async (newTitle: string) => {
+    const res = await fetch("/api/topics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: newTitle }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.topic;
+  };
 
   useEffect(() => {
     if (!loading && !user) router.push('/');
@@ -74,19 +231,19 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
 
            if (note.type === 'general') setContent(note.content || '');
            if (note.type === 'dsa' && note.dsa) {
-             // Normalize old DSA data to include per-implementation complexity fields
-             const normalizedDsa = {
-               ...note.dsa,
-               implementations: (note.dsa.implementations || []).map((impl: any) => ({
-                 language: impl.language || 'Java',
-                 code: impl.code || '',
-                 timeComplexity: impl.timeComplexity || '',
-                 spaceComplexity: impl.spaceComplexity || '',
-               })),
-             };
-             setDsa(normalizedDsa);
-           }
-           if (note.type === 'qa' && note.qa) setQa(note.qa);
+              // Normalize old DSA data to include per-implementation complexity fields
+              const normalizedDsa = {
+                ...note.dsa,
+                implementations: (note.dsa.implementations || []).map((impl: any) => ({
+                  language: impl.language || 'Java',
+                  code: impl.code || '',
+                  timeComplexity: impl.timeComplexity || '',
+                  spaceComplexity: impl.spaceComplexity || '',
+                })),
+              };
+              setDsa(normalizedDsa);
+            }
+            if (note.type === 'qa' && note.qa) setQa(note.qa);
         } else {
           router.push('/dashboard');
         }
@@ -101,31 +258,28 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
     fetchNote();
   }, [user, id, router]);
 
-  const handleAddTag = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
-      if (!tags.includes(tagInput.trim())) {
-        setTags([...tags, tagInput.trim()]);
-      }
-      setTagInput('');
+      if (!tags.includes(tagInput.trim())) setTags([...tags, tagInput.trim()]);
+      setTagInput("");
     }
   };
 
-  const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter(t => t !== tag));
-  };
+  const updateDsa = (fields: Partial<DSAData>) =>
+    setDsa((prev) => ({ ...prev, ...fields }));
 
   const handleAddImplementation = () => {
     setDsa({
       ...dsa,
-      implementations: [...dsa.implementations, { language: 'Java', code: '', timeComplexity: '', spaceComplexity: '' }]
+      implementations: [...dsa.implementations, { language: 'Java', code: '', timeComplexity: '', spaceComplexity: '' }],
     });
   };
 
   const handleRemoveImplementation = (index: number) => {
-    const newImpls = [...dsa.implementations];
-    newImpls.splice(index, 1);
-    setDsa({ ...dsa, implementations: newImpls });
+    const next = [...dsa.implementations];
+    next.splice(index, 1);
+    updateDsa({ implementations: next });
   };
 
   const handleAddPoint = () => {
@@ -133,15 +287,14 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
   };
 
   const handleRemovePoint = (index: number) => {
-    const newPoints = [...qa.importantPoints];
-    newPoints.splice(index, 1);
-    setQa({ ...qa, importantPoints: newPoints });
+    const next = [...qa.importantPoints];
+    next.splice(index, 1);
+    setQa({ ...qa, importantPoints: next });
   };
 
   const handleSave = async () => {
-    if (!title.trim()) return alert('Title is required');
+    if (!title.trim()) return alert("Title is required");
     if (!user) return;
-
     setIsSaving(true);
     try {
       const noteData: any = { title, isFavorite, tags, topicId };
@@ -170,412 +323,387 @@ export default function EditNotePage({ params }: { params: Promise<{ id: string 
     }
   };
 
-if (loading || isInitialLoading) {
-      return (
-        <div className="flex h-screen items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-neutral-900 dark:border-neutral-800 dark:border-t-neutral-400" />
-        </div>
-      );
-    }
+  if (loading || isInitialLoading) return null;
 
-return (
-      <div className="mx-auto max-w-5xl pb-20 font-sans">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+  return (
+    <div className="mx-6 lg:mx-10 font-sans text-[#1A1D1E] dark:text-[#E4E6EB]">
+      {/* Sticky Header */}
+      <div
+        className="sticky top-0 z-30 -mx-6 lg:-mx-10 px-6 lg:px-10 bg-[#FFFFFF]/95 dark:bg-[#1A1A1A]/95  border-b border-[#E6E8EB] dark:border-[#2D2D2D]"
+      >
+        <div className="py-3 flex items-center justify-between gap-4">
+          {/* Left: Back Button + Dynamic Title Header */}
+          <div className="flex items-center gap-3 min-w-0">
             <Link
               href={`/dashboard/notes/${id}`}
-              className="group flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+              className="group flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#E6E8EB] bg-[#FFFFFF] transition-colors duration-100 hover:bg-[#F4F7F6] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:hover:bg-[#111111]"
             >
-              <ChevronLeft className="h-4 w-4 text-neutral-500 group-hover:text-neutral-900 dark:text-neutral-400 dark:group-hover:text-neutral-100" />
+              <ChevronLeft className="h-4 w-4 text-[#687076] group-hover:text-[#1A1D1E] dark:text-[#A0A0A0] dark:group-hover:text-[#E4E6EB] transition-colors duration-100" />
             </Link>
-            <h1 className="text-2xl font-serif tracking-tight text-neutral-900 dark:text-neutral-100">
-              Edit Note
+            <h1 className="text-lg font-bold tracking-tight text-[#1A1D1E] dark:text-[#E4E6EB] truncate">
+              {title.trim() || "Edit Note"}
             </h1>
           </div>
-          <div className="flex items-center gap-2">
+
+          {/* Right Action Container: Filters, Star, Save Trigger */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Desktop Pill Selectors */}
+            <div className="hidden sm:flex items-center gap-0.5 p-0.5 rounded-full bg-[#F4F7F6] dark:bg-[#111111] border border-[#E6E8EB] dark:border-[#2D2D2D]">
+              {(["general", "dsa", "qa"] as const).map((t) => {
+                const Icon = TYPE_PILL_STYLES[t].icon;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setType(t)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 h-7 rounded-full text-[12px] font-bold uppercase tracking-wide border border-transparent transition-all duration-100",
+                      type === t ? TYPE_PILL_STYLES[t].active : TYPE_PILL_STYLES[t].inactive
+                    )}
+                  >
+                    <Icon className="h-3 w-3" />
+                    {t === "qa" ? "Q&A" : t}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Tablet/Slim Display Minimalist Icons Selector */}
+            <div className="flex sm:hidden items-center gap-0.5 p-0.5 rounded-full bg-[#F4F7F6] dark:bg-[#111111] border border-[#E6E8EB] dark:border-[#2D2D2D]">
+              {(["general", "dsa", "qa"] as const).map((t) => {
+                const Icon = TYPE_PILL_STYLES[t].icon;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setType(t)}
+                    className={cn(
+                      "flex items-center justify-center w-7 h-7 rounded-full border border-transparent transition-all duration-100",
+                      type === t ? TYPE_PILL_STYLES[t].active : "text-[#687076] dark:text-[#A0A0A0]"
+                    )}
+                  >
+                    <Icon className="h-3 w-3" />
+                  </button>
+                );
+              })}
+            </div>
+
             <button
-              type="button"
               onClick={() => setIsFavorite(!isFavorite)}
               className={cn(
-                "h-9 w-9 flex items-center justify-center rounded-xl border transition-colors",
+                "h-8 w-8 flex items-center justify-center rounded-full border transition-colors duration-100",
                 isFavorite
-                  ? "bg-amber-50 border-amber-200 text-amber-500 dark:bg-amber-500/10 dark:border-amber-500/20"
-                  : "bg-white border-neutral-200 text-neutral-400 hover:text-neutral-600 dark:bg-neutral-900 dark:border-neutral-800",
+                  ? "bg-amber-500/5 border-amber-500/20 text-amber-500 hover:bg-amber-500/10 hover:border-amber-500/30 dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-400"
+                  : "bg-[#FFFFFF] border-[#E6E8EB] text-[#687076] hover:text-[#1A1D1E] hover:bg-[#F4F7F6] dark:bg-[#1A1A1A] dark:border-[#2D2D2D] dark:hover:text-[#E4E6EB] dark:hover:bg-[#111111]"
               )}
             >
-              <Star className={cn("h-4 w-4", isFavorite && "fill-current")} />
+              <Star className={cn("h-3.5 w-3.5", isFavorite && "fill-current")} />
             </button>
+
             <button
-              type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center gap-2 h-9 px-5 rounded-xl bg-neutral-900 text-white text-[12px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-colors disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
+              className="flex items-center gap-1.5 h-8 px-4 rounded-full bg-[#1A1D1E] text-white text-[12px] font-bold uppercase tracking-wide hover:bg-[#687076] transition-colors duration-100 disabled:opacity-50 dark:bg-[#E4E6EB] dark:text-[#111111] dark:hover:bg-[#A0A0A0]"
             >
               {isSaving ? (
-                <span className="flex items-center gap-2">
-                  <div className="h-3.5 w-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  Saving...
-                </span>
+                "Saving..."
               ) : (
                 <>
-                  <Check className="h-4 w-4" /> Save
+                  <Check className="h-3.5 w-3.5" />
+                  Save
                 </>
               )}
             </button>
           </div>
         </div>
-
-        {/* Type Selector */}
-        <div className="mb-8 flex p-1.5 w-fit rounded-2xl bg-neutral-100/50 border border-neutral-200/50 dark:bg-neutral-900/50 dark:border-neutral-800">
-          {(['general', 'dsa', 'qa'] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setType(t)}
-              className={cn(
-                "flex items-center gap-2 px-6 h-9 rounded-xl text-[11px] font-black uppercase tracking-wider transition-colors",
-                "border border-transparent",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
-                "dark:focus-visible:ring-neutral-700 dark:focus-visible:ring-offset-neutral-900",
-                type === t
-                  ? "bg-white text-neutral-900 shadow-sm border-neutral-200 dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-700"
-                  : "bg-transparent text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-500 dark:hover:bg-neutral-900/40 dark:hover:text-neutral-300",
-              )}
-            >
-              {t === 'dsa' && <Code2 className="h-3.5 w-3.5" />}
-              {t === 'qa' && <BookOpen className="h-3.5 w-3.5" />}
-              {t === 'general' && <FileText className="h-3.5 w-3.5" />}
-              {t === 'qa' ? 'Q&A' : t}
-            </button>
-          ))}
-        </div>
-
-      {/* Title + Tags grouped */}
-      <div className="mb-6 space-y-3">
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Note title..."
-          className="h-12 w-full rounded-xl border px-4 text-base font-semibold outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
-        />
-
-        <div className="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-          <label className="mb-2 block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
-            Topic
-          </label>
-          <TopicSelector value={topicId} onChange={setTopicId} />
-        </div>
-
-        {/* Tags */}
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
-          <Tag className="h-3.5 w-3.5 text-neutral-400 mr-2" />
-          {tags.map((tag) => (
-            <span
-              key={tag}
-              className="flex items-center gap-1.5 bg-neutral-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-neutral-600 rounded-lg dark:bg-neutral-800 dark:text-neutral-400"
-            >
-              #{tag}
-              <button
-                type="button"
-                onClick={() => handleRemoveTag(tag)}
-                className="text-neutral-400 hover:text-red-500 transition-colors"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </span>
-          ))}
-          <input
-            type="text"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={handleAddTag}
-            placeholder="Add tag..."
-            className="flex-1 min-w-[120px] bg-transparent outline-none text-[13px] placeholder:text-neutral-400 dark:text-neutral-100"
-          />
-        </div>
       </div>
 
-      {/* Type-specific content */}
-      <div className="space-y-5">
-        {/* General */}
-        {type === 'general' && (
-          <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
-            <div className="flex items-center gap-2 border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
-              <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
-                Content
-              </span>
-              <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[9px] font-bold text-neutral-500 uppercase dark:bg-neutral-800 dark:text-neutral-400">
-                Markdown
-              </span>
-            </div>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Write your note..."
-              className="w-full min-h-[400px] p-6 text-[14px] text-neutral-700 bg-transparent outline-none resize-none leading-relaxed dark:text-neutral-300 placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
-            />
+      {/* Main Interactive Workspace Container */}
+      <div className="py-6 space-y-6">
+        {/* Dynamic Core Header Input Field */}
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Untitled Note"
+          className="w-full bg-transparent text-3xl font-bold tracking-tight text-[#1A1D1E] dark:text-[#E4E6EB] placeholder:text-[#687076]/40 dark:placeholder:text-[#A0A0A0]/30 outline-none border-b border-[#E6E8EB] dark:border-[#2D2D2D] pb-3"
+        />
+
+        {/* Global Metadata Matrix Grid Alignment */}
+        <div className="flex flex-col md:flex-row md:items-start gap-6">
+          {/* Linked Topic Anchor */}
+          <div className="w-full md:w-64 shrink-0 space-y-1.5">
+            <InlineLabel>Topic</InlineLabel>
+            <TopicSelector value={topicId} onChange={setTopicId} onCreate={handleCreateTopic} />
           </div>
-        )}
 
-        {/* DSA */}
-        {type === 'dsa' && (
-          <div className="space-y-5">
-            {/* Meta row */}
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
-              <div className="border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
-                <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
-                  Problem Info
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-5 p-5">
-                <div>
-                  <label className="block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 mb-2 dark:text-neutral-400">
-                    Platform
-                  </label>
-                  <input
-                    type="text"
-                    value={dsa.platform}
-                    onChange={(e) => setDsa({ ...dsa, platform: e.target.value })}
-                    placeholder="LeetCode"
-                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 mb-2 dark:text-neutral-400">
-                    Difficulty
-                  </label>
-                  <select
-                    value={dsa.difficulty}
-                    onChange={(e) => setDsa({ ...dsa, difficulty: e.target.value as 'Easy' | 'Medium' | 'Hard' })}
-                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
-                  >
-                    <option>Easy</option>
-                    <option>Medium</option>
-                    <option>Hard</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 mb-2 dark:text-neutral-400">
-                    Pattern
-                  </label>
-                  <input
-                    type="text"
-                    value={dsa.pattern}
-                    onChange={(e) => setDsa({ ...dsa, pattern: e.target.value })}
-                    placeholder="Two Pointers, Sliding Window..."
-                    className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Problem Statement */}
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
-              <div className="flex items-center gap-2 border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
-                <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
-                  Problem Statement
-                </span>
-                <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[9px] font-bold text-neutral-500 uppercase dark:bg-neutral-800 dark:text-neutral-400">
-                  Markdown
-                </span>
-              </div>
-              <textarea
-                value={dsa.problemStatement}
-                onChange={(e) => setDsa({ ...dsa, problemStatement: e.target.value })}
-                placeholder="Describe the problem..."
-                className="w-full min-h-[150px] p-5 text-[13.5px] bg-transparent outline-none resize-none dark:text-neutral-300 placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
-              />
-            </div>
-
-            {/* Implementations */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
-                  Implementations
-                </span>
-                <button
-                  type="button"
-                  onClick={handleAddImplementation}
-                  className="flex items-center gap-2 h-9 px-4 rounded-xl border border-neutral-200 bg-white text-[12px] font-black uppercase tracking-wider text-neutral-600 hover:bg-neutral-50 transition-colors dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
+          {/* Managed Functional Meta Tags Input */}
+          <div className="flex-1 space-y-1.5">
+            <InlineLabel>Tags</InlineLabel>
+            <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-[#E6E8EB] bg-[#FFFFFF] px-3 py-[5px] transition-colors duration-100 focus-within:border-[#687076]/40 dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:focus-within:border-[#A0A0A0]/40">
+              <Tag className="h-3.5 w-3.5 text-[#687076]/40 dark:text-[#A0A0A0]/40 shrink-0" />
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="flex items-center gap-1 bg-[#F4F7F6] dark:bg-[#111111] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#687076] dark:text-[#A0A0A0] rounded border border-[#E6E8EB] dark:border-[#2D2D2D]"
                 >
-                  <Plus className="h-4 w-4" /> Add Language
-                </button>
-              </div>
-              <div className="space-y-4">
-                {dsa.implementations.map((impl, index) => (
-                  <div
-                    key={index}
-                    className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50"
+                  #{tag}
+                  <button
+                    onClick={() => setTags(tags.filter((t) => t !== tag))}
+                    className="text-[#687076] hover:text-red-500 dark:text-[#A0A0A0] dark:hover:text-red-400 transition-colors duration-100"
                   >
-                    <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-                      <select
-                        value={impl.language}
-                        onChange={(e) => {
-                          const newImpls = [...dsa.implementations];
-                          newImpls[index].language = e.target.value;
-                          setDsa({ ...dsa, implementations: newImpls });
-                        }}
-                        className="text-[12px] font-black uppercase tracking-wider outline-none bg-transparent text-neutral-600 w-40 dark:text-neutral-200"
-                      >
-                        <option value="Java">Java</option>
-                        <option value="Python">Python</option>
-                        <option value="C++">C++</option>
-                        <option value="JavaScript">JavaScript</option>
-                      </select>
-                      {dsa.implementations.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImplementation(index)}
-                          className="text-neutral-500 hover:text-red-500 transition-colors dark:text-neutral-400"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                    <CodeEditor
-                      language={impl.language}
-                      value={impl.code}
-                      onChange={(code) => {
-                        const newImpls = [...dsa.implementations];
-                        newImpls[index].code = code;
-                        setDsa({ ...dsa, implementations: newImpls });
-                      }}
-                    />
-                    <div className="grid grid-cols-2 gap-4 p-5 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950">
-                      <div>
-                        <label className="block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 mb-2 dark:text-neutral-400">
-                          Time
-                        </label>
-                        <input
-                          type="text"
-                          value={impl.timeComplexity}
-                          onChange={(e) => {
-                            const newImpls = [...dsa.implementations];
-                            newImpls[index].timeComplexity = e.target.value;
-                            setDsa({ ...dsa, implementations: newImpls });
-                          }}
-                          placeholder="O(n)"
-                          className="h-10 w-full rounded-xl border px-4 text-[13px] font-mono outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 mb-2 dark:text-neutral-400">
-                          Space
-                        </label>
-                        <input
-                          type="text"
-                          value={impl.spaceComplexity}
-                          onChange={(e) => {
-                            const newImpls = [...dsa.implementations];
-                            newImpls[index].spaceComplexity = e.target.value;
-                            setDsa({ ...dsa, implementations: newImpls });
-                          }}
-                          placeholder="O(1)"
-                          className="h-10 w-full rounded-xl border px-4 text-[13px] font-mono outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
-              <div className="border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
-                <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
-                  Notes
+                    <X className="h-2.5 w-2.5" />
+                  </button>
                 </span>
-              </div>
-              <textarea
-                value={dsa.notes}
-                onChange={(e) => setDsa({ ...dsa, notes: e.target.value })}
-                placeholder="Additional notes, hints, edge cases..."
-                className="w-full min-h-[120px] p-5 text-[13px] text-neutral-600 placeholder:text-neutral-400 outline-none resize-none bg-transparent leading-6 dark:text-neutral-400 dark:placeholder:text-neutral-600"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Q&A */}
-        {type === 'qa' && (
-          <div className="space-y-5">
-            <div>
-              <label className="block text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 mb-2 dark:text-neutral-400">
-                Topic
-              </label>
+              ))}
               <input
-                type="text"
-                value={qa.topic}
-                onChange={(e) => setQa({ ...qa, topic: e.target.value })}
-                placeholder="System Design, React, Node.js..."
-                className="h-10 w-full rounded-xl border px-4 text-[13px] font-medium outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleAddTag}
+                placeholder="Add tag..."
+                className="flex-1 min-w-[100px] bg-transparent outline-none text-sm text-[#1A1D1E] placeholder:text-[#687076]/50 dark:text-[#E4E6EB] dark:placeholder:text-[#A0A0A0]/40 py-0.5"
               />
-            </div>
-
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
-              <div className="flex items-center gap-2 border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
-                <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
-                  Content
-                </span>
-                <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[9px] font-bold text-neutral-500 uppercase dark:bg-neutral-800 dark:text-neutral-400">
-                  Markdown
-                </span>
-              </div>
-              <textarea
-                value={qa.content}
-                onChange={(e) => setQa({ ...qa, content: e.target.value })}
-                placeholder="Write your Q&A..."
-                className="w-full min-h-[300px] p-6 text-[14px] bg-transparent outline-none resize-none dark:text-neutral-300 placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
-              />
-            </div>
-
-            {/* Key Takeaways */}
-            <div className="rounded-[10px] border border-neutral-200 bg-white overflow-hidden dark:border-neutral-800 dark:bg-neutral-900/50">
-              <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
-                <span className="text-[10.5px] font-black uppercase tracking-[0.1em] text-neutral-500 dark:text-neutral-400">
-                  Key Takeaways
-                </span>
-                <button
-                  type="button"
-                  onClick={handleAddPoint}
-                  className="flex items-center gap-2 h-9 px-4 rounded-xl border border-neutral-200 bg-white text-[12px] font-black uppercase tracking-wider text-neutral-600 hover:bg-neutral-50 transition-colors dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
-                >
-                  <Plus className="h-4 w-4" /> Add Point
-                </button>
-              </div>
-              <div className="p-4 space-y-2.5">
-                {qa.importantPoints.map((point, index) => (
-                  <div key={index} className="flex items-center gap-2.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-neutral-300 flex-shrink-0 dark:bg-neutral-600" />
-                    <input
-                      type="text"
-                      value={point}
-                      onChange={(e) => {
-                        const newPoints = [...qa.importantPoints];
-                        newPoints[index] = e.target.value;
-                        setQa({ ...qa, importantPoints: newPoints });
-                      }}
-                      placeholder="Important point..."
-                      className="flex-1 h-10 rounded-xl border px-4 text-[13px] font-medium outline-none transition-colors border-neutral-200 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-2 focus:ring-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-700 dark:focus:bg-neutral-950 dark:focus:ring-neutral-900/50"
-                    />
-                    {qa.importantPoints.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemovePoint(index)}
-                        className="flex-shrink-0 text-neutral-400 hover:text-red-500 transition-colors dark:text-neutral-500"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Workspace Panels Strategy Layer */}
+        <div className="pt-2">
+          {type === "general" && (
+            <div className="space-y-3">
+              <SectionDivider>Content</SectionDivider>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Write your note..."
+                className="w-full min-h-[400px] p-4 text-base font-medium text-[#1A1D1E] bg-[#FFFFFF] dark:bg-[#1A1A1A] border border-[#E6E8EB] dark:border-[#2D2D2D] rounded-md outline-none resize-none leading-relaxed dark:text-[#E4E6EB] placeholder:text-[#687076]/50 dark:placeholder:text-[#A0A0A0]/35 focus:border-[#687076]/40 dark:focus:border-[#A0A0A0]/40 transition-colors duration-100"
+              />
+            </div>
+          )}
+
+          {type === "dsa" && (
+            <div className="space-y-6">
+               {/* Problem Attribute Details Workspace Grid */}
+               <div>
+                 <SectionDivider>Problem Details</SectionDivider>
+                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                   <div className="space-y-1.5">
+                     <InlineLabel>Platform</InlineLabel>
+                     <InputField
+                       placeholder="LeetCode"
+                       value={dsa.platform}
+                       onChange={(e) => updateDsa({ platform: e.target.value })}
+                     />
+                   </div>
+                   <div className="space-y-1.5">
+                     <InlineLabel>Difficulty</InlineLabel>
+                     <Dropdown
+                       ariaLabel="Difficulty"
+                       value={dsa.difficulty}
+                       onChange={(next) => updateDsa({ difficulty: next })}
+                       options={[
+                         { label: "Easy", value: "Easy" },
+                         { label: "Medium", value: "Medium" },
+                         { label: "Hard", value: "Hard" },
+                       ]}
+                     />
+                   </div>
+                   <div className="space-y-1.5">
+                     <InlineLabel>Pattern</InlineLabel>
+                     <InputField
+                       placeholder="Sliding Window"
+                       value={dsa.pattern}
+                       onChange={(e) => updateDsa({ pattern: e.target.value })}
+                     />
+                   </div>
+                 </div>
+               </div>
+
+               {/* Implementations Block */}
+               <div className="space-y-4">
+                 <SectionDivider>Implementations</SectionDivider>
+                 <div className="space-y-4">
+                   {dsa.implementations.map((impl, idx) => (
+                     <div
+                       key={idx}
+                       className="rounded-lg border border-[#E6E8EB] bg-[#FFFFFF] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] overflow-hidden shadow-sm"
+                     >
+                       {/* Sub-Header Node Control Blocks */}
+                       <div className="flex items-center justify-between px-4 py-3 bg-[#F4F7F6]/50 dark:bg-[#111111]/40 border-b border-[#E6E8EB] dark:border-[#2D2D2D]">
+                         <div className="w-[120px]">
+                           <Dropdown
+                             ariaLabel="Language"
+                             value={impl.language}
+                             onChange={(next) => {
+                               const nextImpl = [...dsa.implementations];
+                               nextImpl[idx].language = next;
+                               updateDsa({ implementations: nextImpl });
+                             }}
+                             options={[
+                               { label: "Java", value: "Java" },
+                               { label: "Python", value: "Python" },
+                               { label: "C++", value: "C++" },
+                               { label: "JavaScript", value: "JavaScript" }
+                             ]}
+                           />
+                         </div>
+                         <button
+                           onClick={() => {
+                             const next = [...dsa.implementations];
+                             next.splice(idx, 1);
+                             updateDsa({ implementations: next });
+                           }}
+                           className="p-1.5 rounded-full hover:bg-[#E6E8EB] dark:hover:bg-[#2D2D2D] text-[#687076] hover:text-red-500 dark:text-[#A0A0A0] dark:hover:text-red-400 transition-colors duration-100"
+                         >
+                           <Trash2 className="h-3.5 w-3.5" />
+                         </button>
+                       </div>
+
+                       {/* Code Execution Representation Canvas Layer */}
+                       <div className="p-4 bg-[#FFFFFF] dark:bg-[#1A1A1A]">
+                         <CodeEditor
+                           language={impl.language}
+                           value={impl.code}
+                           onChange={(code) => {
+                             const next = [...dsa.implementations];
+                             next[idx].code = code;
+                             updateDsa({ implementations: next });
+                           }}
+                         />
+                       </div>
+
+                       {/* Algorithmic Metrics Inputs Matrix Block */}
+                       <div className="grid grid-cols-2 border-t border-[#E6E8EB] dark:border-[#2D2D2D] bg-[#F4F7F6]/30 dark:bg-[#111111]/20">
+                         <div className="flex items-center gap-3 px-4 py-2.5 border-r border-[#E6E8EB] dark:border-[#2D2D2D]">
+                           <span className="text-[10px] font-bold text-[#687076] uppercase tracking-wider dark:text-[#A0A0A0] shrink-0">
+                             Time
+                           </span>
+                           <input
+                             className="bg-transparent border-b border-[#E6E8EB]/60 text-sm font-mono text-[#1A1D1E] outline-none focus:border-[#687076]/40 pb-0.5 w-full placeholder:text-[#687076]/45 dark:border-[#2D2D2D]/60 dark:text-[#E4E6EB] dark:focus:border-[#A0A0A0]/40 transition-colors duration-100 dark:placeholder:text-[#A0A0A0]/35"
+                             placeholder="O(n)"
+                             value={impl.timeComplexity}
+                             onChange={(e) => {
+                               const next = [...dsa.implementations];
+                               next[idx].timeComplexity = e.target.value;
+                               updateDsa({ implementations: next });
+                             }}
+                           />
+                         </div>
+                         <div className="flex items-center gap-3 px-4 py-2.5">
+                           <span className="text-[10px] font-bold text-[#687076] uppercase tracking-wider dark:text-[#A0A0A0] shrink-0">
+                             Space
+                           </span>
+                           <input
+                             className="bg-transparent border-b border-[#E6E8EB]/60 text-sm font-mono text-[#1A1D1E] outline-none focus:border-[#687076]/40 pb-0.5 w-full placeholder:text-[#687076]/45 dark:border-[#2D2D2D]/60 dark:text-[#E4E6EB] dark:focus:border-[#A0A0A0]/40 transition-colors duration-100 dark:placeholder:text-[#A0A0A0]/35"
+                             placeholder="O(1)"
+                             value={impl.spaceComplexity}
+                             onChange={(e) => {
+                               const next = [...dsa.implementations];
+                               next[idx].spaceComplexity = e.target.value;
+                               updateDsa({ implementations: next });
+                             }}
+                           />
+                         </div>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+
+                 <button
+                   onClick={() =>
+                     updateDsa({
+                       implementations: [
+                         ...dsa.implementations,
+                         { language: "Java", code: "", timeComplexity: "", spaceComplexity: "" },
+                       ],
+                     })
+                   }
+                   className="flex items-center gap-1.5 px-3 h-8 rounded-full border border-[#E6E8EB] bg-[#FFFFFF] text-[11px] font-bold uppercase tracking-wide text-[#687076] hover:bg-[#F4F7F6] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:text-[#A0A0A0] dark:hover:bg-[#111111] transition-colors duration-100"
+                 >
+                   <Plus className="h-3 w-3" />
+                   Add Language
+                 </button>
+               </div>
+
+               {/* Core Problem Statement Canvas Block */}
+               <div className="space-y-3">
+                 <SectionDivider>Problem Statement</SectionDivider>
+                 <textarea
+                   value={dsa.problemStatement}
+                   onChange={(e) => updateDsa({ problemStatement: e.target.value })}
+                   placeholder="Describe the problem properties and core challenges..."
+                   className="w-full min-h-[140px] p-4 text-base font-medium bg-[#FFFFFF] dark:bg-[#1A1A1A] border border-[#E6E8EB] dark:border-[#2D2D2D] rounded-md outline-none resize-none dark:text-[#E4E6EB] placeholder:text-[#687076]/50 dark:placeholder:text-[#A0A0A0]/35 focus:border-[#687076]/40 dark:focus:border-[#A0A0A0]/40 transition-colors duration-100"
+                 />
+               </div>
+
+               {/* Algorithmic Intuition & Conceptual Notes Container */}
+               <div className="space-y-3">
+                 <SectionDivider>Notes</SectionDivider>
+                 <textarea
+                   value={dsa.notes}
+                   onChange={(e) => updateDsa({ notes: e.target.value })}
+                   placeholder="Analyze tricky edge cases, abstract complexity assumptions, or mathematical intuition models..."
+                   className="w-full min-h-[140px] p-4 text-base font-medium text-[#1A1D1E] bg-[#FFFFFF] dark:bg-[#1A1A1A] border border-[#E6E8EB] dark:border-[#2D2D2D] rounded-md outline-none resize-none dark:text-[#E4E6EB] placeholder:text-[#687076]/50 dark:placeholder:text-[#A0A0A0]/35 focus:border-[#687076]/40 dark:focus:border-[#A0A0A0]/40 transition-colors duration-100"
+                 />
+               </div>
+             </div>
+           )}
+
+           {type === "qa" && (
+             <div className="space-y-6">
+               {/* Detailed Explanation Textarea Array Workspace */}
+               <div className="space-y-3">
+                 <SectionDivider>Detailed Answer</SectionDivider>
+                 <textarea
+                   value={qa.content}
+                   onChange={(e) => setQa({ ...qa, content: e.target.value })}
+                   placeholder="Document structural mechanics, architectural design tradeoffs, or precise operational definitions..."
+                   className="w-full min-h-[280px] p-4 text-base font-medium bg-[#FFFFFF] dark:bg-[#1A1A1A] border border-[#E6E8EB] dark:border-[#2D2D2D] rounded-md outline-none resize-none dark:text-[#E4E6EB] placeholder:text-[#687076]/50 dark:placeholder:text-[#A0A0A0]/35 focus:border-[#687076]/40 dark:focus:border-[#A0A0A0]/40 transition-colors duration-100"
+                 />
+               </div>
+
+               {/* Key Highlights Segment Column Checklist */}
+               <div className="space-y-3">
+                 <SectionDivider>Key Takeaways</SectionDivider>
+                 <div className="space-y-3">
+                   {qa.importantPoints.map((p, i) => (
+                     <div key={i} className="flex items-center gap-3 group">
+                       <div className="h-1.5 w-1.5 rounded-full bg-[#687076]/50 dark:bg-[#A0A0A0]/50 shrink-0" />
+                       <input
+                         value={p}
+                         onChange={(e) => {
+                           const next = [...qa.importantPoints];
+                           next[i] = e.target.value;
+                           setQa({ ...qa, importantPoints: next });
+                         }}
+                         className="flex-1 bg-transparent border-b border-[#E6E8EB] dark:border-[#2D2D2D] py-1 text-base font-medium outline-none focus:border-[#687076]/40 dark:focus:border-[#A0A0A0]/40 dark:text-[#E4E6EB] transition-colors duration-100 placeholder:text-[#687076]/40 dark:placeholder:text-[#A0A0A0]/30"
+                         placeholder="State critical architecture milestone or key takeaway concept..."
+                       />
+                       <button
+                         onClick={() => {
+                           const next = [...qa.importantPoints];
+                           next.splice(i, 1);
+                           setQa({ ...qa, importantPoints: next });
+                         }}
+                         className="p-1 text-[#687076]/40 hover:text-red-500 dark:text-[#A0A0A0]/40 dark:hover:text-red-400 rounded-full transition-colors duration-100 opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                       >
+                         <X className="h-4 w-4" />
+                       </button>
+                     </div>
+                   ))}
+                   <button
+                     onClick={() =>
+                       setQa({ ...qa, importantPoints: [...qa.importantPoints, ""] })
+                     }
+                     className="flex items-center gap-1.5 mt-2 text-[11px] font-bold uppercase tracking-wide text-[#687076] hover:text-[#1A1D1E] dark:text-[#A0A0A0] dark:hover:text-[#E4E6EB] transition-colors duration-100"
+                   >
+                     <Plus className="h-3 w-3" />
+                     Add Point
+                   </button>
+                 </div>
+               </div>
+             </div>
+           )}
+        </div>
       </div>
     </div>
   );

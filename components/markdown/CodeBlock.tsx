@@ -15,7 +15,7 @@ const CODE_FONT_FAMILY =
 const removeBackgrounds = (style: Record<string, CSSProperties>, isDark: boolean) =>
   Object.fromEntries(
     Object.entries(style).map(([key, value]) => {
-      const isRoot = key.startsWith('pre[') || key.startsWith('code[');
+      const isRoot = key.startsWith('pre') || key.startsWith('code');
       
       // Inject unified structural tokens for custom keywords, strings, and operators
       let structuralOverrides: CSSProperties = {};

@@ -368,7 +368,7 @@ export function CodeEditor({ language, value, onChange, placeholder = '// Your c
             right: '0',
             top: adjustedHighlightTop,
             height: lineHeightPx,
-            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
           }}
         />
 

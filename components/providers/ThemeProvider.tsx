@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, useSyncExternalStore } from 'react';
 
 type Theme = 'dark' | 'light' | 'system';
 
@@ -12,22 +12,33 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+function getSystemTheme(): 'dark' | 'light' {
+  if (typeof window !== 'undefined') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  return 'light';
+}
+
+function getStoredTheme(): Theme | null {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('theme') as Theme | null;
+    if (stored && ['dark', 'light', 'system'].includes(stored)) {
+      return stored;
+    }
+  }
+  return null;
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('theme') as Theme | null;
-      if (stored && ['dark', 'light', 'system'].includes(stored)) {
-        return stored;
-      }
+  const [theme, setThemeState] = useState<Theme>('system');
+  const [systemTheme, setSystemTheme] = useState<'dark' | 'light'>(() => getSystemTheme());
+
+  useEffect(() => {
+    const stored = getStoredTheme();
+    if (stored) {
+      setThemeState(stored);
     }
-    return 'system';
-  });
-  const [systemTheme, setSystemTheme] = useState<'dark' | 'light'>(() => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    return 'light';
-  });
+  }, []);
 
   const resolvedTheme = useMemo(() => (theme === 'system' ? systemTheme : theme), [theme, systemTheme]);
 

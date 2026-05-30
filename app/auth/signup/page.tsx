@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { SignUp } from '@clerk/nextjs';
-import { motion } from 'motion/react';
 
 export default function SignupPage() {
   return (
@@ -70,9 +69,7 @@ export default function SignupPage() {
           Back
         </Link>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
           className="w-full max-w-[400px]"
         >
           <SignUp 
@@ -101,7 +98,7 @@ export default function SignupPage() {
               Sign in
             </Link>
           </p>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Navbar />
         
         {/* Main Content Workspace Canvas */}
-        <main className="flex-1 overflow-y-auto bg-[#F4F7F6] dark:bg-[#111111] transition-colors duration-100">
+        <main className="flex-1 overflow-y-auto  transition-colors duration-100">
           <div className="">
             {children}
           </div>

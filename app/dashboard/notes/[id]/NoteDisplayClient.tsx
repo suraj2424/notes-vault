@@ -104,6 +104,22 @@ export const MarkdownRenderer = memo(({ content, resolvedTheme }: MarkdownRender
             </div>
           );
         },
+        // Explicitly format list wrappers to eliminate unexpected box rendering
+        ul({ children }) {
+          return <ul className="my-5 list-none space-y-2 pl-0">{children}</ul>;
+        },
+        ol({ children }) {
+          return <ol className="my-5 list-decimal space-y-2 pl-6 text-primary">{children}</ol>;
+        },
+        li({ children }) {
+          // Removes accidental trailing/leading text wrapper issues inside list nodes
+          return (
+            <li className="flex items-start gap-2 text-base text-primary">
+              <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-400 dark:bg-neutral-600" />
+              <span className="flex-1">{children}</span>
+            </li>
+          );
+        },
         table({ children }) {
           return (
             <div className="not-prose my-6 w-full overflow-x-auto rounded-lg border border-default">
@@ -332,12 +348,13 @@ function StickyNoteHeader({
   return (
     <header
       className={cn(
-        'sticky top-0 z-30 -mx-5 border-b border-transparent px-5 py-3 transition-colors duration-150',
-        isCompact &&
-          'border-default bg-[#FFFFFF]/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-[#FFFFFF]/80 dark:bg-[#0F0F0F]/95 dark:supports-[backdrop-filter]:bg-[#0F0F0F]/80'
+        'sticky top-0 z-30 w-full border-b transition-all duration-150',
+        isCompact
+          ? 'border-default shadow-sm bg-[#FFFFFF] dark:bg-[#1A1A1A]'
+          : 'border-transparent bg-[#FFFFFF] dark:bg-[#1A1A1A]'
       )}
     >
-      <div className="flex items-start gap-3">
+      <div className="mx-auto flex max-w-7xl items-center gap-3 px-5 py-3">
         <Link
           href="/dashboard/notes"
           className={cn(iconButtonClass, 'mt-0.5')}
@@ -384,8 +401,7 @@ function StickyNoteHeader({
             <Star
               className={cn(
                 'h-4 w-4',
-                isFavorite && 'fill-amber-500',
-                isTogglingFavorite && 'animate-pulse'
+                isFavorite && 'fill-amber-500'
               )}
             />
           </button>
@@ -708,7 +724,7 @@ export default function NoteDisplayClient({
   };
 
   return (
-    <div ref={rootRef} className="w-full px-5 pb-16 font-sans">
+    <div ref={rootRef} className="w-full pt-4 pb-16 font-sans">
       <StickyNoteHeader
         note={note}
         topicTitle={topicTitle}
@@ -722,7 +738,9 @@ export default function NoteDisplayClient({
         onDelete={onDelete}
       />
 
-      <main className="mt-6 space-y-5">{renderContent()}</main>
+      <main className="mx-auto mt-6 max-w-5xl px-5">
+        <div className="space-y-5">{renderContent()}</div>
+      </main>
     </div>
   );
 }

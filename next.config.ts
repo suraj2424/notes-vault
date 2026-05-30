@@ -2,9 +2,7 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  turbopack: {},
   typescript: {
     // Some environments (locked-down Windows shells / CI sandboxes) can throw `spawn EPERM`
     // during Next.js' type-check phase. We run type-checking separately (e.g. in editor/CI),

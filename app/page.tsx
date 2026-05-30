@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { LogIn, Shield, Zap, BookOpen, Code2, ArrowRight, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -45,9 +44,7 @@ export default function LandingPage() {
 
       <main className="mx-auto max-w-7xl h-[calc(100vh-140px)] px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         {/* Left Column: Content */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+        <div
           className="flex flex-col items-start"
         >
           <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-neutral-100 border border-neutral-200 text-[12px] font-bold uppercase tracking-widest text-neutral-700 mb-6">
@@ -72,7 +69,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-4 mb-12">
             <Link
               href="/auth/login"
-              className="group flex items-center gap-2 h-11 px-6 rounded-[8px] bg-neutral-900 text-sm font-medium text-white transition-colors transition-transform hover:bg-neutral-800 active:scale-95"
+              className="group flex items-center gap-2 h-11 px-6 rounded-[8px] bg-neutral-900 text-sm font-medium text-white transition-colors hover:bg-neutral-800 active:scale-95"
             >
               Start Your Vault
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -104,12 +101,10 @@ export default function LandingPage() {
               label="Q&A"
             />
           </div>
-        </motion.div>
+        </div>
 
         {/* Right Column: Visual Mockup */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+        <div
           className="relative h-[480px] w-full rounded-xl border border-neutral-200 bg-neutral-50/50 p-2 overflow-hidden"
         >
           <div className="h-full w-full rounded-lg bg-white border border-neutral-200 shadow-2xl overflow-hidden flex flex-col">
@@ -124,22 +119,12 @@ export default function LandingPage() {
 
             {/* Dynamic Viewport */}
             <div className="flex-1 p-6 font-mono text-[13px]">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition
-                >
-                  {activeTab === 'dsa' && <DSAMockup />}
-                  {activeTab === 'general' && <GeneralMockup />}
-                  {activeTab === 'qa' && <QAMockup />}
-                </motion.div>
-              </AnimatePresence>
+              {activeTab === 'dsa' && <DSAMockup />}
+              {activeTab === 'general' && <GeneralMockup />}
+              {activeTab === 'qa' && <QAMockup />}
             </div>
           </div>
-        </motion.div>
+        </div>
       </main>
 
       {/* Footer */}

@@ -65,7 +65,7 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
   return (
     <div className="w-full px-5 pb-16 font-sans text-primary antialiased">
       {/* Header */}
-      <header className="flex flex-col justify-between gap-4 border-b border-default bg-[#F4F7F6] py-5 dark:bg-[#111111] sm:flex-row sm:items-end">
+      <header className="flex flex-col justify-between gap-4 border-b border-default  py-5  sm:flex-row sm:items-end">
         <div className="flex items-center gap-4">
           <div className="hidden h-11 w-11 items-center justify-center rounded-lg border border-default bg-surface text-xs font-bold text-primary sm:flex">
             {initials}

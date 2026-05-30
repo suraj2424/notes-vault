@@ -53,6 +53,8 @@ const TopicSchema = new Schema<ITopic>(
 
 TopicSchema.index({ userId: 1, updatedAt: -1 });
 TopicSchema.index({ userId: 1, isArchived: 1 });
+TopicSchema.index({ userId: 1, isArchived: 1, updatedAt: -1 });
+TopicSchema.index({ title: "text", description: "text" });
 
 if (mongoose.models.Topic) {
   delete mongoose.models.Topic;

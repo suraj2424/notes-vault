@@ -63,7 +63,7 @@ export default function TopicDetailClient({
 }) {
   return (
     <div className="w-full px-5 pb-16 font-sans">
-      <header className="sticky top-0 z-30 -mx-5 border-b border-default bg-[#F4F7F6]/95 px-5 backdrop-blur supports-[backdrop-filter]:bg-[#F4F7F6]/80 dark:bg-[#111111]/95 dark:supports-[backdrop-filter]:bg-[#111111]/80">
+      <header className="sticky top-0 z-30 -mx-5 border-b border-default px-5">
         <div className="flex flex-col gap-4 py-4">
           <div
             className="h-36 overflow-hidden rounded-lg border border-default sm:h-44"

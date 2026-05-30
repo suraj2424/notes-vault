@@ -3,7 +3,7 @@ import { z } from "zod";
 import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/mongodb";
 import Topic from "@/models/Topic";
-import { escapeRegex, formatTopic } from "@/lib/topics";
+import { formatTopic } from "@/lib/topics";
 import { TOPIC_COLOR_PALETTE } from "@/lib/topic-constants";
 
 const createTopicSchema = z.object({
@@ -33,12 +33,11 @@ export async function GET(request: NextRequest) {
       ...(includeArchived ? {} : { isArchived: false }),
     };
 
-    if (search) {
-      const pattern = new RegExp(escapeRegex(search), "i");
-      query.$or = [{ title: pattern }, { description: pattern }];
-    }
+if (search) {
+  query.$text = { $search: search };
+}
 
-    const skip = (page - 1) * pageSize;
+const skip = (page - 1) * pageSize;
 
     const [topics, total] = await Promise.all([
       Topic.find(query).sort({ updatedAt: -1 }).skip(skip).limit(pageSize).lean(),

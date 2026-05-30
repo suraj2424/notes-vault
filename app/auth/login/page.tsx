@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { SignIn } from '@clerk/nextjs';
-import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 
 export default function LoginPage() {
@@ -71,9 +70,7 @@ export default function LoginPage() {
           Back
         </Link>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
           className="w-full max-w-[400px]"
         >
           {/* Mobile logo (hidden on LG) */}
@@ -118,7 +115,7 @@ export default function LoginPage() {
               Sign up
             </Link>
           </p>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

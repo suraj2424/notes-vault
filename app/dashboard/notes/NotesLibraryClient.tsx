@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { AnimatePresence, motion } from "motion/react";
 import { formatDistanceToNow } from "date-fns";
 import {
   ArrowUpDown,
@@ -303,41 +302,33 @@ function SortMenu({
         <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-100", open && "rotate-180")} />
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <>
-            <div className="fixed inset-0 z-10" onClick={() => onOpenChange(false)} />
-            <motion.div
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 4 }}
-              transition={{ duration: 0.08 }}
-              className="absolute right-0 top-full z-20 mt-1 w-44 overflow-hidden rounded-lg border border-default bg-surface shadow-sm"
-            >
-              <div className="p-1">
-                {sortOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => {
-                      onSortChange(option.value);
-                      onOpenChange(false);
-                    }}
-                    className={cn(
-                      "w-full rounded px-2 py-2 text-left text-xs font-medium transition-colors duration-100",
-                      sortBy === option.value
-                        ? "bg-bg-muted font-bold text-primary"
-                        : "text-secondary hover:bg-bg-muted hover:text-primary"
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => onOpenChange(false)} />
+          <div className="absolute right-0 top-full z-20 mt-1 w-44 overflow-hidden rounded-lg border border-default bg-surface shadow-sm">
+            <div className="p-1">
+              {sortOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    onSortChange(option.value);
+                    onOpenChange(false);
+                  }}
+                  className={cn(
+                    "w-full rounded px-2 py-2 text-left text-xs font-medium transition-colors duration-100",
+                    sortBy === option.value
+                      ? "bg-bg-muted font-bold text-primary"
+                      : "text-secondary hover:bg-bg-muted hover:text-primary"
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -348,7 +339,7 @@ function SkeletonGrid() {
       {[1, 2, 3, 4, 5, 6].map((i) => (
         <div
           key={i}
-          className="h-52 animate-pulse rounded-lg border border-default bg-surface dark:bg-[#161616]"
+          className="h-52 rounded-lg border border-default bg-surface dark:bg-[#161616]"
         />
       ))}
     </div>
@@ -538,7 +529,7 @@ export function NotesLibraryClient({
 
   return (
     <div className="w-full px-5 pb-16 font-sans">
-      <header className="sticky top-0 z-30 -mx-5 border-b border-default bg-[#F4F7F6]/95 px-5 backdrop-blur supports-[backdrop-filter]:bg-[#F4F7F6]/80 dark:bg-[#111111]/95 dark:supports-[backdrop-filter]:bg-[#111111]/80">
+      <header className="sticky top-0 z-30 -mx-5 border-b border-default px-5 ">
         <div className="flex flex-col gap-4 py-4">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div className="min-w-0">
@@ -662,20 +653,9 @@ export function NotesLibraryClient({
           <SkeletonGrid />
         ) : notes.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            <AnimatePresence mode="popLayout">
-              {notes.map((note, index) => (
-                <motion.div
-                  key={note.id}
-                  layout
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 4 }}
-                  transition={{ delay: index * 0.012, duration: 0.12 }}
-                >
-                  <NoteCard note={note} onToggleFavorite={handleToggleFavorite} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
+            {notes.map((note) => (
+              <NoteCard key={note.id} note={note} onToggleFavorite={handleToggleFavorite} />
+            ))}
           </div>
         ) : (
           <div className="flex min-h-[360px] flex-col items-center justify-center rounded-lg border border-dashed border-default bg-surface/60 px-4 text-center">

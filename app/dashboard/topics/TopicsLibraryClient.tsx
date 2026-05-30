@@ -94,7 +94,7 @@ function SkeletonGrid() {
       {[1, 2, 3, 4, 5, 6].map((item) => (
         <div
           key={item}
-          className="h-64 animate-pulse rounded-lg border border-default bg-surface dark:bg-[#161616]"
+          className="h-64 rounded-lg border border-default bg-surface dark:bg-[#161616]"
         />
       ))}
     </div>
@@ -199,7 +199,7 @@ export function TopicsLibraryClient({
 
   return (
     <div className="w-full px-5 pb-16 font-sans">
-      <header className="sticky top-0 z-30 -mx-5 border-b border-default bg-[#F4F7F6]/95 px-5 backdrop-blur supports-[backdrop-filter]:bg-[#F4F7F6]/80 dark:bg-[#111111]/95 dark:supports-[backdrop-filter]:bg-[#111111]/80">
+      <header className="sticky top-0 z-30 -mx-5 border-b border-default px-5">
         <div className="flex flex-col gap-4 py-4">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div className="min-w-0">

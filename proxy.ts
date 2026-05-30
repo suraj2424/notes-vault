@@ -6,7 +6,7 @@ const ignoredRoutes = ['/api/auth/login', '/api/auth/signup', '/api/auth/me'];
 const isPublicRoute = createRouteMatcher(publicRoutes);
 const isIgnoredRoute = createRouteMatcher(ignoredRoutes);
 
-export default clerkMiddleware(async (auth, req) => {
+export const proxy = clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
     await auth.protect();
   }
