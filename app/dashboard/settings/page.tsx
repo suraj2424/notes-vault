@@ -68,7 +68,7 @@ export default async function SettingsPage() {
 
           <Link
             href="/user"
-            className="group rounded-lg border border-[#E6E8EB] bg-[#FFFFFF] p-5 transition-all duration-100 hover:bg-[#F4F7F6]/50 active:scale-[0.99] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:hover:bg-[#111111]/40"
+            className="group rounded-lg border border-[#E6E8EB] bg-[#FFFFFF] p-5 transition-colors duration-100 hover:bg-[#F4F7F6]/50 active:scale-[0.99] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:hover:bg-[#111111]/40"
           >
             <div className="mb-3 flex h-8 w-8 items-center justify-center rounded border border-[#E6E8EB] bg-[#F4F7F6] text-[#687076] transition-colors duration-100 group-hover:bg-[#1A1D1E] group-hover:text-[#FFFFFF] group-hover:border-transparent dark:border-[#2D2D2D] dark:bg-[#111111] dark:text-[#A0A0A0] dark:group-hover:bg-[#E4E6EB] dark:group-hover:text-[#111111]">
               <ShieldCheck className="h-3.5 w-3.5" />

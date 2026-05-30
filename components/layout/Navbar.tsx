@@ -3,7 +3,7 @@
 import { useUser } from '@clerk/nextjs';
 import { Search, Plus, X, Loader2, Code2, BookOpen, FileText } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Note } from '@/types';
 import { cn } from '@/lib/utils';
 import { useRouter, usePathname } from 'next/navigation';
@@ -17,6 +17,11 @@ export function Navbar() {
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  const resetSearchResults = useCallback(() => {
+    setSearchResults([]);
+    setShowResults(false);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -47,12 +52,11 @@ export function Navbar() {
           setIsSearching(false);
         }
       } else {
-        searchResults.length > 0 && setSearchResults([]);
-        showResults && setShowResults(false);
+        resetSearchResults();
       }
     }, 300);
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, user]);
+  }, [resetSearchResults, searchQuery, user]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,39 +66,47 @@ export function Navbar() {
     }
   };
 
-  const breadcrumbs = useMemo(() => {
-    const segments = pathname.split('/').filter(Boolean);
-    const crumbs = [{ label: 'Dashboard', href: '/dashboard' }];
+const breadcrumbs = useMemo(() => {
+  const segments = pathname.split('/').filter(Boolean);
+  const crumbs = [{ label: 'Dashboard', href: '/dashboard' }];
 
-    if (segments.length > 1 && segments[0] === 'dashboard') {
-      for (let i = 1; i < segments.length; i++) {
-        const segment = segments[i];
-        const href = '/' + segments.slice(0, i + 1).join('/');
-        const label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
-        crumbs.push({ label, href });
+  if (segments.length > 1 && segments[0] === 'dashboard') {
+    for (let i = 1; i < segments.length; i++) {
+      const segment = segments[i];
+      const href = '/' + segments.slice(0, i + 1).join('/');
+      let label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
+      if (i >= segments.length - 1 && segments[i - 1] === 'notes') {
+        const match = pathname.match(/^\/dashboard\/notes\/([^/]+)/);
+        if (match) {
+          const id = match[1];
+          const safe = id.replace(/[^a-zA-Z0-9]/g, '');
+          label = safe.length > 9 ? `${safe.slice(0, 8)}...` : safe || 'Note';
+        }
       }
+      crumbs.push({ label, href });
     }
+  }
 
-    return crumbs;
-  }, [pathname]);
+  return crumbs;
+}, [pathname]);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-[#E6E8EB] bg-[#FFFFFF] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] font-sans">
-      <div className="flex items-center justify-between px-4 h-[56px]">
+    <nav className="sticky top-0 z-50 border-b border-default bg-surface font-sans">
+      <div className="flex h-14 items-center justify-between gap-4 px-5">
 
         {/* Left: Breadcrumbs */}
-        <nav className="hidden sm:flex items-center gap-2 text-[12px] text-[#687076] dark:text-[#A0A0A0]">
+        <nav className="hidden min-w-0 items-center gap-2 text-[12px] text-secondary sm:flex">
           {breadcrumbs.map((crumb, index) => (
             <div key={crumb.href} className="flex items-center gap-2">
-              {index > 0 && <span className="text-[#E6E8EB] dark:text-[#2D2D2D] text-[11px] select-none">/</span>}
+              {index > 0 && <span className="select-none text-[11px] text-muted">/</span>}
               {index === breadcrumbs.length - 1 ? (
-                <span className="font-bold text-[12.5px] text-[#1A1D1E] dark:text-[#E4E6EB] tracking-tight">
+                <span className="truncate text-[12.5px] font-bold tracking-tight text-primary">
                   {crumb.label}
                 </span>
               ) : (
                 <Link
                   href={crumb.href}
-                  className="font-medium tracking-tight hover:text-[#1A1D1E] dark:hover:text-[#E4E6EB] transition-colors duration-100"
+                  className="font-medium tracking-tight transition-colors duration-100 hover:text-primary"
                 >
                   {crumb.label}
                 </Link>
@@ -104,7 +116,7 @@ export function Navbar() {
         </nav>
 
         {/* Right: Search + Action */}
-        <div className="flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-3">
           {/* Search Bar Container */}
           <div className="relative hidden md:block" ref={searchRef}>
             <form onSubmit={handleSearchSubmit} className="relative flex items-center">
@@ -115,13 +127,13 @@ export function Navbar() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => searchQuery.length >= 2 && setShowResults(true)}
                 placeholder="Quick search..."
-                className="h-9 w-56 rounded border border-[#E6E8EB] bg-[#F4F7F6] pl-9 pr-8 text-xs font-medium text-[#1A1D1E] placeholder:text-[#687076]/50 outline-none transition-colors duration-100 focus:border-[#00A3A3] focus:bg-[#FFFFFF] dark:border-[#2D2D2D] dark:bg-[#111111] dark:text-[#E4E6EB] dark:placeholder:text-[#A0A0A0]/40 dark:focus:border-[#00E0E0] dark:focus:bg-[#1A1A1A]"
+                className="h-9 w-60 rounded-lg border border-default bg-bg-muted pl-9 pr-8 text-xs font-medium text-primary outline-none transition-colors duration-100 placeholder:text-secondary/50 focus:border-[#00A3A3] focus:bg-surface dark:focus:border-[#00E0E0]"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 p-0.5 rounded text-[#687076] hover:bg-[#E6E8EB] dark:text-[#A0A0A0] dark:hover:bg-[#2D2D2D] transition-colors duration-100"
+                  className="absolute right-2.5 rounded p-0.5 text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -130,7 +142,7 @@ export function Navbar() {
 
             {/* Micro Dropdown Results Overlay */}
             {showResults && (
-              <div className="absolute top-full mt-1 right-0 w-80 rounded border border-[#E6E8EB] bg-[#FFFFFF] shadow-md overflow-hidden z-50 dark:border-[#2D2D2D] dark:bg-[#1A1A1A]">
+              <div className="absolute right-0 top-full z-50 mt-1 w-80 overflow-hidden rounded-lg border border-default bg-surface shadow-md">
                 {isSearching ? (
                   <div className="flex items-center justify-center gap-2.5 py-6 text-xs font-medium text-[#687076] dark:text-[#A0A0A0]">
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-[#00A3A3] dark:text-[#00E0E0]" />
@@ -158,26 +170,26 @@ export function Navbar() {
                              <FileText className="h-3.5 w-3.5" />}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="truncate text-xs font-semibold text-[#1A1D1E] dark:text-[#E4E6EB] group-hover:text-[#00A3A3] dark:group-hover:text-[#00E0E0] transition-colors duration-100">{note.title}</p>
+                            <p className="truncate text-xs font-semibold text-primary transition-colors duration-100 group-hover:text-[#00A3A3] dark:group-hover:text-[#00E0E0]">{note.title}</p>
                             <p className="truncate text-[9px] font-bold text-[#687076] dark:text-[#A0A0A0] uppercase tracking-wider mt-0.5">{note.type} document</p>
                           </div>
                         </Link>
                       ))}
                     </div>
-                    <div className="border-t border-[#E6E8EB] dark:border-[#2D2D2D] bg-[#F4F7F6]/50 dark:bg-[#111111]/30 px-3 py-2">
+                    <div className="border-t border-default bg-bg-muted px-3 py-2">
                       <Link
                         href={`/dashboard/notes?search=${encodeURIComponent(searchQuery)}`}
                         onClick={() => setShowResults(false)}
-                        className="text-[11px] font-bold text-[#1A1D1E] dark:text-[#E4E6EB] hover:text-[#00A3A3] dark:hover:text-[#00E0E0] flex items-center justify-between transition-colors duration-100"
+                        className="flex items-center justify-between text-[11px] font-bold text-primary transition-colors duration-100 hover:text-[#00A3A3] dark:hover:text-[#00E0E0]"
                       >
                         View all index matches
-                        <span className="text-[9px] bg-[#E6E8EB] dark:bg-[#2D2D2D] text-[#687076] dark:text-[#A0A0A0] px-1 py-0.5 rounded font-mono select-none">↵</span>
+                        <span className="select-none rounded bg-surface px-1 py-0.5 font-mono text-[9px] text-secondary">Enter</span>
                       </Link>
                     </div>
                   </>
                 ) : (
                   <div className="py-8 px-4 text-center">
-                    <p className="text-xs font-bold text-[#1A1D1E] dark:text-[#E4E6EB]">No documents mapped</p>
+                    <p className="text-xs font-bold text-primary">No documents mapped</p>
                     <p className="mt-1 text-[11px] font-medium text-[#687076] dark:text-[#A0A0A0]">No matches found for &quot;{searchQuery}&quot;</p>
                   </div>
                 )}
@@ -188,7 +200,7 @@ export function Navbar() {
           {/* Action Trigger */}
           <Link
             href="/dashboard/notes/new"
-            className="flex items-center gap-1.5 h-9 px-3.5 rounded bg-[#1A1D1E] text-[#FFFFFF] text-xs font-bold hover:bg-[#00A3A3] hover:text-[#FFFFFF] active:scale-[0.98] transition-[colors,transform,shadow] duration-100 dark:bg-[#E4E6EB] dark:text-[#111111] dark:hover:bg-[#00E0E0] dark:hover:text-[#111111] shadow-sm"
+            className="flex h-9 items-center gap-1.5 rounded-lg bg-[#1A1D1E] px-3.5 text-xs font-bold text-white shadow-sm transition-[colors,transform,shadow] duration-100 hover:bg-[#00A3A3] active:scale-[0.98] dark:bg-[#E4E6EB] dark:text-[#111111] dark:hover:bg-[#00E0E0]"
           >
             <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
             <span className="hidden sm:inline tracking-tight">New Note</span>

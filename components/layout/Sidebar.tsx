@@ -70,7 +70,7 @@ const NavLink = ({ item, isActive, isCollapsed }: NavLinkProps) => {
           isCollapsed ? 'justify-center w-9 h-9 mx-auto rounded-md' : 'gap-2.5 px-2.5 py-1.5 w-full rounded-md text-xs',
           isActive
             ? 'bg-[#00A3A3]/10 text-[#00A3A3] dark:bg-[#00E0E0]/10 dark:text-[#00E0E0] font-medium'
-            : 'text-[#687076] hover:bg-[#F4F7F6] hover:text-[#1A1D1E] dark:text-[#A0A0A0] dark:hover:bg-[#2D2D2D] dark:hover:text-[#E4E6EB]'
+            : 'text-secondary hover:bg-bg-muted hover:text-primary'
         )}
       >
         <item.icon className="h-4 w-4 shrink-0" />
@@ -102,9 +102,9 @@ export function Sidebar() {
     <motion.aside
       animate={{ width: isCollapsed ? 64 : 240 }}
       transition={{ duration: 0.15, ease: 'easeInOut' }}
-      className="sticky top-0 hidden h-screen flex-col lg:flex border-r border-[#E6E8EB] bg-[#FFFFFF] dark:bg-[#1A1A1A] dark:border-[#2D2D2D] z-40"
+      className="sticky top-0 z-40 hidden h-screen flex-col border-r border-default bg-surface lg:flex"
     >
-      <div className={cn('relative flex flex-col h-full py-4 font-sans', isCollapsed ? 'px-0' : 'px-3')}>
+      <div className={cn('relative flex h-full flex-col py-4 font-sans', isCollapsed ? 'px-0' : 'px-3')}>
         
         {/* LOGO SECTION */}
         <div className={cn("mb-6 flex items-center", isCollapsed ? "justify-center" : "justify-between px-1")}>
@@ -155,7 +155,7 @@ export function Sidebar() {
                 initial={{ opacity: 0 }} 
                 animate={{ opacity: 1 }} 
                 transition={{ duration: 0.1 }}
-                className="text-sm tracking-tight font-bold text-[#1A1D1E] dark:text-[#E4E6EB]"
+                className="text-sm font-bold tracking-tight text-primary"
               >
                 NoteVault
               </motion.span>
@@ -165,7 +165,7 @@ export function Sidebar() {
           {!isCollapsed && (
              <button 
                onClick={() => setIsCollapsed(true)} 
-               className="p-1 rounded text-[#687076] dark:text-[#A0A0A0] hover:text-[#1A1D1E] dark:hover:text-[#E4E6EB] hover:bg-[#F4F7F6] dark:hover:bg-[#111111] transition-colors duration-100"
+               className="rounded p-1 text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
              >
                 <PanelLeftClose className="h-3.5 w-3.5" />
              </button>
@@ -179,10 +179,10 @@ export function Sidebar() {
           <NavLink item={{ name: 'Topics', href: '/dashboard/topics', icon: FolderOpen }} isActive={pathname === '/dashboard/topics' || pathname.startsWith('/dashboard/topics/')} isCollapsed={isCollapsed} />
         </nav>
 
-        <div className="my-4 border-t border-[#E6E8EB] dark:border-[#2D2D2D]" />
+        <div className="my-4 border-t border-default" />
 
         <nav className="space-y-0.5">
-          <p className={cn("px-2.5 mb-1.5 text-[9px] font-bold uppercase tracking-wider text-[#687076] dark:text-[#A0A0A0]", isCollapsed && "text-center px-0")}>
+          <p className={cn("mb-1.5 px-2.5 text-[9px] font-bold uppercase tracking-wider text-secondary", isCollapsed && "px-0 text-center")}>
             {isCollapsed ? "•••" : "Organize"}
           </p>
           <NavLink item={{ name: 'Tags', href: '/dashboard/tags', icon: Tags }} isActive={pathname === '/dashboard/tags'} isCollapsed={isCollapsed} />
@@ -200,7 +200,7 @@ export function Sidebar() {
         <div 
           className={cn(
             "flex items-center transition-colors duration-100", 
-            isCollapsed ? "justify-center w-10 h-10 mx-auto rounded-md" : "gap-2.5 p-1.5 w-full rounded-md hover:bg-[#F4F7F6] dark:hover:bg-[#111111]/50"
+            isCollapsed ? "mx-auto h-10 w-10 justify-center rounded-md" : "w-full gap-2.5 rounded-md p-1.5 hover:bg-bg-muted"
           )}
         >
           <div className="shrink-0 overflow-hidden flex items-center justify-center">
@@ -218,14 +218,14 @@ export function Sidebar() {
                 }}
               />
             ) : (
-              <UserIcon className="p-1 h-7 w-7 text-[#687076] dark:text-[#A0A0A0]" />
+              <UserIcon className="h-7 w-7 p-1 text-secondary" />
             )}
           </div>
 
           {!isCollapsed && (
             <div className="flex-1 text-left min-w-0">
-              <p className="text-xs font-semibold text-[#1A1D1E] dark:text-[#E4E6EB] truncate">{user?.firstName || 'User'}</p>
-              <p className="text-[10px] text-[#687076] dark:text-[#A0A0A0] truncate">{user?.emailAddresses[0]?.emailAddress}</p>
+              <p className="truncate text-xs font-semibold text-primary">{user?.firstName || 'User'}</p>
+              <p className="truncate text-[10px] text-secondary">{user?.emailAddresses[0]?.emailAddress}</p>
             </div>
           )}
         </div>

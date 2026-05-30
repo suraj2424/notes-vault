@@ -18,7 +18,7 @@ export default function TagsClient({ initialTags }: TagsClientProps) {
 
   if (tags.length === 0) {
     return (
-      <div className="mx-auto max-w-4xl font-sans">
+<div className="mx-auto max-w-7xl font-sans">
         <header className="pb-6">
           <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-[#687076] dark:text-[#A0A0A0]">
             Organize
@@ -43,7 +43,7 @@ export default function TagsClient({ initialTags }: TagsClientProps) {
   }
 
   return (
-    <div className="mx-auto max-w-4xl font-sans">
+    <div className="mx-auto max-w-7xl font-sans">
       <header className="pb-6">
         <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-[#687076] dark:text-[#A0A0A0]">
           Organize

@@ -63,28 +63,28 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
   const initials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <div className="w-full bg-[#F4F7F6] text-[#1A1D1E] antialiased transition-colors duration-100 dark:bg-[#111111] dark:text-[#E4E6EB]">
+    <div className="w-full px-5 pb-16 font-sans text-primary antialiased">
       {/* Header */}
-      <header className="flex items-end justify-between pb-6">
+      <header className="flex flex-col justify-between gap-4 border-b border-default bg-[#F4F7F6] py-5 dark:bg-[#111111] sm:flex-row sm:items-end">
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex h-11 w-11 rounded-lg bg-[#FFFFFF] items-center justify-center text-xs font-bold text-[#1A1D1E] border border-[#E6E8EB] dark:bg-[#1A1A1A] dark:text-[#E4E6EB] dark:border-[#2D2D2D]">
+          <div className="hidden h-11 w-11 items-center justify-center rounded-lg border border-default bg-surface text-xs font-bold text-primary sm:flex">
             {initials}
           </div>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#687076] dark:text-[#A0A0A0] mb-1">
+            <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-secondary">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
-            <h1 className="text-2xl font-bold tracking-tight text-[#1A1D1E] dark:text-[#E4E6EB] leading-tight">
+            <h1 className="text-2xl font-bold leading-tight tracking-tight text-primary">
               Welcome back, {userName.split(' ')[0]}
             </h1>
-            <p className="text-xs text-[#687076] dark:text-[#A0A0A0]">
+            <p className="text-xs text-secondary">
               Your vault is synced and up to date.
             </p>
           </div>
         </div>
         <Link
           href="/dashboard/notes/new"
-          className="hidden sm:flex items-center gap-2 h-9 px-4 rounded-md bg-[#00A3A3] text-white text-xs font-medium hover:bg-[#008B8B] transition-colors duration-100 dark:bg-[#00E0E0] dark:text-[#111111] dark:hover:bg-[#00C2C2]"
+          className="hidden h-10 items-center gap-2 rounded-lg bg-[#1A1D1E] px-4 text-xs font-bold text-white transition-colors duration-100 hover:bg-[#00A3A3] dark:bg-[#E4E6EB] dark:text-[#111111] dark:hover:bg-[#00E0E0] sm:flex"
         >
           <Plus className="h-4 w-4" />
           New Note
@@ -92,19 +92,19 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
       </header>
 
       {/* Stats Grid */}
-      <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="my-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Total Notes" value={stats.total} icon={<TrendingUp className="h-4 w-4" />} />
         <StatCard label="DSA Solved"  value={stats.dsa}   icon={<Code2 className="h-4 w-4" />} />
         <StatCard label="Topic Q&A"   value={stats.qa}    icon={<BookOpen className="h-4 w-4" />} />
         <StatCard label="Favorites"   value={stats.favorites} icon={<Star className="h-4 w-4" />} />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         {/* Recent Activity */}
         <div className="lg:col-span-2">
-          <div className="rounded-lg border border-[#E6E8EB] bg-[#FFFFFF] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] overflow-hidden">
-            <div className="flex items-center justify-between border-b border-[#E6E8EB] px-4 py-3.5 dark:border-[#2D2D2D]">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-[#687076] dark:text-[#A0A0A0]">Recent Activity</h2>
+          <div className="overflow-hidden rounded-lg border border-default bg-surface">
+            <div className="flex items-center justify-between border-b border-default bg-bg-muted px-4 py-3.5">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-secondary">Recent Activity</h2>
               <Link href="/dashboard/notes" className="text-xs text-[#00A3A3] hover:underline dark:text-[#00E0E0]">
                 View all
               </Link>
@@ -113,32 +113,32 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
             {recentNotesState.length > 0 ? (
               <div className="divide-y divide-[#E6E8EB] dark:divide-[#2D2D2D]">
                 {recentNotesState.map((note) => (
-                  <div key={note.id} className="group flex items-center gap-3 px-4 py-3 hover:bg-[#F4F7F6]/50 dark:hover:bg-[#111111]/30 transition-colors duration-100">
+                  <div key={note.id} className="group flex items-center gap-3 px-4 py-3 transition-colors duration-100 hover:bg-bg-muted">
                     <Link href={`/dashboard/notes/${note.id}`} className="flex flex-1 items-center gap-3 min-w-0">
                       <div className={cn(
                         'flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-colors duration-100',
                         note.type === 'dsa' ? 'bg-blue-500/5 text-blue-500 border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20' :
                         note.type === 'qa'  ? 'bg-amber-500/5 text-amber-500 border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20' :
-                                              'bg-[#F4F7F6] text-[#687076] border-[#E6E8EB] dark:bg-[#111111] dark:text-[#A0A0A0] dark:border-[#2D2D2D]'
+                                              'border-default bg-bg-muted text-secondary'
                       )}>
                         {note.type === 'dsa' ? <Code2 className="h-4 w-4" /> :
                          note.type === 'qa'  ? <BookOpen className="h-4 w-4" /> :
                                                <FileText className="h-4 w-4" />}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-semibold text-[#1A1D1E] dark:text-[#E4E6EB]">
+                        <p className="truncate text-xs font-semibold text-primary">
                           {note.title}
                         </p>
-                        <p className="mt-0.5 text-[10px] text-[#687076] uppercase tracking-wide dark:text-[#A0A0A0]">
+                        <p className="mt-0.5 text-[10px] uppercase tracking-wide text-secondary">
                           {note.type} • {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}
                         </p>
                       </div>
                     </Link>
                     <div className="flex items-center gap-0.5">
-                      <button onClick={() => toggleFavorite(note.id, note.isFavorite)} className={cn('p-1.5 rounded transition-colors duration-100', note.isFavorite ? 'text-amber-500' : 'text-[#687076] hover:text-[#1A1D1E] dark:text-[#A0A0A0] dark:hover:text-[#E4E6EB]')}>
+                      <button onClick={() => toggleFavorite(note.id, note.isFavorite)} className={cn('rounded p-1.5 transition-colors duration-100', note.isFavorite ? 'text-amber-500' : 'text-secondary hover:text-primary')}>
                         <Star className={cn('h-3.5 w-3.5 transition-colors duration-100', note.isFavorite && 'fill-amber-500')} />
                       </button>
-                      <Link href={`/dashboard/notes/${note.id}`} className="p-1.5 rounded text-[#687076] hover:text-[#1A1D1E] dark:text-[#A0A0A0] dark:hover:text-[#E4E6EB] transition-colors duration-100">
+                      <Link href={`/dashboard/notes/${note.id}`} className="rounded p-1.5 text-secondary transition-colors duration-100 hover:text-primary">
                         <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                     </div>
@@ -147,7 +147,7 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
               </div>
             ) : (
               <div className="py-12 text-center">
-                <p className="text-xs text-[#687076] dark:text-[#A0A0A0]">No recent notes found.</p>
+                <p className="text-xs text-secondary">No recent notes found.</p>
               </div>
             )}
           </div>
@@ -155,8 +155,8 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
 
         {/* Quick Actions */}
         <div className="space-y-4">
-          <div className="rounded-lg border border-[#E6E8EB] bg-[#FFFFFF] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] p-4">
-            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-[#687076] dark:text-[#A0A0A0]">Quick Actions</h3>
+          <div className="rounded-lg border border-default bg-surface p-4">
+            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-secondary">Quick Actions</h3>
             <div className="grid grid-cols-2 gap-2">
               <QuickActionBtn icon={<Code2 className="h-4 w-4" />}    label="DSA"  href="/dashboard/notes/new?type=dsa" />
               <QuickActionBtn icon={<BookOpen className="h-4 w-4" />} label="Q&A"  href="/dashboard/notes/new?type=qa" />
@@ -172,14 +172,14 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
 
 function StatCard({ label, value, icon }: { label: string; value: number; icon: ReactNode }) {
   return (
-    <div className="rounded-lg border border-[#E6E8EB] p-4 bg-[#FFFFFF] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] transition-colors duration-100 hover:border-[#00A3A3] dark:hover:border-[#00E0E0] group">
+    <div className="group rounded-lg border border-default bg-surface p-4 transition-colors duration-100 hover:border-[#00A3A3] dark:hover:border-[#00E0E0]">
       <div className="flex flex-col gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#F4F7F6] text-[#687076] dark:bg-[#111111] dark:text-[#A0A0A0] border border-[#E6E8EB] dark:border-[#2D2D2D] group-hover:scale-105 transition-transform duration-100">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md border border-default bg-bg-muted text-secondary transition-transform duration-100 group-hover:scale-105">
           {icon}
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[#687076] dark:text-[#A0A0A0]">{label}</p>
-          <p className="mt-0.5 text-2xl font-bold tracking-tight text-[#1A1D1E] dark:text-[#E4E6EB]">{value}</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-secondary">{label}</p>
+          <p className="mt-0.5 text-2xl font-bold tracking-tight text-primary">{value}</p>
         </div>
       </div>
     </div>
@@ -188,9 +188,9 @@ function StatCard({ label, value, icon }: { label: string; value: number; icon: 
 
 function QuickActionBtn({ icon, label, href }: { icon: ReactNode; label: string; href: string }) {
   return (
-    <Link href={href} className="flex flex-col items-center justify-center gap-2 rounded-md border border-[#E6E8EB] py-3.5 bg-[#FFFFFF] hover:border-[#00A3A3] hover:bg-[#F4F7F6]/30 transition-colors duration-100 dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:hover:border-[#00E0E0] dark:hover:bg-[#111111]/30 group">
-      <div className="text-[#687076] group-hover:text-[#00A3A3] dark:text-[#A0A0A0] dark:group-hover:text-[#00E0E0] transition-colors duration-100">{icon}</div>
-      <span className="text-[10px] font-bold uppercase tracking-wider text-[#687076] dark:text-[#A0A0A0] group-hover:text-[#1A1D1E] dark:group-hover:text-[#E4E6EB] transition-colors duration-100">{label}</span>
+    <Link href={href} className="group flex flex-col items-center justify-center gap-2 rounded-md border border-default bg-surface py-3.5 transition-colors duration-100 hover:border-[#00A3A3] hover:bg-bg-muted dark:hover:border-[#00E0E0]">
+      <div className="text-secondary transition-colors duration-100 group-hover:text-[#00A3A3] dark:group-hover:text-[#00E0E0]">{icon}</div>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-secondary transition-colors duration-100 group-hover:text-primary">{label}</span>
     </Link>
   );
 }

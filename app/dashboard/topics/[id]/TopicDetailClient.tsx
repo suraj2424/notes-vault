@@ -2,9 +2,55 @@
 
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Archive, ChevronLeft, FolderOpen, Plus, Unlink } from "lucide-react";
+import { Archive, BookOpen, ChevronLeft, Code2, FileText, FolderOpen, Plus, Unlink } from "lucide-react";
 import { Note, Topic } from "@/types";
 import { cn } from "@/lib/utils";
+
+function notePreview(note: Note) {
+  const content =
+    note.type === "general"
+      ? note.content
+      : note.type === "qa"
+        ? note.qa?.content
+        : note.dsa?.problemStatement || note.dsa?.notes;
+
+  return (content || `${note.type === "qa" ? "Q&A" : note.type.toUpperCase()} note`)
+    .replace(/[#*_`>[\]()]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function NoteTypeBadge({ type }: { type: Note["type"] }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex rounded border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+        type === "dsa"
+          ? "border-[#00A3A3]/20 bg-[#00A3A3]/5 text-[#00A3A3] dark:border-[#00E0E0]/20 dark:bg-[#00E0E0]/5 dark:text-[#00E0E0]"
+          : type === "qa"
+            ? "border-amber-500/20 bg-amber-500/5 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+            : "border-default bg-bg-muted text-secondary"
+      )}
+    >
+      {type === "qa" ? "Q&A" : type}
+    </span>
+  );
+}
+
+function NoteIcon({ type }: { type: Note["type"] }) {
+  const className = cn(
+    "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border",
+    type === "dsa"
+      ? "border-[#00A3A3]/15 bg-[#00A3A3]/5 text-[#00A3A3] dark:border-[#00E0E0]/15 dark:bg-[#00E0E0]/5 dark:text-[#00E0E0]"
+      : type === "qa"
+        ? "border-amber-500/15 bg-amber-500/5 text-amber-600 dark:text-amber-400"
+        : "border-default bg-bg-muted text-secondary"
+  );
+
+  if (type === "dsa") return <div className={className}><Code2 className="h-4 w-4" /></div>;
+  if (type === "qa") return <div className={className}><BookOpen className="h-4 w-4" /></div>;
+  return <div className={className}><FileText className="h-4 w-4" /></div>;
+}
 
 export default function TopicDetailClient({
   topic,
@@ -16,147 +62,141 @@ export default function TopicDetailClient({
   onRemoveNote: (noteId: string) => void;
 }) {
   return (
-    <div className="mx-auto max-w-6xl font-sans">
-      <div className="mb-8 overflow-hidden rounded-[28px] border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
-        <div
-          className="h-48 w-full"
-          style={{
-            backgroundColor: topic.color || "#2563eb",
-            ...(topic.coverImage
-              ? {
-                  backgroundImage: `linear-gradient(180deg, rgba(17,24,39,0.08), rgba(17,24,39,0.55)), url(${topic.coverImage})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }
-              : {}),
-          }}
-        />
+    <div className="w-full px-5 pb-16 font-sans">
+      <header className="sticky top-0 z-30 -mx-5 border-b border-default bg-[#F4F7F6]/95 px-5 backdrop-blur supports-[backdrop-filter]:bg-[#F4F7F6]/80 dark:bg-[#111111]/95 dark:supports-[backdrop-filter]:bg-[#111111]/80">
+        <div className="flex flex-col gap-4 py-4">
+          <div
+            className="h-36 overflow-hidden rounded-lg border border-default sm:h-44"
+            style={{
+              backgroundColor: topic.color || "#2563eb",
+              ...(topic.coverImage
+                ? {
+                    backgroundImage: `linear-gradient(180deg, rgba(17,24,39,0.08), rgba(17,24,39,0.58)), url(${topic.coverImage})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }
+                : {}),
+            }}
+          />
 
-        <div className="p-6">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex items-start gap-4">
+          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+            <div className="flex min-w-0 items-start gap-3">
               <Link
                 href="/dashboard/topics"
-                className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-500 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
+                aria-label="Back to topics"
+                title="Back to topics"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Link>
 
-              <div>
+              <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="font-serif text-[34px] leading-none tracking-tight text-neutral-950 dark:text-neutral-50">
+                  <h1 className="truncate text-2xl font-bold leading-tight tracking-tight text-primary sm:text-3xl">
                     {topic.title}
                   </h1>
                   {topic.isArchived && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/20 bg-amber-500/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
                       <Archive className="h-3.5 w-3.5" />
                       Archived
                     </span>
                   )}
                 </div>
-                <p className="mt-3 max-w-3xl text-[15px] leading-7 text-neutral-500 dark:text-neutral-400">
+                <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-secondary">
                   {topic.description || "A focused topic collection for grouping notes that belong together."}
                 </p>
-                <div className="mt-4 flex flex-wrap items-center gap-3 text-[11px] font-black uppercase tracking-[0.14em] text-neutral-400 dark:text-neutral-500">
+                <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] font-bold uppercase tracking-wide text-secondary">
                   <span>{topic.noteCount} notes</span>
-                  <span>•</span>
+                  <span>/</span>
                   <span>Updated {formatDistanceToNow(new Date(topic.updatedAt), { addSuffix: true })}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               <Link
                 href={`/dashboard/notes/new?topicId=${topic.id}`}
-                className="inline-flex h-11 items-center gap-2 rounded-xl bg-neutral-950 px-5 text-[12px] font-black uppercase tracking-[0.14em] text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
+                className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#1A1D1E] px-4 text-xs font-bold text-white transition-colors duration-100 hover:bg-[#00A3A3] dark:bg-[#E4E6EB] dark:text-[#111111] dark:hover:bg-[#00E0E0]"
               >
                 <Plus className="h-4 w-4" />
                 New Note
               </Link>
               <Link
                 href={`/dashboard/topics/${topic.id}/edit`}
-                className="inline-flex h-11 items-center rounded-xl border border-neutral-200 px-5 text-[12px] font-black uppercase tracking-[0.14em] text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
+                className="inline-flex h-10 items-center rounded-lg border border-default bg-surface px-4 text-xs font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
               >
                 Edit Topic
               </Link>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {notes.length > 0 ? (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {notes.map((note) => (
-            <div
-              key={note.id}
-              className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-950"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <Link href={`/dashboard/notes/${note.id}`}>
-                    <h2 className="truncate text-[16px] font-bold tracking-tight text-neutral-950 hover:text-neutral-700 dark:text-neutral-50 dark:hover:text-neutral-200">
+      <main className="mt-5">
+        {notes.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+            {notes.map((note) => (
+              <article
+                key={note.id}
+                className="group rounded-lg border border-default bg-surface p-4 transition-colors duration-100 hover:border-[#00A3A3]/35 dark:hover:border-[#00E0E0]/30"
+              >
+                <div className="flex items-start gap-3">
+                  <NoteIcon type={note.type} />
+                  <Link href={`/dashboard/notes/${note.id}`} className="min-w-0 flex-1">
+                    <h2 className="truncate text-[15px] font-bold tracking-tight text-primary transition-colors duration-100 group-hover:text-secondary">
                       {note.title}
                     </h2>
+                    <p className="mt-2 line-clamp-2 text-xs font-medium leading-6 text-secondary">
+                      {notePreview(note)}
+                    </p>
                   </Link>
-                  <p className="mt-2 line-clamp-3 text-sm leading-6 text-neutral-500 dark:text-neutral-400">
-                    {note.type === "general"
-                      ? note.content || "General note"
-                      : note.type === "qa"
-                        ? note.qa?.content || "Q&A note"
-                        : note.dsa?.problemStatement || "DSA note"}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => onRemoveNote(note.id)}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-neutral-900 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-                >
-                  <Unlink className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 pt-4 text-[11px] font-bold uppercase tracking-[0.14em] text-neutral-400 dark:border-neutral-900 dark:text-neutral-500">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      "rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em]",
-                      note.type === "dsa"
-                        ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300"
-                        : note.type === "qa"
-                          ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
-                          : "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
-                    )}
+                  <button
+                    type="button"
+                    onClick={() => onRemoveNote(note.id)}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
+                    aria-label="Remove note from topic"
+                    title="Remove note from topic"
                   >
-                    {note.type}
-                  </span>
-                  <span>{formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}</span>
+                    <Unlink className="h-4 w-4" />
+                  </button>
                 </div>
-                <Link href={`/dashboard/notes/${note.id}`} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200">
-                  Open
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-200 bg-neutral-50/50 py-24 text-center dark:border-neutral-800 dark:bg-neutral-950/30">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 dark:bg-neutral-900 dark:text-neutral-600">
-            <FolderOpen className="h-8 w-8" />
+
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-default pt-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <NoteTypeBadge type={note.type} />
+                    <span className="truncate text-[11px] font-medium text-secondary">
+                      {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}
+                    </span>
+                  </div>
+                  <Link
+                    href={`/dashboard/notes/${note.id}`}
+                    className="text-[11px] font-medium text-secondary transition-colors duration-100 hover:text-primary"
+                  >
+                    Open
+                  </Link>
+                </div>
+              </article>
+            ))}
           </div>
-          <h2 className="font-serif text-xl text-neutral-950 dark:text-neutral-50">No notes in this topic yet</h2>
-          <p className="mt-2 max-w-sm text-[14px] font-medium text-neutral-500 dark:text-neutral-400">
-            Start the collection by creating a note directly inside this topic.
-          </p>
-          <Link
-            href={`/dashboard/notes/new?topicId=${topic.id}`}
-            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-neutral-950 px-6 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
-          >
-            <Plus className="h-4 w-4" />
-            Create First Note
-          </Link>
-        </div>
-      )}
+        ) : (
+          <div className="flex min-h-[360px] flex-col items-center justify-center rounded-lg border border-dashed border-default bg-surface/60 px-4 text-center">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-default bg-bg-muted text-secondary">
+              <FolderOpen className="h-5 w-5" />
+            </div>
+            <h2 className="text-base font-bold text-primary">No notes in this topic yet</h2>
+            <p className="mt-1 max-w-sm text-sm font-medium text-secondary">
+              Start the collection by creating a note directly inside this topic.
+            </p>
+            <Link
+              href={`/dashboard/notes/new?topicId=${topic.id}`}
+              className="mt-6 inline-flex h-9 items-center gap-2 rounded-lg bg-[#1A1D1E] px-4 text-xs font-bold text-white transition-colors duration-100 hover:bg-[#00A3A3] dark:bg-[#E4E6EB] dark:text-[#111111] dark:hover:bg-[#00E0E0]"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Create First Note
+            </Link>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

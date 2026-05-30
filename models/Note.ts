@@ -78,6 +78,7 @@ NoteSchema.index({ userId: 1, type: 1, updatedAt: -1 }); // For filtered queries
 NoteSchema.index({ userId: 1, isFavorite: 1, updatedAt: -1 }); // For favorites filter
 NoteSchema.index({ userId: 1, topicId: 1, updatedAt: -1 }); // For notes within a topic
 
+NoteSchema.index({ userId: 1, tags: 1, updatedAt: -1 }); // For tag filter sorting
 // Index for search functionality - covers all note types
 NoteSchema.index({
   title: 'text',
