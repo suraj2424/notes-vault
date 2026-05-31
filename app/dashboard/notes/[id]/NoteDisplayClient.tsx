@@ -1,7 +1,16 @@
 "use client";
 
-import { memo, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  memo,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  type ReactNode,
+  useCallback,
+} from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { formatDistanceToNow } from "date-fns";
@@ -14,10 +23,11 @@ import {
   Code2,
   Edit2,
   FileText,
-  Lock,
+  List,
   Star,
   Tag as TagIcon,
   Trash2,
+  X,
 } from "lucide-react";
 import { CodeBlock } from "@/components/markdown/CodeBlock";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -30,8 +40,6 @@ interface NoteDisplayClientProps {
   topicId: string | null;
   onEdit: () => void | Promise<void>;
   onDelete: () => void | Promise<void>;
-  isLocked?: boolean;
-  lockedNoteTitle?: string | null;
   topicNotes?: Array<{ id: string; title: string; sequence?: number | null }>;
   isInitiallyCompleted?: boolean;
 }
@@ -77,46 +85,118 @@ const DIFFICULTY_STYLES = {
 const iconButtonClass =
   "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary disabled:cursor-wait disabled:opacity-50";
 
-export const MarkdownRenderer = memo(
-  ({ content, resolvedTheme }: MarkdownRendererProps) => (
-    <div
-      className={cn(
-        "prose prose-neutral prose-base dark:prose-invert max-w-4xl font-sans sm:prose-lg",
-        "prose-headings:text-balance prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-primary",
-        "prose-h1:mt-0 prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h3:font-semibold",
-        "prose-p:leading-7 prose-a:font-medium prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-2",
-        "prose-pre:bg-transparent prose-pre:p-0 prose-pre:shadow-none",
-        "prose-code:before:content-none prose-code:after:content-none prose-code:rounded prose-code:border prose-code:border-default prose-code:bg-bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[12px] prose-code:font-medium prose-code:text-primary dark:prose-code:text-primary",
-        "prose-hr:border-default prose-img:m-0",
-      )}
-    >
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          code({ className, children, ...props }) {
-            const match = /language-(\w+)/.exec(className || "");
-            const language = match ? match[1] : "";
-            const isInline = !match && !String(children).includes("\n");
+export function extractHeadings(content: string): Array<{ level: number; text: string; id: string }> {
+  const headingRegex = /^(#{1,6})\s+(.+?)\s*$/gm;
+  const headings: Array<{ level: number; text: string; id: string }> = [];
+  
+  let match;
+  while ((match = headingRegex.exec(content)) !== null) {
+    const level = match[1].length;
+    const text = match[2];
+    const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
+    headings.push({ level, text, id });
+  }
+  
+  return headings;
+}
 
-            if (isInline) {
+export const MarkdownRenderer = memo(
+  ({ content, resolvedTheme, onHeadingClick }: MarkdownRendererProps & { onHeadingClick?: (id: string) => void }) => {
+    const headings = useMemo(() => extractHeadings(content), [content]);
+
+    return (
+      <div
+        className={cn(
+          "prose prose-neutral prose-base dark:prose-invert max-w-4xl font-sans sm:prose-lg",
+          "prose-headings:text-balance prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-primary",
+          "prose-h1:mt-0 prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h3:font-semibold",
+          "prose-p:leading-7 prose-a:font-medium prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-2",
+          "prose-pre:bg-transparent prose-pre:p-0 prose-pre:shadow-none",
+          "prose-code:before:content-none prose-code:after:content-none prose-code:rounded prose-code:border prose-code:border-default prose-code:bg-bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[12px] prose-code:font-medium prose-code:text-primary dark:prose-code:text-primary",
+          "prose-hr:border-default prose-img:m-0",
+        )}
+      >
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            h1({ node, children, ...props }) {
+              const text = String(children).replace(/<[^>]*>/g, "");
+              const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
               return (
-                <code className={className} {...props}>
+                <h1 id={id} {...props}>
                   {children}
-                </code>
+                </h1>
               );
-            }
-            return (
-              <div className="not-prose my-5 w-full max-w-none overflow-x-auto">
-                <CodeBlock
-                  language={language || "text"}
-                  theme={resolvedTheme === "dark" ? "dark" : "light"}
-                >
-                  {String(children).replace(/\n$/, "")}
-                </CodeBlock>
-              </div>
-            );
-          },
-          ul({ children }) {
+            },
+            h2({ node, children, ...props }) {
+              const text = String(children).replace(/<[^>]*>/g, "");
+              const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
+              return (
+                <h2 id={id} {...props}>
+                  {children}
+                </h2>
+              );
+            },
+            h3({ node, children, ...props }) {
+              const text = String(children).replace(/<[^>]*>/g, "");
+              const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
+              return (
+                <h3 id={id} {...props}>
+                  {children}
+                </h3>
+              );
+            },
+            h4({ node, children, ...props }) {
+              const text = String(children).replace(/<[^>]*>/g, "");
+              const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
+              return (
+                <h4 id={id} {...props}>
+                  {children}
+                </h4>
+              );
+            },
+            h5({ node, children, ...props }) {
+              const text = String(children).replace(/<[^>]*>/g, "");
+              const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
+              return (
+                <h5 id={id} {...props}>
+                  {children}
+                </h5>
+              );
+            },
+            h6({ node, children, ...props }) {
+              const text = String(children).replace(/<[^>]*>/g, "");
+              const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
+              return (
+                <h6 id={id} {...props}>
+                  {children}
+                </h6>
+              );
+            },
+            code({ className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || "");
+              const language = match ? match[1] : "";
+              const isInline = !match && !String(children).includes("\n");
+
+              if (isInline) {
+                return (
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
+                );
+              }
+              return (
+                <div className="not-prose my-5 w-full max-w-none overflow-x-auto">
+                  <CodeBlock
+                    language={language || "text"}
+                    theme={resolvedTheme === "dark" ? "dark" : "light"}
+                  >
+                    {String(children).replace(/\n$/, "")}
+                  </CodeBlock>
+                </div>
+              );
+            },
+            ul({ children }) {
             return (
               <ul className="my-5 list-none space-y-2 pl-0">{children}</ul>
             );
@@ -202,12 +282,104 @@ export const MarkdownRenderer = memo(
         }}
       >
         {content}
-      </ReactMarkdown>
-    </div>
-  ),
+        </ReactMarkdown>
+      </div>
+    );
+  },
 );
 
 MarkdownRenderer.displayName = "MarkdownRenderer";
+
+interface TocNode {
+  heading: { level: number; text: string; id: string };
+  children: TocNode[];
+}
+
+function buildTocTree(
+  headings: Array<{ level: number; text: string; id: string }>
+): TocNode[] {
+  const root: TocNode[] = [];
+  const stack: TocNode[] = [{ heading: { level: 0, text: "", id: "" }, children: root }];
+
+  for (const heading of headings) {
+    const node: TocNode = { heading, children: [] };
+
+    while (stack.length > 1 && stack[stack.length - 1].heading.level >= heading.level) {
+      stack.pop();
+    }
+
+    stack[stack.length - 1].children.push(node);
+    stack.push({ heading, children: node.children });
+  }
+
+  return root;
+}
+
+function TocContentNode({
+  node,
+  activeId,
+}: {
+  node: TocNode;
+  activeId?: string;
+}) {
+  const { heading } = node;
+
+  return (
+    <li>
+      <a
+        href={`#${heading.id}`}
+        className={cn(
+          "block truncate transition-colors duration-100",
+          heading.id === activeId
+            ? "text-[#00A3A3] dark:text-[#00E0E0]"
+            : "text-secondary hover:text-primary",
+          heading.level === 1 && "text-base font-bold",
+          heading.level === 2 && "text-sm font-semibold",
+          heading.level >= 3 && "text-xs"
+        )}
+onClick={(e) => {
+                e.preventDefault();
+                const element = document.getElementById(heading.id);
+                if (element) {
+                  const id = element.getAttribute("id");
+                  if (id) {
+                    window.location.hash = id;
+                  }
+                  element.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }}
+      >
+        {heading.text}
+      </a>
+      {node.children.length > 0 && (
+        <ul className="space-y-1 pl-1.5 border-l border-default mt-1 ml-2.5">
+          {node.children.map((child) => (
+            <TocContentNode key={child.heading.id} node={child} activeId={activeId} />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+function TableOfContents({ headings, activeId }: { headings: Array<{ level: number; text: string; id: string }>; activeId?: string }) {
+  if (!headings.length) return null;
+  const tree = buildTocTree(headings);
+
+  return (
+    <nav className="sticky top-24 w-64 shrink-0 self-start rounded-lg border border-default bg-surface p-4 hidden lg:block">
+      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-secondary mb-3">
+        <List className="h-4 w-4" />
+        Table of Contents
+      </div>
+      <ul className="space-y-1">
+        {tree.map((node) => (
+          <TocContentNode key={node.heading.id} node={node} activeId={activeId} />
+        ))}
+      </ul>
+    </nav>
+  );
+}
 
 function TypeBadge({ type }: { type: NoteType }) {
   const meta = NOTE_TYPE_META[type];
@@ -404,6 +576,8 @@ function StickyNoteHeader({
   onToggleFavorite,
   onEdit,
   onDelete,
+  onBack,
+  onDeleteClick,
 }: {
   note: Note;
   topicTitle: string | null;
@@ -415,6 +589,8 @@ function StickyNoteHeader({
   onToggleFavorite: () => void;
   onEdit: () => void | Promise<void>;
   onDelete: () => void | Promise<void>;
+  onBack?: () => void;
+  onDeleteClick?: () => void;
 }) {
   return (
     <header
@@ -430,14 +606,15 @@ function StickyNoteHeader({
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between">
               <div>
-                <Link
-                  href="/dashboard/notes"
+                <button
+                  type="button"
+                  onClick={onBack}
                   className={cn(iconButtonClass, "mt-0.5")}
-                  aria-label="Back to notes"
-                  title="Back to notes"
+                  aria-label="Go back"
+                  title="Go back"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                </Link>
+                </button>
               </div>
               <div className="">
                 <h1
@@ -481,7 +658,7 @@ function StickyNoteHeader({
                 </button>
                 <button
                   type="button"
-                  onClick={onDelete}
+                  onClick={onDeleteClick}
                   className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200/60 bg-surface px-3 text-xs font-bold text-red-600 transition-colors duration-100 hover:bg-red-50/70 active:scale-[0.98] dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -752,11 +929,10 @@ export default function NoteDisplayClient({
   topicId,
   onEdit,
   onDelete,
-  isLocked = false,
-  lockedNoteTitle,
   topicNotes = [],
   isInitiallyCompleted = false,
 }: NoteDisplayClientProps) {
+  const router = useRouter();
   const { resolvedTheme } = useTheme();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [activeImplIndex, setActiveImplIndex] = useState(0);
@@ -765,7 +941,16 @@ export default function NoteDisplayClient({
   const [isHeaderCompact, setIsHeaderCompact] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(isInitiallyCompleted);
-  const [verifyLocked, setVerifyLocked] = useState(isLocked);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleBack = useCallback(() => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/dashboard/notes");
+    }
+  }, [router]);
 
   const handleMarkComplete = async () => {
     if (isCompleting) return;
@@ -776,7 +961,6 @@ export default function NoteDisplayClient({
       });
       if (res.ok) {
         setIsCompleted(true);
-        setVerifyLocked(false);
       }
     } catch (error) {
       console.error("Failed to mark complete:", error);
@@ -852,37 +1036,7 @@ export default function NoteDisplayClient({
     }
   };
 
-  const renderContent = () => {
-    if (verifyLocked) {
-      const lockedNoteTitleText = lockedNoteTitle || "the previous note";
-      const currentIndex = topicNotes.findIndex((n) => n.id === note.id);
-      const lockedNote = currentIndex > 0 ? topicNotes[currentIndex - 1] : null;
-      return (
-        <div className="mx-auto max-w-4xl px-5">
-          <div className="rounded-lg border border-dashed border-default bg-surface/60 px-5 py-16 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-amber-500/15 bg-amber-500/5 text-amber-600 dark:text-amber-400">
-              <Lock className="h-5 w-5" />
-            </div>
-            <h2 className="text-lg font-bold text-primary">
-              Prerequisites not met
-            </h2>
-            <p className="mt-2 max-w-md text-sm font-medium text-secondary">
-              Complete &quot;{lockedNoteTitleText}&quot; before viewing this
-              note.
-            </p>
-            {lockedNote && topicId && (
-              <Link
-                href={`/dashboard/notes/${lockedNote.id}`}
-                className="mt-6 inline-flex h-9 items-center gap-2 rounded-lg bg-[#1A1D1E] px-4 text-xs font-bold text-white transition-colors duration-100 hover:bg-[#00A3A3] dark:bg-[#E4E6EB] dark:text-[#111111] dark:hover:bg-[#00E0E0]"
-              >
-                Review locked note
-              </Link>
-            )}
-          </div>
-        </div>
-      );
-    }
-
+const renderContent = () => {
     switch (note.type) {
       case "general":
         return <GeneralContent note={note} resolvedTheme={resolvedTheme} />;
@@ -909,6 +1063,42 @@ export default function NoteDisplayClient({
     }
   };
 
+  const content = useMemo(() => {
+    if (note.type === "general") return note.content || "";
+    if (note.type === "qa") return note.qa?.content || "";
+    if (note.type === "dsa") return note.dsa?.problemStatement || note.dsa?.notes || "";
+    return "";
+  }, [note]);
+
+  const headings = useMemo(() => {
+    const contentHeadings = extractHeadings(content);
+    return [{ level: 1, text: note.title, id: "note-title" }, ...contentHeadings];
+  }, [content, note.title]);
+  const [activeHeadingId, setActiveHeadingId] = useState<string>("");
+
+  const handleScroll = useCallback(() => {
+    const headingsElements = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+    const scrollPosition = window.scrollY + 100;
+
+    let currentId = "";
+    headingsElements.forEach((element) => {
+      const id = element.getAttribute("id");
+      if (!id) return;
+
+      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+      if (scrollPosition >= elementPosition - 20) {
+        currentId = id;
+      }
+    });
+
+    setActiveHeadingId(currentId || "note-title");
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
   return (
     <div ref={rootRef} className="w-full pt-4 pb-16 font-sans">
       <StickyNoteHeader
@@ -922,22 +1112,86 @@ export default function NoteDisplayClient({
         onToggleFavorite={handleToggleFavorite}
         onEdit={onEdit}
         onDelete={onDelete}
+        onBack={handleBack}
+        onDeleteClick={() => setShowDeleteModal(true)}
       />
 
-      <main className="mx-auto mt-6 max-w-4xl px-5">
-        {topicId && (
-          <div className="mb-5 flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-secondary">
-              Progress
-            </span>
-            {completionBadge}
+      <div className="mx-auto mt-6 max-w-7xl px-5">
+        <h1 id="note-title" className="hidden">{note.title}</h1>
+        <div className="flex gap-8">
+          <main className="flex-1 max-w-4xl">
+            {topicId && (
+              <div className="mb-5 flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wide text-secondary">
+                  Progress{" "}
+                </span>
+                {completionBadge}
+              </div>
+            )}
+            <div className="space-y-5">{renderContent()}</div>
+            {topicId && topicNotes.length > 1 && (
+              <TopicNav currentNoteId={note.id} topicNotes={topicNotes} />
+            )}
+          </main>
+          {headings.length > 0 && (
+            <TableOfContents headings={headings} activeId={activeHeadingId} />
+          )}
+        </div>
+      </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowDeleteModal(false)}
+          />
+          <div className="relative w-full max-w-md rounded-2xl border border-[#E6E8EB] bg-[#FFFFFF] p-6 shadow-xl dark:border-[#2D2D2D] dark:bg-[#1A1A1A]">
+            <button
+              type="button"
+              onClick={() => setShowDeleteModal(false)}
+              className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full text-[#687076] hover:text-[#1A1D1E] hover:bg-[#F4F7F6] transition-colors duration-100 dark:text-[#A0A0A0] dark:hover:text-[#E4E6EB] dark:hover:bg-[#111111]"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-red-200 bg-red-50 dark:border-red-900/30 dark:bg-red-950/30">
+              <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
+            </div>
+            <h3 className="mb-1 text-center text-lg font-bold text-[#1A1D1E] dark:text-[#E4E6EB]">
+              Delete Note
+            </h3>
+            <p className="mb-6 text-center text-sm text-[#687076] dark:text-[#A0A0A0]">
+              Are you sure you want to delete &ldquo;{note.title}&rdquo;? This
+              action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                className="flex-1 h-10 rounded-lg border border-[#E6E8EB] bg-[#FFFFFF] text-sm font-bold text-[#1A1D1E] transition-colors duration-100 hover:bg-[#F4F7F6] disabled:opacity-50 dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:text-[#E4E6EB] dark:hover:bg-[#111111]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={async () => {
+                  setIsDeleting(true);
+                  try {
+                    await onDelete();
+                    setShowDeleteModal(false);
+                  } finally {
+                    setIsDeleting(false);
+                  }
+                }}
+                className="flex-1 h-10 rounded-lg bg-red-600 text-sm font-bold text-white transition-colors duration-100 hover:bg-red-700 disabled:opacity-50 dark:bg-red-600 dark:hover:bg-red-700"
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
           </div>
-        )}
-        <div className="space-y-5">{renderContent()}</div>
-        {topicId && topicNotes.length > 1 && (
-          <TopicNav currentNoteId={note.id} topicNotes={topicNotes} />
-        )}
-      </main>
+        </div>
+      )}
     </div>
   );
 }

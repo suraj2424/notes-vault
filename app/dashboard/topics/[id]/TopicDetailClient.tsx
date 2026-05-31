@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -13,9 +13,10 @@ import {
   Code2,
   FileText,
   FolderOpen,
-  Lock,
   Plus,
+  Search,
   Unlink,
+  X,
 } from "lucide-react";
 import { Note, Topic } from "@/types";
 import { cn } from "@/lib/utils";
@@ -50,6 +51,55 @@ function NoteTypeBadge({ type }: { type: Note["type"] }) {
     >
       {type === "qa" ? "Q&A" : type}
     </span>
+  );
+}
+
+function Tooltip({
+  text,
+  children,
+}: {
+  text: string;
+  children: React.ReactNode;
+}) {
+  const [visible, setVisible] = useState(false);
+  const [overflowing, setOverflowing] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const tipRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!visible || !triggerRef.current || !tipRef.current) return;
+    const triggerRect = triggerRef.current.getBoundingClientRect();
+    const tipRect = tipRef.current.getBoundingClientRect();
+    setOverflowing(triggerRect.right + tipRect.width > window.innerWidth);
+  }, [visible, text]);
+
+  return (
+    <div
+      className="relative inline-flex items-center justify-center"
+      onMouseEnter={() => setVisible(true)}
+      onMouseLeave={() => setVisible(false)}
+      ref={triggerRef}
+    >
+      {children}
+      {visible && (
+        <div
+          ref={tipRef}
+          className={`pointer-events-none absolute bottom-full mb-2 z-[100] whitespace-nowrap rounded-md px-3 py-1.5 bg-[#1A1D1E] text-[#FFFFFF] text-xs font-medium shadow-md dark:bg-[#E4E6EB] dark:text-[#111111] border border-[#E6E8EB]/10 dark:border-[#2D2D2D]/10 ${
+            overflowing ? "right-0" : "left-1/2 -translate-x-1/2"
+          }`}
+        >
+          <span
+            className="absolute h-1.5 w-1.5 rotate-45 bg-[#1A1D1E] dark:bg-[#E4E6EB]"
+            style={
+              overflowing
+                ? { right: 12, bottom: -3 }
+                : { left: "50%", bottom: -3, marginLeft: -3 }
+            }
+          />
+          {text}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -88,7 +138,6 @@ export default function TopicDetailClient({
   onRemoveNote,
   onReorder,
   onToggleComplete,
-  lockedNotes = {},
   completedNotes = new Set<string>(),
   completedCount = 0,
   totalCount = 0,
@@ -98,22 +147,36 @@ export default function TopicDetailClient({
   onRemoveNote: (noteId: string) => void;
   onReorder?: (noteId: string, direction: "up" | "down") => void;
   onToggleComplete?: (noteId: string) => Promise<void>;
-  lockedNotes?: Record<string, boolean>;
   completedNotes?: Set<string>;
   completedCount?: number;
   totalCount?: number;
 }) {
   const [notes, setNotes] = useState(serverNotes);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isReordering, setIsReordering] = useState<string | null>(null);
-  const [completingNotes, setCompletingNotes] = useState<Set<string>>(new Set());
-  const [completedNotesState, setCompletedNotesState] = useState(completedNotes);
-  const [completedCountState, setCompletedCountState] = useState(completedCount);
+  const [completingNotes, setCompletingNotes] = useState<Set<string>>(
+    new Set(),
+  );
+  const [completedNotesState, setCompletedNotesState] =
+    useState(completedNotes);
+  const [completedCountState, setCompletedCountState] =
+    useState(completedCount);
+
+  const filteredNotes = useMemo(() => {
+    if (!searchQuery.trim()) return notes;
+    const query = searchQuery.toLowerCase();
+    return notes.filter(
+      (note) =>
+        note.title.toLowerCase().includes(query) ||
+        notePreview(note).toLowerCase().includes(query),
+    );
+  }, [notes, searchQuery]);
 
   const sorted = useMemo(() => {
-    return [...notes].sort(
+    return [...filteredNotes].sort(
       (a, b) => (a.sequence ?? 9999) - (b.sequence ?? 9999),
     );
-  }, [notes]);
+  }, [filteredNotes]);
 
   const displayCount = sorted.length;
   const hasSequenced = sorted.some((n) => n.sequence != null);
@@ -121,7 +184,6 @@ export default function TopicDetailClient({
   const handleToggleComplete = useCallback(
     async (noteId: string) => {
       if (!onToggleComplete) return;
-      if (lockedNotes[noteId]) return;
       if (completingNotes.has(noteId)) return;
 
       const isCurrentlyCompleted = completedNotesState.has(noteId);
@@ -162,7 +224,7 @@ export default function TopicDetailClient({
         });
       }
     },
-    [completedNotesState, completingNotes, lockedNotes, onToggleComplete],
+    [completedNotesState, completingNotes, onToggleComplete],
   );
 
   const handleMove = useCallback(
@@ -202,7 +264,7 @@ export default function TopicDetailClient({
 
   return (
     <div className="mx-auto max-w-7xl px-5 p-8 font-sans">
-      <header className="sticky top-0 z-30 -mx-5 border-b border-default px-5 pb-2">
+      <header className="sticky top-0 z-30 -mx-5 border-b border-default bg-[#FFFFFF] dark:bg-[#1A1A1A] px-5 pb-2">
         <div className="flex flex-col gap-4 py-4">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div className="flex min-w-0 items-start gap-3">
@@ -241,26 +303,49 @@ export default function TopicDetailClient({
                     })}
                   </span>
                 </div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Link
-                href={`/dashboard/notes/new?topicId=${topic.id}`}
-                className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#1A1D1E] px-4 text-xs font-bold text-white transition-colors duration-100 hover:bg-[#00A3A3] dark:bg-[#E4E6EB] dark:text-[#111111] dark:hover:bg-[#00E0E0]"
-              >
-                <Plus className="h-4 w-4" />
-                New Note
-              </Link>
-              <Link
-                href={`/dashboard/topics/${topic.id}/edit`}
-                className="inline-flex h-10 items-center rounded-lg border border-default bg-surface px-4 text-xs font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
-              >
-                Edit Topic
-              </Link>
-            </div>
           </div>
-          {totalCount > 0 && (
+        </div>
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="group relative min-w-0 flex-1 sm:w-80">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-secondary/60 transition-colors group-focus-within:text-primary" />
+            <input
+              type="text"
+              placeholder="Search notes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-10 w-full rounded-lg border border-default bg-surface pl-9 pr-9 text-sm font-medium text-primary outline-none transition-colors duration-100 placeholder:text-secondary/50 focus:bg-[#FFFFFF] dark:focus:bg-[#1A1A1A]"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
+                aria-label="Clear search"
+                title="Clear search"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={`/dashboard/notes/new?topicId=${topic.id}`}
+              className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#1A1D1E] px-4 text-xs font-bold text-white transition-colors duration-100 hover:bg-[#00A3A3] dark:bg-[#E4E6EB] dark:text-[#111111] dark:hover:bg-[#00E0E0]"
+            >
+              <Plus className="h-4 w-4" />
+              New Note
+            </Link>
+            <Link
+              href={`/dashboard/topics/${topic.id}/edit`}
+              className="inline-flex h-10 items-center rounded-lg border border-default bg-surface px-4 text-xs font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
+            >
+              Edit Topic
+            </Link>
+          </div>
+        </div>
+      </div>
+      {totalCount > 0 && (
             <div className="flex items-center gap-3">
               <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-bg-muted">
                 <div
@@ -289,98 +374,95 @@ export default function TopicDetailClient({
                 <div className="z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-default bg-surface text-xs font-bold text-secondary">
                   {note.sequence ?? index + 1}
                 </div>
-                <article
-                  className={cn(
-                    "group flex-1 rounded-lg border border-default bg-surface p-4 transition-colors duration-100",
-                    lockedNotes[note.id]
-                      ? "opacity-70"
-                      : "hover:border-[#00A3A3]/35 dark:hover:border-[#00E0E0]/30",
-                  )}
-                >
+                <article className="group flex-1 rounded-lg border border-default bg-surface p-4 transition-colors duration-100 hover:border-[#00A3A3]/35 dark:hover:border-[#00E0E0]/30">
                   <div className="flex items-start gap-3">
                     <Link
                       href={`/dashboard/notes/${note.id}`}
                       className="flex flex-1 items-start gap-3"
                     >
-                      {lockedNotes[note.id] ? (
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-500/20 bg-amber-500/5 text-amber-600 dark:text-amber-400">
-                          <Lock className="h-4 w-4" />
-                        </div>
-                      ) : (
-                        <NoteIcon type={note.type} />
-                      )}
+                      <NoteIcon type={note.type} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <h2 className="truncate text-base font-bold tracking-tight text-primary transition-colors duration-100 hover:text-secondary">
                             {note.title}
                           </h2>
                         </div>
-                        <p className="mt-1.5 line-clamp-2 text-sm font-medium leading-6 text-secondary">
-                          {notePreview(note)}
-                        </p>
                       </div>
                     </Link>
                     <div className="flex shrink-0 items-center gap-1.5">
                       {onToggleComplete && (
+                        <Tooltip
+                          text={
+                            completedNotesState.has(note.id)
+                              ? "Mark as incomplete"
+                              : "Mark as complete"
+                          }
+                        >
+                          <button
+                            type="button"
+                            onClick={() => handleToggleComplete(note.id)}
+                            disabled={completingNotes.has(note.id)}
+                            className={cn(
+                              "flex h-8 w-8 items-center justify-center rounded-lg border transition-colors duration-100 disabled:opacity-40 disabled:hover:bg-surface",
+                              completedNotesState.has(note.id)
+                                ? "border-[#00A3A3] bg-[#00A3A3]/10 text-[#00A3A3] dark:border-[#00E0E0] dark:bg-[#00E0E0]/10 dark:text-[#00E0E0]"
+                                : "border-default bg-surface text-secondary hover:bg-bg-muted hover:text-primary",
+                            )}
+                            aria-label={
+                              completedNotesState.has(note.id)
+                                ? "Mark as incomplete"
+                                : "Mark as complete"
+                            }
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                        </Tooltip>
+                      )}
+                      <Tooltip text="Move up">
                         <button
                           type="button"
-                          onClick={() => handleToggleComplete(note.id)}
-                          disabled={!!lockedNotes[note.id] || completingNotes.has(note.id)}
-                          className={cn(
-                            "flex h-8 w-8 items-center justify-center rounded-lg border transition-colors duration-100 disabled:opacity-40 disabled:hover:bg-surface",
-                            completedNotesState.has(note.id)
-                              ? "border-[#00A3A3] bg-[#00A3A3]/10 text-[#00A3A3] dark:border-[#00E0E0] dark:bg-[#00E0E0]/10 dark:text-[#00E0E0]"
-                              : "border-default bg-surface text-secondary hover:bg-bg-muted hover:text-primary",
-                          )}
-                          aria-label={completedNotesState.has(note.id) ? "Mark as incomplete" : "Mark as complete"}
-                          title={completedNotesState.has(note.id) ? "Mark as incomplete" : "Mark as complete"}
+                          disabled={index === 0 || isReordering === note.id}
+                          onClick={() => handleMove(note.id, "up")}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary disabled:opacity-40 disabled:hover:bg-surface"
+                          aria-label="Move up"
                         >
-                          <Check className="h-3.5 w-3.5" />
+                          <ChevronUp className="h-3.5 w-3.5" />
                         </button>
-                      )}
-                      <button
-                        type="button"
-                        disabled={
-                          index === 0 ||
-                          isReordering === note.id ||
-                          !!lockedNotes[note.id]
-                        }
-                        onClick={() => handleMove(note.id, "up")}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary disabled:opacity-40 disabled:hover:bg-surface"
-                        aria-label="Move up"
-                      >
-                        <ChevronUp className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={
-                          index === sorted.length - 1 ||
-                          isReordering === note.id ||
-                          !!lockedNotes[note.id]
-                        }
-                        onClick={() => handleMove(note.id, "down")}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary disabled:opacity-40 disabled:hover:bg-surface"
-                        aria-label="Move down"
-                      >
-                        <ChevronDown className="h-3.5 w-3.5" />
-                      </button>
-                      <Link
-                        href={`/dashboard/notes/${note.id}`}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
-                        aria-label="Open note"
-                      >
-                        <FileText className="h-3.5 w-3.5" />
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => onRemoveNote(note.id)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
-                        aria-label="Remove note from topic"
-                        title="Remove note from topic"
-                        disabled={!!lockedNotes[note.id]}
-                      >
-                        <Unlink className="h-3.5 w-3.5" />
-                      </button>
+                      </Tooltip>
+                      <Tooltip text="Move down">
+                        <button
+                          type="button"
+                          disabled={
+                            index === sorted.length - 1 ||
+                            isReordering === note.id
+                          }
+                          onClick={() => handleMove(note.id, "down")}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary disabled:opacity-40 disabled:hover:bg-surface"
+                          aria-label="Move down"
+                        >
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        </button>
+                      </Tooltip>
+                      <Tooltip text="Open note">
+                        <Link
+                          href={`/dashboard/notes/${note.id}`}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
+                          aria-label="Open note"
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                        </Link>
+                      </Tooltip>
+                      <Tooltip text="Remove note from topic">
+                        <button
+                          type="button"
+                          onClick={() => onRemoveNote(note.id)}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
+                          aria-label="Remove note from topic"
+                          disabled={false}
+                        >
+                          <Unlink className="h-3.5 w-3.5" />
+                        </button>
+                      </Tooltip>
                     </div>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-default pt-3">
@@ -406,8 +488,9 @@ export default function TopicDetailClient({
               No notes in this topic yet
             </h2>
             <p className="mt-1 max-w-sm text-sm font-medium text-secondary">
-              Start the collection by creating a note directly inside this
-              topic.
+            {searchQuery
+              ? "No notes match your search. Try a different term."
+              : "Start the collection by creating a note directly inside this topic."}
             </p>
             <Link
               href={`/dashboard/notes/new?topicId=${topic.id}`}

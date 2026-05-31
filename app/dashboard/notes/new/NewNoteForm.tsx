@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { NoteType, DSAData, QAData } from "@/types";
 import { X, Plus, ChevronLeft, Star, Tag, Check, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import { TopicSelector } from "@/app/dashboard/topics/TopicSelector";
 import { NoteTypeSelector } from "./components/NoteTypeSelector";
 import { SectionDivider } from "./components/SectionDivider";
@@ -71,7 +70,7 @@ const [nextSequence, setNextSequence] = useState<number | null>(null);
 useEffect(() => {
 let cancelled = false;
 if (!topicId) { setNextSequence(null); return; }
-fetch(`/api/topics/${topicId}/notes?pageSize=1`)
+  fetch(`/api/topics/${topicId}/notes?pageSize=1&sort=desc`)
   .then((r) => r.ok ? r.json() : null)
   .then((data) => {
     if (cancelled || !data) return;
@@ -133,7 +132,7 @@ const handleCreateTopic = useCallback(async (newTitle: string) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(noteData),
       });
-      if (res.ok) router.push("/dashboard");
+        if (res.ok) router.back();
     } catch (err) {
       alert("Failed to save note.");
     } finally {
@@ -148,12 +147,12 @@ const handleCreateTopic = useCallback(async (newTitle: string) => {
       <div className="sticky top-0 z-30 -mx-6 lg:-mx-10 px-6 lg:px-10 bg-[#FFFFFF]/95 dark:bg-[#1A1A1A]/95 border-b border-[#E6E8EB] dark:border-[#2D2D2D]">
         <div className="py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <Link
-              href="/dashboard/notes"
-              className="group flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#E6E8EB] bg-[#FFFFFF] transition-colors duration-100 hover:bg-[#F4F7F6] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:hover:bg-[#111111]"
-            >
+        <button
+          onClick={() => router.back()}
+          className="group flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#E6E8EB] bg-[#FFFFFF] transition-colors duration-100 hover:bg-[#F4F7F6] dark:border-[#2D2D2D] dark:bg-[#1A1A1A] dark:hover:bg-[#111111]"
+        >
               <ChevronLeft className="h-4 w-4 text-[#687076] group-hover:text-[#1A1D1E] dark:text-[#A0A0A0] dark:group-hover:text-[#E4E6EB] transition-colors duration-100" />
-            </Link>
+            </button>
             <h1 className="text-lg font-bold tracking-tight text-[#1A1D1E] dark:text-[#E4E6EB] truncate">
               {title.trim() || "New Note"}
             </h1>
@@ -243,7 +242,12 @@ This note will be added as Step {nextSequence}
         </div>
 
         <div className="pt-2">
-          {type === "general" && <GeneralWorkspace content={content} onContentChange={setContent} isSaving={isSaving} />}
+          {type === "general" && (
+          <div>
+            <SectionDivider>Content</SectionDivider>
+            <GeneralWorkspace content={content} onContentChange={setContent} isSaving={isSaving} />
+          </div>
+        )}
           {type === "dsa" && <DSAWorkspace dsa={dsa} updateDsa={updateDsa} isSaving={isSaving} />}
           {type === "qa" && <QAWorkspace qa={qa} setQa={setQa} isSaving={isSaving} />}
         </div>

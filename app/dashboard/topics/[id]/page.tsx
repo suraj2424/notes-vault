@@ -66,20 +66,12 @@ dsa: note.dsa as any,
 qa: note.qa as any,
 }));
 
-const lockedEntries = await UserNoteProgress.find({ userId, topicId: id, completed: false }).lean();
-const lockedNoteIds = new Set(lockedEntries.map((e) => e.noteId));
 const completedEntries = await UserNoteProgress.find({ userId, topicId: id, completed: true }).lean();
 const completedNotes = new Set(completedEntries.map((e) => e.noteId));
-const lockedNotes: Record<string, boolean> = {};
-const sequencedNotes = noteDocs.filter((n) => n.sequence != null).sort((a, b) => a.sequence - b.sequence);
-for (const n of sequencedNotes) {
-  if (!lockedNoteIds.has(n._id.toString())) {
-    break;
-  }
-  lockedNotes[n._id.toString()] = true;
-}
 
 const completedCount = completedEntries.length;
+
+const sequencedNotes = noteDocs.filter((n) => n.sequence != null).sort((a, b) => a.sequence - b.sequence);
 
 const onRemoveNote = async (noteId: string) => {
 "use server";
@@ -160,12 +152,15 @@ if (!note.topicId) {
   throw new Error("Note is not in a topic");
 }
 
-const existing = await UserNoteProgress.findOne({ userId, noteId, topicId: note.topicId });
+const existing = await UserNoteProgress.findOne({ userId, noteId, topicId: note.topicId }).lean();
 if (existing) {
   if (existing.completed) {
-    await UserNoteProgress.deleteOne({ _id: existing._id });
+    const result = await UserNoteProgress.deleteOne({ _id: existing._id });
+    if (result.deletedCount === 0) {
+      throw new Error("Failed to delete progress");
+    }
   } else {
-    await UserNoteProgress.updateOne(
+    await UserNoteProgress.findOneAndUpdate(
       { _id: existing._id },
       { $set: { completed: true, completedAt: new Date() } }
     );
@@ -188,7 +183,6 @@ notes={notes}
 onRemoveNote={onRemoveNote}
 onReorder={onReorderNote}
 onToggleComplete={onToggleComplete}
-lockedNotes={lockedNotes}
 completedNotes={completedNotes}
 completedCount={completedCount}
 totalCount={sequencedNotes.length || noteDocs.length}

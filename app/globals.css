@@ -202,6 +202,18 @@
 .dark::-webkit-scrollbar-thumb:hover {
   background: var(--color-scrollbar-thumb-hover);
 }
+.dark * {
+  scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
+}
+
+h1[id],
+h2[id],
+h3[id],
+h4[id],
+h5[id],
+h6[id] {
+  scroll-margin-top: 80px;
+}
 
 .dark * {
   scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);

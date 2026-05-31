@@ -170,54 +170,7 @@ export function CodeBlock({ language = 'text', children, theme = 'dark', minimal
         >
           {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
         </button>
-        <div className="overflow-x-auto p-4">
-          <SyntaxHighlighter
-            language={lang}
-            style={style}
-            PreTag="div"
-            className="!m-0 !bg-transparent !p-0 font-mono antialiased"
-            customStyle={{
-              fontSize: CODE_FONT_SIZE,
-              lineHeight: CODE_LINE_HEIGHT,
-              fontFamily: CODE_FONT_FAMILY,
-              background: 'transparent',
-              border: 'none',
-              boxShadow: 'none',
-              WebkitFontSmoothing: 'antialiased',
-              MozOsxFontSmoothing: 'grayscale',
-            }}
-          >
-            {codeString}
-          </SyntaxHighlighter>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="group relative overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-[#111111] text-neutral-900 dark:text-neutral-100 rounded-lg">
-      {/* Header bar */}
-      <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-100/70 px-4 py-2 dark:border-neutral-800 dark:bg-neutral-900/50">
-        <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-          {lang || 'Code'}
-        </span>
-        <button
-          onClick={copyToClipboard}
-          className={cn(
-            "flex items-center gap-1.5 text-[11px] font-medium transition-colors duration-150 py-0.5 px-1.5 rounded-md",
-            copied 
-              ? "text-emerald-600 dark:text-emerald-400" 
-              : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-          )}
-          title={copied ? "Copied" : "Copy code"}
-        >
-          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-          <span>{copied ? 'Copied!' : 'Copy'}</span>
-        </button>
-      </div>
-
-      {/* Code Content Area */}
-      <div className="overflow-x-auto p-4 selection:bg-neutral-200/60 dark:selection:bg-neutral-800/60">
+  <div className="overflow-x-auto p-4" suppressHydrationWarning>
         <SyntaxHighlighter
           language={lang}
           style={style}
@@ -239,6 +192,53 @@ export function CodeBlock({ language = 'text', children, theme = 'dark', minimal
       </div>
     </div>
   );
+}
+
+return (
+  <div className="group relative overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-[#111111] text-neutral-900 dark:text-neutral-100 rounded-lg">
+    {/* Header bar */}
+    <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-100/70 px-4 py-2 dark:border-neutral-800 dark:bg-neutral-900/50">
+      <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+        {lang || 'Code'}
+      </span>
+      <button
+        onClick={copyToClipboard}
+        className={cn(
+          "flex items-center gap-1.5 text-[11px] font-medium transition-colors duration-150 py-0.5 px-1.5 rounded-md",
+          copied
+            ? "text-emerald-600 dark:text-emerald-400"
+            : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+        )}
+        title={copied ? "Copied" : "Copy code"}
+      >
+        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+        <span>{copied ? 'Copied!' : 'Copy'}</span>
+      </button>
+    </div>
+
+    {/* Code Content Area */}
+    <div className="overflow-x-auto p-4 selection:bg-neutral-200/60 dark:selection:bg-neutral-800/60" suppressHydrationWarning>
+      <SyntaxHighlighter
+        language={lang}
+        style={style}
+        PreTag="div"
+        className="!m-0 !bg-transparent !p-0 font-mono antialiased"
+        customStyle={{
+          fontSize: CODE_FONT_SIZE,
+          lineHeight: CODE_LINE_HEIGHT,
+          fontFamily: CODE_FONT_FAMILY,
+          background: 'transparent',
+          border: 'none',
+          boxShadow: 'none',
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale',
+        }}
+      >
+        {codeString}
+      </SyntaxHighlighter>
+    </div>
+  </div>
+);
 }
 
 // Inline code component for markdown

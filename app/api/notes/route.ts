@@ -173,7 +173,7 @@ const maxSeq = await Note.findOne({ topicId: noteData.topicId, sequence: { $ne: 
 .sort({ sequence: -1 }) 
 .select('sequence') 
 .lean(); 
-sequence = maxSeq?.sequence !== undefined ? maxSeq.sequence + 1 : 0; 
+sequence = maxSeq?.sequence !== undefined && maxSeq.sequence !== null ? maxSeq.sequence + 1 : 1; 
 } 
 
 const note = await Note.create({ 

@@ -151,7 +151,7 @@ export function NoteCard({
     <Link
       href={`/dashboard/notes/${note.id}`}
       className={cn(
-        "group relative flex h-full min-h-52 flex-col overflow-hidden rounded-lg border border-default bg-surface transition-colors duration-100",
+      "group relative flex h-full min-h-44 flex-col overflow-hidden rounded-lg border border-default bg-surface transition-colors duration-100",
         NOTE_TYPE_STYLES[note.type].accentBorder
       )}
     >
@@ -540,7 +540,7 @@ fetchNotes(page, debouncedSearchQuery, typeFilter, showFavoritesOnly, sortBy, ta
 
   return (
     <div className="mx-auto max-w-7xl px-8 py-6 font-sans">
-      <header className="sticky top-0 z-30 -mx-5 border-b border-default px-5 ">
+      <header className="sticky top-0 z-30 -mx-5 border-b border-default bg-[#FFFFFF] dark:bg-[#1A1A1A] px-5 ">
         <div className="flex flex-col gap-4 py-4">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div className="min-w-0">

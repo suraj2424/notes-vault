@@ -28,14 +28,16 @@ export async function GET(
     const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get("pageSize") || "20", 10)));
     const skip = (page - 1) * pageSize;
 
-const [notes, total] = await Promise.all([
-Note.find({ userId, topicId: id })
-.sort({ sequence: 1 })
-.skip(skip)
-.limit(pageSize)
-.lean(),
-Note.countDocuments({ userId, topicId: id }),
-]);
+  const sortOrder = searchParams.get("sort") === "desc" ? -1 : 1;
+
+  const [notes, total] = await Promise.all([
+    Note.find({ userId, topicId: id })
+      .sort({ sequence: sortOrder })
+      .skip(skip)
+      .limit(pageSize)
+      .lean(),
+    Note.countDocuments({ userId, topicId: id }),
+  ]);
 
 return NextResponse.json({
 notes: notes.map((note) => ({
