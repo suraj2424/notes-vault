@@ -18,7 +18,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Code2,
   FileText,
   Filter,
   Plus,
@@ -54,6 +53,12 @@ interface NotesLibraryClientProps {
 
 const NOTE_TYPE_STYLES = NOTE_TYPE_META;
 
+const SKELETON_SHIMMER_STYLE = `
+  @keyframes shimmer {
+    100% { transform: translateX(100%); }
+  }
+`;
+
 function stripMarkdown(content: string) {
   return content.replace(/[#*_`>[\]()]/g, "").replace(/\s+/g, " ").trim();
 }
@@ -65,7 +70,7 @@ function getNotePreview(note: Note) {
   return stripMarkdown(note.content || "");
 }
 
-function TypeIcon({ type }: { type: NoteType }) {
+const TypeIcon = memo(function TypeIcon({ type }: { type: NoteType }) {
   const meta = NOTE_TYPE_STYLES[type];
   const Icon = meta.icon;
 
@@ -79,9 +84,9 @@ function TypeIcon({ type }: { type: NoteType }) {
       <Icon className="h-4 w-4" />
     </div>
   );
-}
+});
 
-function TypeBadge({ type }: { type: NoteType }) {
+const TypeBadge = memo(function TypeBadge({ type }: { type: NoteType }) {
   return (
     <span
       className={cn(
@@ -92,16 +97,18 @@ function TypeBadge({ type }: { type: NoteType }) {
       {NOTE_TYPE_STYLES[type].label}
     </span>
   );
-}
+});
 
 const NoteCard = memo(function NoteCard({
   note,
   onToggleFavorite,
   preview,
+  formattedDate,
 }: {
   note: Note;
   onToggleFavorite: (noteId: string, currentFavorite: boolean) => void;
   preview: string;
+  formattedDate: string;
 }) {
 
   return (
@@ -204,9 +211,7 @@ const NoteCard = memo(function NoteCard({
             <div className="flex min-w-0 items-center gap-2">
               <TypeBadge type={note.type} />
               <span className="truncate text-[11px] font-medium text-secondary">
-                {formatDistanceToNow(new Date(note.updatedAt), {
-                  addSuffix: true,
-                })}
+                {formattedDate}
               </span>
             </div>
             <span className="shrink-0 text-[11px] font-medium text-secondary transition-colors duration-150 group-hover:text-primary">
@@ -266,7 +271,7 @@ function SortMenu({
       >
         <ArrowUpDown className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">
-          {sortOptions.find((o) => o.value === sortBy)?.label}
+          {sortOptions.find((o) => o.value === sortBy)?.label ?? "Most Recent"}
         </span>
         <ChevronDown
           className={cn(
@@ -321,11 +326,7 @@ function SkeletonGrid() {
           <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent dark:via-white/[0.02]" />
         </div>
       ))}
-      <style>{`
-        @keyframes shimmer {
-          100% { transform: translateX(100%); }
-        }
-      `}</style>
+      <style>{SKELETON_SHIMMER_STYLE}</style>
     </div>
   );
 }
@@ -582,6 +583,9 @@ export function NotesLibraryClient({
     return notes.map((note) => ({
       note,
       preview: getNotePreview(note),
+      formattedDate: formatDistanceToNow(new Date(note.updatedAt), {
+        addSuffix: true,
+      }),
     }));
   }, [notes]);
 
@@ -717,12 +721,13 @@ export function NotesLibraryClient({
           skeletonGrid
         ) : notes.length > 0 ? (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4">
-            {notesWithPreviews.map(({ note, preview }) => (
+            {notesWithPreviews.map(({ note, preview, formattedDate }) => (
               <NoteCard
                 key={note.id}
                 note={note}
                 onToggleFavorite={handleToggleFavorite}
                 preview={preview}
+                formattedDate={formattedDate}
               />
             ))}
           </div>
