@@ -444,7 +444,7 @@ export function TableOfContents({
           </div>
           <div className="h-1 w-full rounded-full bg-zinc-200 dark:bg-zinc-800 bg-default overflow-hidden">
             <div
-              className="h-full rounded-full bg-[#00A3A3] dark:bg-[#00E0E0] transition-all duration-150 ease-out"
+              className="h-full rounded-full bg-[#00A3A3] dark:bg-[#00E0E0] transition-[width] duration-150 ease-out"
               style={{ width: `${overallProgress * 100}%` }}
             />
           </div>
@@ -467,7 +467,7 @@ export function TableOfContents({
 }
 
 // FIX: A clean, visually flawless node renderer that incorporates the section progress map
-function TocContentNode({
+const TocContentNode = memo(function TocContentNode({
   node,
   activeId,
   sectionProgress,
@@ -480,28 +480,19 @@ function TocContentNode({
   const isActive = activeId === id;
   const progress = sectionProgress.get(id) ?? 0;
 
-  // Indentation adjustments based on heading hierarchy level (assuming h1/h2 start at base)
-  const indentClass = 
-    level <= 2 ? "pl-3" : 
+  const indentClass =
+    level <= 2 ? "pl-3" :
     level === 3 ? "pl-6" : "pl-9";
 
   return (
     <li className="relative my-1">
-      {/* Visual Indicator Track on the Left Border */}
-      {/* {progress > 0 && (
-        <div 
-          className="absolute left-[-1px] top-0 w-[2px] bg-[#00A3A3] dark:bg-[#00E0E0] transition-all duration-150"
-          style={{ height: `${progress * 100}%` }}
-        />
-      )} */}
-
       <a
         href={`#${id}`}
         className={`block text-xs py-1 transition-colors duration-150 truncate ${indentClass} ${
           isActive
             ? "text-[#00A3A3] dark:text-[#00E0E0] font-medium"
             : progress === 1
-            ? "text-primary/90" // Read/Passed sections stay slightly darker than unread
+            ? "text-primary/90"
             : "text-secondary hover:text-primary"
         }`}
         title={text}
@@ -509,7 +500,6 @@ function TocContentNode({
         {text}
       </a>
 
-      {/* Recursive Render for Nested Headings */}
       {node.children.length > 0 && (
         <ul className="space-y-1">
           {node.children.map((child) => (
@@ -524,7 +514,7 @@ function TocContentNode({
       )}
     </li>
   );
-}
+});
 
 // Simple Tree Builder Helper to ensure standard structure
 function buildTocTree(headings: Array<{ level: number; text: string; id: string }>): TocNode[] {
@@ -711,9 +701,13 @@ function TopicNav({
   currentNoteId: string;
   topicNotes: Array<{ id: string; title: string; sequence?: number | null }>;
 }) {
-  const sorted = [...topicNotes]
-    .filter((n) => n.sequence != null)
-    .sort((a, b) => (a.sequence ?? 9999) - (b.sequence ?? 9999));
+  const sorted = useMemo(
+    () =>
+      [...topicNotes]
+        .filter((n) => n.sequence != null)
+        .sort((a, b) => (a.sequence ?? 9999) - (b.sequence ?? 9999)),
+    [topicNotes],
+  );
   if (sorted.length < 2) return null;
   const currentIndex = sorted.findIndex((n) => n.id === currentNoteId);
   if (currentIndex < 0) return null;
@@ -797,7 +791,7 @@ function StickyNoteHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 w-full border-b transition-all duration-150",
+        "sticky top-0 z-30 w-full border-b transition-[border-color,box-shadow] duration-150",
         isCompact
           ? "border-default shadow-sm bg-[#FFFFFF] dark:bg-[#1A1A1A]"
           : "border-transparent bg-[#FFFFFF] dark:bg-[#1A1A1A]",
@@ -1213,19 +1207,20 @@ export default function NoteDisplayClient({
     const updateScrollStates = () => {
       const { scrollTop, scrollHeight, clientHeight } = getDimensions();
 
-      setIsHeaderCompact(scrollTop > 16);
+      const newHeaderCompact = scrollTop > 16;
+      setIsHeaderCompact((prev) => (prev === newHeaderCompact ? prev : newHeaderCompact));
 
       const totalScrollable = scrollHeight - clientHeight;
       const overallProg = totalScrollable > 0 ? Math.min(scrollTop / totalScrollable, 1) : 0;
-      setOverallProgress(overallProg);
+      setOverallProgress((prev) => Math.abs(prev - overallProg) < 0.001 ? prev : overallProg);
 
       if (cachedHeadings.length === 0) {
-        setSectionProgress(new Map());
-        setActiveHeadingId("note-title");
+        setSectionProgress((prev) => (prev.size === 0 ? prev : new Map()));
+        setActiveHeadingId((prev) => (prev === "note-title" ? prev : "note-title"));
         return;
       }
 
-      const scrollTrigger = scrollTop + clientHeight * 0.3; 
+      const scrollTrigger = scrollTop + clientHeight * 0.3;
       let activeIdx = -1;
       for (let i = cachedHeadings.length - 1; i >= 0; i--) {
         if (scrollTrigger >= cachedHeadings[i].top) {
@@ -1235,13 +1230,13 @@ export default function NoteDisplayClient({
       }
 
       if (activeIdx < 0) {
-        setActiveHeadingId("note-title");
-        setSectionProgress(new Map());
+        setActiveHeadingId((prev) => (prev === "note-title" ? prev : "note-title"));
+        setSectionProgress((prev) => (prev.size === 0 ? prev : new Map()));
         return;
       }
 
       const activeHeading = cachedHeadings[activeIdx];
-      setActiveHeadingId(activeHeading.id);
+      setActiveHeadingId((prev) => (prev === activeHeading.id ? prev : activeHeading.id));
 
       const sectionStart = activeHeading.top;
       const sectionEnd = activeHeading.end;
@@ -1259,7 +1254,16 @@ export default function NoteDisplayClient({
         newSectionProgress.set(cachedHeadings[i].id, 1);
       }
 
-      setSectionProgress(newSectionProgress);
+      setSectionProgress((prev) => {
+        if (prev.size === newSectionProgress.size) {
+          let same = true;
+          for (const [k, v] of newSectionProgress) {
+            if (prev.get(k) !== v) { same = false; break; }
+          }
+          if (same) return prev;
+        }
+        return newSectionProgress;
+      });
     };
 
     // Throttle React state updates to 60fps to prevent render choking
@@ -1285,7 +1289,6 @@ export default function NoteDisplayClient({
       updateScrollStates();
     });
     
-    resizeObserver.observe(document.body);
     if (rootRef.current) {
       resizeObserver.observe(rootRef.current);
     }
@@ -1308,7 +1311,7 @@ export default function NoteDisplayClient({
     }
   }, [router]);
 
-  const handleToggleFavorite = async () => {
+  const handleToggleFavorite = useCallback(async () => {
     if (isTogglingFavorite) return;
     const previousFavorite = isFavorite;
     const newFavorite = !previousFavorite;
@@ -1329,9 +1332,9 @@ export default function NoteDisplayClient({
     } finally {
       setIsTogglingFavorite(false);
     }
-  };
+  }, [isFavorite, isTogglingFavorite, note.id]);
 
-const renderContent = () => {
+const renderContent = useCallback(() => {
     switch (note.type) {
       case "general":
         return <GeneralContent note={note} resolvedTheme={resolvedTheme} />;
@@ -1356,7 +1359,7 @@ const renderContent = () => {
       default:
         return null;
     }
-  };
+  }, [note, resolvedTheme, activeImplIndex, topicId, topicTitle]);
 
   const content = useMemo(() => {
     if (note.type === "general") return note.content || "";
@@ -1365,10 +1368,7 @@ const renderContent = () => {
     return "";
   }, [note]);
 
-  const headings = useMemo(() => {
-    const contentHeadings = extractHeadings(content);
-    return [...contentHeadings];
-  }, [content]);
+  const headings = useMemo(() => extractHeadings(content), [content]);
 
   return (
     <div ref={rootRef} className="w-full pt-4 pb-16 font-sans">
@@ -1411,7 +1411,7 @@ const renderContent = () => {
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40"
             onClick={() => setShowDeleteModal(false)}
           />
           <div className="relative w-full max-w-md rounded-2xl border border-[#E6E8EB] bg-[#FFFFFF] p-6 shadow-xl dark:border-[#2D2D2D] dark:bg-[#1A1A1A]">
