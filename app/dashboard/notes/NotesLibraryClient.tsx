@@ -97,11 +97,12 @@ function TypeBadge({ type }: { type: NoteType }) {
 const NoteCard = memo(function NoteCard({
   note,
   onToggleFavorite,
+  preview,
 }: {
   note: Note;
   onToggleFavorite: (noteId: string, currentFavorite: boolean) => void;
+  preview: string;
 }) {
-  const preview = getNotePreview(note);
 
   return (
     <Link
@@ -472,6 +473,7 @@ export function NotesLibraryClient({
         body: JSON.stringify({ isFavorite: newFavorite }),
       }).catch((error) => {
         console.error("Error toggling favorite:", error);
+        // Re-fetch only if needed, using stable ref
         fetchNotes(
           f.page,
           f.debouncedSearchQuery,
@@ -482,7 +484,7 @@ export function NotesLibraryClient({
         );
       });
     },
-    [fetchNotes]
+    [] // Empty deps - uses filtersRef for current values
   );
 
   const handleTypeFilterChange = useCallback(
@@ -539,7 +541,7 @@ export function NotesLibraryClient({
       sortBy,
       tagFilter
     );
-  }, [page, typeFilter, showFavoritesOnly, sortBy, debouncedSearchQuery, fetchNotes, tagFilter]);
+  }, [page, typeFilter, showFavoritesOnly, sortBy, debouncedSearchQuery, tagFilter, fetchNotes]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -573,6 +575,15 @@ export function NotesLibraryClient({
     if (tagFilter) count += 1;
     return count;
   }, [debouncedSearchQuery, showFavoritesOnly, typeFilter, tagFilter]);
+
+  const skeletonGrid = useMemo(() => <SkeletonGrid />, []);
+
+  const notesWithPreviews = useMemo(() => {
+    return notes.map((note) => ({
+      note,
+      preview: getNotePreview(note),
+    }));
+  }, [notes]);
 
   if (!user) return null;
 
@@ -703,14 +714,15 @@ export function NotesLibraryClient({
 
       <main className="mt-4 sm:mt-5">
         {isPending || (notes.length === 0 && totalPagesState > 0) ? (
-          <SkeletonGrid />
+          skeletonGrid
         ) : notes.length > 0 ? (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4">
-            {notes.map((note) => (
+            {notesWithPreviews.map(({ note, preview }) => (
               <NoteCard
                 key={note.id}
                 note={note}
                 onToggleFavorite={handleToggleFavorite}
+                preview={preview}
               />
             ))}
           </div>

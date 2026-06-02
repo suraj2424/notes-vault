@@ -372,13 +372,18 @@ const TocContentNode = memo(
   },
   (prev, next) => {
     if (prev.activeId !== next.activeId) return false;
-    if (prev.node.heading.id !== next.node.heading.id) return false;
     const prevProgress = prev.sectionProgress.get(prev.node.heading.id) ?? 0;
     const nextProgress = next.sectionProgress.get(next.node.heading.id) ?? 0;
-    if (Math.abs(prevProgress - nextProgress) > 0.01) return false;
+    if (Math.abs(prevProgress - nextProgress) > 0.05) return false;
     return true;
   }
 );
+
+interface ScrollState {
+  activeId: string;
+  sectionProgress: Map<string, number>;
+  overallProgress: number;
+}
 
 interface TableOfContentsProps {
   headings: Array<{ level: number; text: string; id: string }>;
@@ -386,16 +391,20 @@ interface TableOfContentsProps {
 }
 
 function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProps) {
-  const [activeId, setActiveId] = useState<string>("note-title");
-  const [sectionProgress, setSectionProgress] = useState<Map<string, number>>(() => new Map());
-  const [overallProgress, setOverallProgress] = useState(0);
+  const [scrollState, setScrollState] = useState<ScrollState>({
+    activeId: "note-title",
+    sectionProgress: new Map(),
+    overallProgress: 0,
+  });
   const scrollContainerRef = useRef<HTMLElement | Window | null>(null);
   const rafIdRef = useRef<number | null>(null);
-  const lastScrollTopRef = useRef(-1);
+  const lastScrollTopRef = useRef(0);
+  const lastUpdateTimeRef = useRef(0);
   const cachedHeadingsRef = useRef<Array<{ id: string; top: number; level: number; end: number }>>([]);
+  const headingsRecalculatedRef = useRef(false);
 
   const tree = useMemo(() => buildTocTree(headings), [headings]);
-  const percentage = useMemo(() => Math.round(overallProgress * 100), [overallProgress]);
+  const percentage = useMemo(() => Math.round(scrollState.overallProgress * 100), [scrollState.overallProgress]);
 
   useEffect(() => {
     const contentEl = contentRef.current;
@@ -414,7 +423,7 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
 
     scrollContainerRef.current = scrollParent;
 
-    const getDimensions = () => {
+    const getDimensions = (): { scrollTop: number; scrollHeight: number; clientHeight: number; containerTop: number } => {
       const isWindow = scrollParent === window;
       return {
         scrollTop: isWindow ? window.scrollY : (scrollParent as HTMLElement).scrollTop,
@@ -425,6 +434,10 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
     };
 
     const recalcHeadingPositions = () => {
+      if (headingsRecalculatedRef.current && cachedHeadingsRef.current.length > 0) {
+        return;
+      }
+      
       const { scrollTop, containerTop } = getDimensions();
       const headingsElements = contentEl.querySelectorAll("h1, h2, h3, h4, h5, h6");
       const positions: Array<{ id: string; top: number; level: number; end: number }> = [];
@@ -442,6 +455,7 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
 
       for (let i = 0; i < positions.length; i++) {
         const current = positions[i];
+        positions.sort((a, b) => a.top - b.top);
         let end = positions[i + 1]?.top ?? scrollTop + getDimensions().clientHeight;
         for (let j = i + 1; j < positions.length; j++) {
           if (positions[j].level <= current.level) {
@@ -453,6 +467,7 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
       }
 
       cachedHeadingsRef.current = positions;
+      headingsRecalculatedRef.current = true;
     };
 
     const updateScrollStates = () => {
@@ -463,11 +478,14 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
 
       const totalScrollable = scrollHeight - clientHeight;
       const overallProg = totalScrollable > 0 ? Math.min(scrollTop / totalScrollable, 1) : 0;
-      setOverallProgress((prev) => (Math.abs(prev - overallProg) > 0.001 ? overallProg : prev));
 
       if (cachedHeadingsRef.current.length === 0) {
-        setSectionProgress((prev) => (prev.size === 0 ? prev : new Map()));
-        setActiveId((prev) => (prev === "note-title" ? prev : "note-title"));
+        setScrollState((prev) => {
+          if (prev.activeId !== "note-title" || prev.sectionProgress.size !== 0 || prev.overallProgress !== overallProg) {
+            return { activeId: "note-title", sectionProgress: new Map(), overallProgress: overallProg };
+          }
+          return prev;
+        });
         return;
       }
 
@@ -482,20 +500,13 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
 
       const positions = cachedHeadingsRef.current;
       if (activeIdx < 0) {
-        if (activeId !== "note-title") {
-          setActiveId("note-title");
-        }
-        if (sectionProgress.size !== 0) {
-          setSectionProgress(new Map());
+        if (scrollState.activeId !== "note-title") {
+          setScrollState((prev) => ({ ...prev, activeId: "note-title", sectionProgress: new Map() }));
         }
         return;
       }
 
       const activeHeading = positions[activeIdx];
-      if (activeId !== activeHeading.id) {
-        setActiveId(activeHeading.id);
-      }
-
       const sectionStart = activeHeading.top;
       const sectionEnd = activeHeading.end;
       const sectionHeight = sectionEnd - sectionStart;
@@ -512,25 +523,35 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
         newSectionProgress.set(cachedHeadingsRef.current[i].id, 1);
       }
 
-      setSectionProgress((prev) => {
-        const isNew = prev.size !== newSectionProgress.size || 
-          !Array.from(newSectionProgress.keys()).every(key => prev.has(key));
-        if (!isNew) {
-          let same = true;
+      setScrollState((prev) => {
+        const progressChanged = (() => {
+          if (prev.sectionProgress.size !== newSectionProgress.size) return true;
           for (const [k, v] of newSectionProgress) {
-            if (Math.abs((prev.get(k) ?? 0) - v) > 0.01) {
-              same = false;
-              break;
-            }
+            const oldV = prev.sectionProgress.get(k) ?? 0;
+            if (Math.abs(oldV - v) > 0.05) return true;
           }
-          if (!same) return newSectionProgress;
+          return false;
+        })();
+
+        if (!progressChanged && prev.activeId === activeHeading.id && Math.abs(prev.overallProgress - overallProg) < 0.001) {
           return prev;
         }
-        return newSectionProgress;
+
+        return {
+          activeId: activeHeading.id,
+          sectionProgress: newSectionProgress,
+          overallProgress: overallProg,
+        };
       });
     };
 
     const onScroll = () => {
+      const now = Date.now();
+      if (now - lastUpdateTimeRef.current < 50) {
+        return;
+      }
+      lastUpdateTimeRef.current = now;
+
       if (rafIdRef.current === null) {
         rafIdRef.current = requestAnimationFrame(() => {
           updateScrollStates();
@@ -545,6 +566,7 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
     scrollParent.addEventListener("scroll", onScroll, { passive: true });
 
     const resizeObserver = new ResizeObserver(() => {
+      headingsRecalculatedRef.current = false;
       recalcHeadingPositions();
       updateScrollStates();
     });
@@ -558,7 +580,7 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
         cancelAnimationFrame(rafIdRef.current);
       }
     };
-  }, [contentRef]);
+  }, [contentRef, headings]);
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -591,7 +613,7 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
           <div className="h-1 w-full rounded-full bg-zinc-200 dark:bg-zinc-800 bg-default overflow-hidden">
             <div
               className="h-full rounded-full bg-[#00A3A3] dark:bg-[#00E0E0] transition-[width] duration-150 ease-out"
-              style={{ width: `${overallProgress * 100}%` }}
+              style={{ width: `${scrollState.overallProgress * 100}%` }}
             />
           </div>
         </div>
@@ -601,8 +623,8 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
             <TocContentNode
               key={node.heading.id}
               node={node}
-              activeId={activeId}
-              sectionProgress={sectionProgress}
+              activeId={scrollState.activeId}
+              sectionProgress={scrollState.sectionProgress}
             />
           ))}
         </ul>
@@ -881,7 +903,7 @@ const StickyNoteHeader = memo(function StickyNoteHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 w-full border-b transition-all duration-200",
+        "sticky top-0 z-30 w-full border-b will-change-transform",
         isCompact
           ? "border-default shadow-sm bg-surface/95 backdrop-blur-sm"
           : "border-transparent bg-surface"
@@ -892,7 +914,10 @@ const StickyNoteHeader = memo(function StickyNoteHeader({
           <button
             type="button"
             onClick={onBack}
-            className={iconButtonClass}
+            className={cn(
+              iconButtonClass,
+              "will-change-transform"
+            )}
             aria-label="Go back"
             title="Go back"
           >
@@ -900,7 +925,7 @@ const StickyNoteHeader = memo(function StickyNoteHeader({
           </button>
           <h1
             className={cn(
-              "min-w-0 flex-1 truncate font-bold tracking-tight text-primary transition-all duration-200",
+              "min-w-0 flex-1 truncate font-bold tracking-tight text-primary will-change-transform",
               isCompact ? "text-base sm:text-lg" : "text-xl leading-tight sm:text-2xl"
             )}
             title={note.title}
@@ -914,6 +939,7 @@ const StickyNoteHeader = memo(function StickyNoteHeader({
               disabled={isTogglingFavorite}
               className={cn(
                 iconButtonClass,
+                "will-change-transform",
                 isFavorite
                   ? "border-amber-500/20 bg-amber-500/5 text-amber-500"
                   : "text-secondary"
@@ -932,7 +958,7 @@ const StickyNoteHeader = memo(function StickyNoteHeader({
             <button
               type="button"
               onClick={onEdit}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-default bg-surface px-2.5 text-xs font-bold text-secondary transition-all duration-150 hover:bg-bg-muted hover:text-primary active:scale-[0.98] sm:px-3"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-default bg-surface px-2.5 text-xs font-bold text-secondary transition-all duration-150 hover:bg-bg-muted hover:text-primary active:scale-[0.98] sm:px-3 will-change-transform"
             >
               <Edit2 className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Edit</span>
@@ -940,7 +966,7 @@ const StickyNoteHeader = memo(function StickyNoteHeader({
             <button
               type="button"
               onClick={onDeleteClick}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200/60 bg-surface px-2.5 text-xs font-bold text-red-600 transition-all duration-150 hover:bg-red-50/70 active:scale-[0.98] dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20 sm:px-3"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200/60 bg-surface px-2.5 text-xs font-bold text-red-600 transition-all duration-150 hover:bg-red-50/70 active:scale-[0.98] dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20 sm:px-3 will-change-transform"
             >
               <Trash2 className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Delete</span>
@@ -1226,6 +1252,28 @@ export default function NoteDisplayClient({
   const [isHeaderCompact, setIsHeaderCompact] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const isScrollingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      isScrollingRef.current = true;
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      scrollTimeoutRef.current = setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 150);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
