@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import {
   memo,
   useEffect,
@@ -110,56 +111,28 @@ export function extractHeadings(
   return headings;
 }
 
+const HEADING_COMPONENTS = ["h1", "h2", "h3", "h4", "h5", "h6"] as const;
+
+const createHeadingComponent = (tag: "h1" | "h2" | "h3" | "h4" | "h5" | "h6") => {
+  return function HeadingComponent({ children, ...props }: { children?: ReactNode } & React.HTMLAttributes<HTMLHeadingElement>) {
+    return React.createElement(tag, { ...props, id: slugify(childrenToText(children)) }, children);
+  };
+};
+
 export const MarkdownRenderer = memo(
   ({ content, resolvedTheme }: MarkdownRendererProps) => {
     const themeRef = useRef(resolvedTheme);
     // eslint-disable-next-line react-hooks/refs
     themeRef.current = resolvedTheme;
 
-    const components = useMemo<Components>(
-      () => ({
-        h1({ children, ...props }) {
-          return (
-            <h1 {...props} id={slugify(childrenToText(children))}>
-              {children}
-            </h1>
-          );
-        },
-        h2({ children, ...props }) {
-          return (
-            <h2 {...props} id={slugify(childrenToText(children))}>
-              {children}
-            </h2>
-          );
-        },
-        h3({ children, ...props }) {
-          return (
-            <h3 {...props} id={slugify(childrenToText(children))}>
-              {children}
-            </h3>
-          );
-        },
-        h4({ children, ...props }) {
-          return (
-            <h4 {...props} id={slugify(childrenToText(children))}>
-              {children}
-            </h4>
-          );
-        },
-        h5({ children, ...props }) {
-          return (
-            <h5 {...props} id={slugify(childrenToText(children))}>
-              {children}
-            </h5>
-          );
-        },
-        h6({ children, ...props }) {
-          return (
-            <h6 {...props} id={slugify(childrenToText(children))}>
-              {children}
-            </h6>
-          );
-        },
+    const components = useMemo<Components>(() => {
+      const headingComponents: Partial<Components> = {};
+      HEADING_COMPONENTS.forEach((tag) => {
+        headingComponents[tag] = createHeadingComponent(tag);
+      });
+
+      return {
+        ...headingComponents,
         code({ className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || "");
           const language = match ? match[1] : "";
@@ -196,7 +169,7 @@ export const MarkdownRenderer = memo(
             </ol>
           );
         },
-        li({ children, ...props }) {
+li({ children, ...props }) {
           const isOrdered = props.className?.includes("ordered") || false;
 
           if (isOrdered) {
@@ -244,10 +217,19 @@ export const MarkdownRenderer = memo(
             </tr>
           );
         },
-        a({ children, href }) {
+        a({ href, children }) {
           return (
             <a
               href={href}
+              onClick={(e) => {
+                if (href?.startsWith("#")) {
+                  e.preventDefault();
+                  const element = document.getElementById(href.slice(1));
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                }
+              }}
               className="font-medium text-primary underline-offset-2 hover:underline"
             >
               {children}
@@ -269,9 +251,8 @@ export const MarkdownRenderer = memo(
             </span>
           );
         },
-      }),
-      []
-    );
+      };
+    }, []);
 
     return (
       <div
@@ -325,16 +306,18 @@ function buildTocTree(
   return root;
 }
 
+interface TocContentNodeProps {
+  node: TocNode;
+  activeId?: string;
+  sectionProgress: Map<string, number>;
+}
+
 const TocContentNode = memo(
   function TocContentNode({
     node,
     activeId,
     sectionProgress,
-  }: {
-    node: TocNode;
-    activeId?: string;
-    sectionProgress: Map<string, number>;
-  }) {
+  }: TocContentNodeProps) {
     const { id, text, level } = node.heading;
     const isActive = activeId === id;
     const progress = sectionProgress.get(id) ?? 0;
@@ -342,10 +325,20 @@ const TocContentNode = memo(
     const indentClass =
       level <= 2 ? "pl-3" : level === 3 ? "pl-6" : "pl-9";
 
+    const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.pushState(null, "", `#${id}`);
+      }
+    }, [id]);
+
     return (
       <li className="relative my-1">
         <a
           href={`#${id}`}
+          onClick={handleClick}
           className={cn(
             "block text-xs py-1 transition-colors duration-150 truncate",
             indentClass,
@@ -376,36 +369,202 @@ const TocContentNode = memo(
     );
   },
   (prev, next) => {
-    if (prev.node !== next.node) return false;
-    const prevActive = prev.activeId === prev.node.heading.id;
-    const nextActive = next.activeId === next.node.heading.id;
-    if (prevActive !== nextActive) return false;
+    if (prev.activeId !== next.activeId) return false;
+    if (prev.node.heading.id !== next.node.heading.id) return false;
     const prevProgress = prev.sectionProgress.get(prev.node.heading.id) ?? 0;
     const nextProgress = next.sectionProgress.get(next.node.heading.id) ?? 0;
-    if (prevProgress !== nextProgress) return false;
+    if (Math.abs(prevProgress - nextProgress) > 0.01) return false;
+    if (prev.sectionProgress.size !== next.sectionProgress.size) return false;
+    for (const [key, value] of prev.sectionProgress) {
+      if (value !== next.sectionProgress.get(key)) return false;
+    }
     return true;
   }
 );
 
 interface TableOfContentsProps {
   headings: Array<{ level: number; text: string; id: string }>;
-  activeId?: string;
-  sectionProgress: Map<string, number>;
-  overallProgress: number;
+  contentRef: React.RefObject<HTMLElement | null>;
 }
 
-export const TableOfContents = memo(function TableOfContents({
-  headings,
-  activeId,
-  sectionProgress,
-  overallProgress,
-}: TableOfContentsProps) {
+function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProps) {
+  const [activeId, setActiveId] = useState<string>("note-title");
+  const [sectionProgress, setSectionProgress] = useState<Map<string, number>>(() => new Map());
+  const [overallProgress, setOverallProgress] = useState(0);
+  const scrollContainerRef = useRef<HTMLElement | Window | null>(null);
+  const rafIdRef = useRef<number | null>(null);
+  const lastScrollTopRef = useRef(-1);
+  const cachedHeadingsRef = useRef<Array<{ id: string; top: number; level: number; end: number }>>([]);
+
   const tree = useMemo(() => buildTocTree(headings), [headings]);
+  const percentage = useMemo(() => Math.round(overallProgress * 100), [overallProgress]);
+
+  useEffect(() => {
+    const contentEl = contentRef.current;
+    if (!contentEl) return;
+
+    let scrollParent: HTMLElement | Window = window;
+    let parent = contentEl.parentElement;
+    while (parent) {
+      const style = window.getComputedStyle(parent);
+      if (/(auto|scroll)/.test(`${style.overflowY}${style.overflow}`)) {
+        scrollParent = parent;
+        break;
+      }
+      parent = parent.parentElement;
+    }
+
+    scrollContainerRef.current = scrollParent;
+
+    const getDimensions = () => {
+      const isWindow = scrollParent === window;
+      return {
+        scrollTop: isWindow ? window.scrollY : (scrollParent as HTMLElement).scrollTop,
+        scrollHeight: isWindow ? document.documentElement.scrollHeight : (scrollParent as HTMLElement).scrollHeight,
+        clientHeight: isWindow ? window.innerHeight : (scrollParent as HTMLElement).clientHeight,
+        containerTop: isWindow ? 0 : (scrollParent as HTMLElement).getBoundingClientRect().top,
+      };
+    };
+
+    const recalcHeadingPositions = () => {
+      const { scrollTop, containerTop } = getDimensions();
+      const headingsElements = contentEl.querySelectorAll("h1, h2, h3, h4, h5, h6");
+      const positions: Array<{ id: string; top: number; level: number; end: number }> = [];
+
+      headingsElements.forEach((element) => {
+        const id = element.getAttribute("id");
+        if (!id) return;
+        const level = parseInt(element.tagName.toLowerCase().charAt(1));
+        const rect = element.getBoundingClientRect();
+        const top = scrollTop + (rect.top - containerTop);
+        positions.push({ id, top, level, end: 0 });
+      });
+
+      positions.sort((a, b) => a.top - b.top);
+
+      for (let i = 0; i < positions.length; i++) {
+        const current = positions[i];
+        let end = positions[i + 1]?.top ?? scrollTop + getDimensions().clientHeight;
+        for (let j = i + 1; j < positions.length; j++) {
+          if (positions[j].level <= current.level) {
+            end = positions[j].top;
+            break;
+          }
+        }
+        current.end = end;
+      }
+
+      cachedHeadingsRef.current = positions;
+    };
+
+    const updateScrollStates = () => {
+      const { scrollTop, scrollHeight, clientHeight } = getDimensions();
+
+      if (scrollTop === lastScrollTopRef.current) return;
+      lastScrollTopRef.current = scrollTop;
+
+      const totalScrollable = scrollHeight - clientHeight;
+      const overallProg = totalScrollable > 0 ? Math.min(scrollTop / totalScrollable, 1) : 0;
+      setOverallProgress((prev) => (Math.abs(prev - overallProg) < 0.001 ? prev : overallProg));
+
+      if (cachedHeadingsRef.current.length === 0) {
+        setSectionProgress((prev) => (prev.size === 0 ? prev : new Map()));
+        setActiveId((prev) => (prev === "note-title" ? prev : "note-title"));
+        return;
+      }
+
+      const scrollTrigger = scrollTop + clientHeight * 0.3;
+      let activeIdx = -1;
+      for (let i = cachedHeadingsRef.current.length - 1; i >= 0; i--) {
+        if (scrollTrigger >= cachedHeadingsRef.current[i].top) {
+          activeIdx = i;
+          break;
+        }
+      }
+
+      if (activeIdx < 0) {
+        setActiveId((prev) => (prev === "note-title" ? prev : "note-title"));
+        setSectionProgress((prev) => (prev.size === 0 ? prev : new Map()));
+        return;
+      }
+
+      const activeHeading = cachedHeadingsRef.current[activeIdx];
+      setActiveId((prev) => (prev === activeHeading.id ? prev : activeHeading.id));
+
+      const sectionStart = activeHeading.top;
+      const sectionEnd = activeHeading.end;
+      const sectionHeight = sectionEnd - sectionStart;
+
+      const newSectionProgress = new Map<string, number>();
+
+      if (sectionHeight > 0) {
+        const scrolledInSection = scrollTop - sectionStart;
+        const progress = Math.max(0, Math.min(1, scrolledInSection / sectionHeight));
+        newSectionProgress.set(activeHeading.id, progress);
+      }
+
+      for (let i = 0; i < activeIdx; i++) {
+        newSectionProgress.set(cachedHeadingsRef.current[i].id, 1);
+      }
+
+      setSectionProgress((prev) => {
+        if (prev.size === newSectionProgress.size) {
+          let same = true;
+          for (const [k, v] of newSectionProgress) {
+            if (Math.abs((prev.get(k) ?? 0) - v) > 0.01) {
+              same = false;
+              break;
+            }
+          }
+          if (same) return prev;
+        }
+        return newSectionProgress;
+      });
+    };
+
+    const onScroll = () => {
+      if (rafIdRef.current === null) {
+        rafIdRef.current = requestAnimationFrame(() => {
+          updateScrollStates();
+          rafIdRef.current = null;
+        });
+      }
+    };
+
+    recalcHeadingPositions();
+    updateScrollStates();
+
+    scrollParent.addEventListener("scroll", onScroll, { passive: true });
+
+    const resizeObserver = new ResizeObserver(() => {
+      recalcHeadingPositions();
+      updateScrollStates();
+    });
+
+    resizeObserver.observe(contentEl);
+
+    return () => {
+      scrollParent.removeEventListener("scroll", onScroll);
+      resizeObserver.disconnect();
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, [contentRef]);
+
+  const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+      history.pushState(null, "", `#${id}`);
+    }
+  }, []);
 
   if (!headings.length) return null;
 
   return (
-    <nav className="sticky top-24 w-56 shrink-0 self-start hidden lg:block max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 scrollbar-thin">
+    <nav className="sticky top-24 w-56 shrink-0 self-start hidden lg:block max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent">
       <div className="rounded-lg border border-default bg-surface p-4">
         <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-secondary mb-4">
           <List className="h-3.5 w-3.5" />
@@ -418,7 +577,7 @@ export const TableOfContents = memo(function TableOfContents({
               Read
             </span>
             <span className="text-[11px] font-bold text-[#00A3A3] dark:text-[#00E0E0]">
-              {Math.round(overallProgress * 100)}%
+              {percentage}%
             </span>
           </div>
           <div className="h-1 w-full rounded-full bg-zinc-200 dark:bg-zinc-800 bg-default overflow-hidden">
@@ -442,7 +601,7 @@ export const TableOfContents = memo(function TableOfContents({
       </div>
     </nav>
   );
-});
+}
 
 function TypeBadge({ type }: { type: NoteType }) {
   const meta = NOTE_TYPE_META[type];
@@ -493,10 +652,14 @@ function TagList({
 }
 
 function UpdatedAt({ updatedAt }: { updatedAt: string }) {
+  const formatted = useMemo(
+    () => formatDistanceToNow(new Date(updatedAt), { addSuffix: true }),
+    [updatedAt]
+  );
   return (
     <span className="inline-flex items-center gap-1.5 text-xs font-medium text-secondary">
       <Clock className="h-3.5 w-3.5" />
-      Updated {formatDistanceToNow(new Date(updatedAt), { addSuffix: true })}
+      Updated {formatted}
     </span>
   );
 }
@@ -605,19 +768,21 @@ function TopicNav({
   currentNoteId: string;
   topicNotes: Array<{ id: string; title: string; sequence?: number | null }>;
 }) {
-  const sorted = useMemo(
-    () =>
-      [...topicNotes]
-        .filter((n) => n.sequence != null)
-        .sort((a, b) => (a.sequence ?? 9999) - (b.sequence ?? 9999)),
-    [topicNotes]
-  );
-  if (sorted.length < 2) return null;
-  const currentIndex = sorted.findIndex((n) => n.id === currentNoteId);
-  if (currentIndex < 0) return null;
-  const prev = currentIndex > 0 ? sorted[currentIndex - 1] : null;
-  const next =
-    currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
+  const { prev, next } = useMemo(() => {
+    const sorted = [...topicNotes]
+      .filter((n) => n.sequence != null)
+      .sort((a, b) => (a.sequence ?? 9999) - (b.sequence ?? 9999));
+    
+    if (sorted.length < 2) return { prev: null, next: null };
+    
+    const currentIndex = sorted.findIndex((n) => n.id === currentNoteId);
+    if (currentIndex < 0) return { prev: null, next: null };
+    
+    return {
+      prev: currentIndex > 0 ? sorted[currentIndex - 1] : null,
+      next: currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null,
+    };
+  }, [topicNotes, currentNoteId]);
 
   if (!prev && !next) return null;
 
@@ -692,6 +857,19 @@ const StickyNoteHeader = memo(function StickyNoteHeader({
   onBack?: () => void;
   onDeleteClick?: () => void;
 }) {
+  const metadata = (
+    <div className="mt-2.5 flex flex-wrap items-center gap-1.5 pl-0 sm:mt-3 sm:gap-2 sm:pl-12">
+      <TypeBadge type={note.type} />
+      <UpdatedAt updatedAt={note.updatedAt} />
+      <TopicChip
+        topicId={topicId}
+        topicTitle={topicTitle}
+        fallback={qaTopic}
+      />
+      <TagList tags={note.tags} compact />
+    </div>
+  );
+
   return (
     <header
       className={cn(
@@ -762,30 +940,12 @@ const StickyNoteHeader = memo(function StickyNoteHeader({
           </div>
         </div>
 
-        {!isCompact ? (
-          <div className="mt-2.5 flex flex-wrap items-center gap-1.5 pl-0 sm:mt-3 sm:gap-2 sm:pl-12">
-            <TypeBadge type={note.type} />
-            <UpdatedAt updatedAt={note.updatedAt} />
-            <TopicChip
-              topicId={topicId}
-              topicTitle={topicTitle}
-              fallback={qaTopic}
-            />
-            <TagList tags={note.tags} compact />
+        {isCompact ? (
+          <div className="h-0 overflow-hidden" aria-hidden="true">
+            {metadata}
           </div>
         ) : (
-          <div className="h-0 overflow-hidden" aria-hidden="true">
-            <div className="mt-2.5 flex flex-wrap items-center gap-1.5 pl-0 sm:mt-3 sm:gap-2 sm:pl-12">
-              <TypeBadge type={note.type} />
-              <UpdatedAt updatedAt={note.updatedAt} />
-              <TopicChip
-                topicId={topicId}
-                topicTitle={topicTitle}
-                fallback={qaTopic}
-              />
-              <TagList tags={note.tags} compact />
-            </div>
-          </div>
+          metadata
         )}
       </div>
     </header>
@@ -1058,206 +1218,24 @@ export default function NoteDisplayClient({
   const [isHeaderCompact, setIsHeaderCompact] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [activeHeadingId, setActiveHeadingId] = useState<string>("");
-  const [sectionProgress, setSectionProgress] = useState<Map<string, number>>(
-    () => new Map()
-  );
-  const [overallProgress, setOverallProgress] = useState(0);
-  const scrollContainerRef = useRef<HTMLElement | Window>(null);
 
   useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
-
-    let scrollParent: HTMLElement | Window = window;
-    let parent = root.parentElement;
-    while (parent) {
-      const style = window.getComputedStyle(parent);
-      if (/(auto|scroll)/.test(`${style.overflowY}${style.overflow}`)) {
-        scrollParent = parent;
-        break;
-      }
-      parent = parent.parentElement;
-    }
-
-    scrollContainerRef.current = scrollParent;
-
-    let cachedHeadings: Array<{
-      id: string;
-      top: number;
-      level: number;
-      end: number;
-    }> = [];
-    let rafId: number | null = null;
-
-    const getDimensions = () => {
-      const isWindow = scrollParent === window;
-      return {
-        scrollTop: isWindow
-          ? window.scrollY
-          : (scrollParent as HTMLElement).scrollTop,
-        scrollHeight: isWindow
-          ? document.documentElement.scrollHeight
-          : (scrollParent as HTMLElement).scrollHeight,
-        clientHeight: isWindow
-          ? window.innerHeight
-          : (scrollParent as HTMLElement).clientHeight,
-        containerTop: isWindow
-          ? 0
-          : (scrollParent as HTMLElement).getBoundingClientRect().top,
-      };
-    };
-
-    const recalcHeadingPositions = () => {
-      const { scrollTop, scrollHeight, containerTop } = getDimensions();
-      const headingsElements =
-        rootRef.current?.querySelectorAll("h1, h2, h3, h4, h5, h6") ?? [];
-      const positions: Array<{
-        id: string;
-        top: number;
-        level: number;
-        end: number;
-      }> = [];
-
-      headingsElements.forEach((element) => {
-        const id = element.getAttribute("id");
-        if (!id) return;
-        const level = parseInt(element.tagName.toLowerCase().charAt(1));
-        const rect = element.getBoundingClientRect();
-
-        const top = scrollTop + (rect.top - containerTop);
-        positions.push({ id, top, level, end: 0 });
-      });
-
-      positions.sort((a, b) => a.top - b.top);
-
-      for (let i = 0; i < positions.length; i++) {
-        const current = positions[i];
-        let end = scrollHeight;
-        for (let j = i + 1; j < positions.length; j++) {
-          if (positions[j].level <= current.level) {
-            end = positions[j].top;
-            break;
-          }
-        }
-        current.end = end;
-      }
-
-      cachedHeadings = positions;
-    };
-
-    const updateScrollStates = () => {
-      const { scrollTop, scrollHeight, clientHeight } = getDimensions();
-
-      const newHeaderCompact = scrollTop > 16;
-      setIsHeaderCompact(
-        (prev) => (prev === newHeaderCompact ? prev : newHeaderCompact)
-      );
-
-      const totalScrollable = scrollHeight - clientHeight;
-      const overallProg =
-        totalScrollable > 0
-          ? Math.min(scrollTop / totalScrollable, 1)
-          : 0;
-      setOverallProgress(
-        (prev) => (Math.abs(prev - overallProg) < 0.001 ? prev : overallProg)
-      );
-
-      if (cachedHeadings.length === 0) {
-        setSectionProgress((prev) => (prev.size === 0 ? prev : new Map()));
-        setActiveHeadingId(
-          (prev) => (prev === "note-title" ? prev : "note-title")
-        );
-        return;
-      }
-
-      const scrollTrigger = scrollTop + clientHeight * 0.3;
-      let activeIdx = -1;
-      for (let i = cachedHeadings.length - 1; i >= 0; i--) {
-        if (scrollTrigger >= cachedHeadings[i].top) {
-          activeIdx = i;
-          break;
-        }
-      }
-
-      if (activeIdx < 0) {
-        setActiveHeadingId(
-          (prev) => (prev === "note-title" ? prev : "note-title")
-        );
-        setSectionProgress((prev) => (prev.size === 0 ? prev : new Map()));
-        return;
-      }
-
-      const activeHeading = cachedHeadings[activeIdx];
-      setActiveHeadingId(
-        (prev) => (prev === activeHeading.id ? prev : activeHeading.id)
-      );
-
-      const sectionStart = activeHeading.top;
-      const sectionEnd = activeHeading.end;
-      const sectionHeight = sectionEnd - sectionStart;
-
-      const newSectionProgress = new Map<string, number>();
-
-      if (sectionHeight > 0) {
-        const scrolledInSection = scrollTop - sectionStart;
-        const progress = Math.max(
-          0,
-          Math.min(1, scrolledInSection / sectionHeight)
-        );
-        newSectionProgress.set(activeHeading.id, progress);
-      }
-
-      for (let i = 0; i < activeIdx; i++) {
-        newSectionProgress.set(cachedHeadings[i].id, 1);
-      }
-
-      setSectionProgress((prev) => {
-        if (prev.size === newSectionProgress.size) {
-          let same = true;
-          for (const [k, v] of newSectionProgress) {
-            if (prev.get(k) !== v) {
-              same = false;
-              break;
-            }
-          }
-          if (same) return prev;
-        }
-        return newSectionProgress;
-      });
-    };
-
-    const onScroll = () => {
-      if (rafId === null) {
-        rafId = requestAnimationFrame(() => {
-          updateScrollStates();
-          rafId = null;
-        });
+    const handleEscape = (e: KeyboardEvent) => {
+      if (showDeleteModal && e.key === "Escape") {
+        setShowDeleteModal(false);
       }
     };
 
-    recalcHeadingPositions();
-    updateScrollStates();
-
-    scrollParent.addEventListener("scroll", onScroll, { passive: true });
-
-    const resizeObserver = new ResizeObserver(() => {
-      recalcHeadingPositions();
-      updateScrollStates();
-    });
-
-    if (rootRef.current) {
-      resizeObserver.observe(rootRef.current);
+    if (showDeleteModal) {
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      scrollParent.removeEventListener("scroll", onScroll);
-      resizeObserver.disconnect();
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-      }
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
     };
-  }, []);
+  }, [showDeleteModal]);
 
   const handleBack = useCallback(() => {
     if (window.history.length > 1) {
@@ -1347,11 +1325,9 @@ export default function NoteDisplayClient({
             )}
           </main>
           {headings.length > 0 && (
-            <TableOfContents
+            <TableOfContentsWithScroll
               headings={headings}
-              activeId={activeHeadingId}
-              sectionProgress={sectionProgress}
-              overallProgress={overallProgress}
+              contentRef={rootRef}
             />
           )}
         </div>
@@ -1361,7 +1337,11 @@ export default function NoteDisplayClient({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setShowDeleteModal(false)}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowDeleteModal(false);
+              }
+            }}
           />
           <div className="relative w-full max-w-md rounded-2xl border border-default bg-surface p-6 shadow-xl">
             <button
