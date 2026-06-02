@@ -295,134 +295,137 @@ interface TocNode {
   heading: { level: number; text: string; id: string };
   children: TocNode[];
 }
+// function buildTocTree(
+//   headings: Array<{ level: number; text: string; id: string }>
+// ): TocNode[] {
+//   const root: TocNode[] = [];
+//   const stack: TocNode[] = [{ heading: { level: 0, text: "", id: "" }, children: root }];
 
-interface SectionProgress {
-  id: string;
-  progress: number; // 0 to 1
+//   for (const heading of headings) {
+//     const node: TocNode = { heading, children: [] };
+
+//     while (stack.length > 1 && stack[stack.length - 1].heading.level >= heading.level) {
+//       stack.pop();
+//     }
+
+//     stack[stack.length - 1].children.push(node);
+//     stack.push({ heading, children: node.children });
+//   }
+
+//   return root;
+// }
+
+// function TocContentNode({
+//   node,
+//   activeId,
+//   sectionProgress,
+// }: {
+//   node: TocNode;
+//   activeId?: string;
+//   sectionProgress: Map<string, number>;
+// }) {
+//   const { heading } = node;
+//   const progress = sectionProgress.get(heading.id);
+//   const isActive = heading.id === activeId;
+//   const isCompleted = progress === 1;
+//   const isInProgress = progress !== undefined && progress > 0 && progress < 1;
+
+//   return (
+//     <li className="group">
+//       <div className="flex items-center gap-2.5">
+//         {/* Indicator */}
+//         <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
+//           {isActive && isInProgress ? (
+//             /* Progress ring for active section being read */
+//             <svg className="h-4 w-4 -rotate-90" viewBox="0 0 16 16">
+//               <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-default" />
+//               <circle
+//                 cx="8" cy="8" r="6" fill="none" stroke="currentColor"
+//                 strokeWidth="1.5"
+//                 strokeDasharray={`${progress! * 37.7} 37.7`}
+//                 className="text-[#00A3A3] dark:text-[#00E0E0]"
+//               />
+//             </svg>
+//           ) : isActive ? (
+//             /* Solid teal dot for active at section start */
+//             <div className="h-2 w-2 rounded-full bg-[#00A3A3] dark:bg-[#00E0E0] shadow-[0_0_6px_rgba(0,163,163,0.5)]" />
+//           ) : isCompleted ? (
+//             /* Checkmark for completed */
+//             <div className="flex h-4 w-4 items-center justify-center rounded-full bg-[#00A3A3] dark:bg-[#00E0E0]">
+//               <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 12 12" fill="none">
+//                 <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+//               </svg>
+//             </div>
+//           ) : (
+//             /* Gray dot for not reached */
+//             <div className="h-2 w-2 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+//           )}
+//         </div>
+//         <a
+//           href={`#${heading.id}`}
+//           className={cn(
+//             "block truncate transition-colors duration-100 flex-1 py-0.5",
+//             isActive
+//               ? "text-[#00A3A3] dark:text-[#00E0E0] font-semibold"
+//               : isCompleted
+//                 ? "text-primary"
+//                 : "text-secondary hover:text-primary",
+//             heading.level === 1 && "text-sm font-bold",
+//             heading.level === 2 && "text-xs font-semibold",
+//             heading.level >= 3 && "text-[11px]"
+//           )}
+//           onClick={(e) => {
+//             e.preventDefault();
+//             const el = document.getElementById(heading.id);
+//             if (el) {
+//               el.scrollIntoView({ behavior: "smooth", block: "start" });
+//             }
+//           }}
+//         >
+//           {stripMarkdown(heading.text)}
+//         </a>
+//       </div>
+//       {node.children.length > 0 && (
+//         <ul className="space-y-0.5 pl-[7px] mt-0.5 border-l border-default ml-[3px]">
+//           {node.children.map((child) => (
+//             <TocContentNode
+//               key={child.heading.id}
+//               node={child}
+//               activeId={activeId}
+//               sectionProgress={sectionProgress}
+//             />
+//           ))}
+//         </ul>
+//       )}
+//     </li>
+//   );
+// }
+
+// Types matching your configuration
+interface TocNode {
+  heading: { level: number; text: string; id: string };
+  children: TocNode[];
 }
 
-function buildTocTree(
-  headings: Array<{ level: number; text: string; id: string }>
-): TocNode[] {
-  const root: TocNode[] = [];
-  const stack: TocNode[] = [{ heading: { level: 0, text: "", id: "" }, children: root }];
-
-  for (const heading of headings) {
-    const node: TocNode = { heading, children: [] };
-
-    while (stack.length > 1 && stack[stack.length - 1].heading.level >= heading.level) {
-      stack.pop();
-    }
-
-    stack[stack.length - 1].children.push(node);
-    stack.push({ heading, children: node.children });
-  }
-
-  return root;
-}
-
-function TocContentNode({
-  node,
-  activeId,
-  sectionProgress,
-}: {
-  node: TocNode;
-  activeId?: string;
-  sectionProgress: Map<string, number>;
-}) {
-  const { heading } = node;
-  const progress = sectionProgress.get(heading.id);
-  const isActive = heading.id === activeId;
-  const isCompleted = progress === 1;
-  const isInProgress = progress !== undefined && progress > 0 && progress < 1;
-
-  return (
-    <li className="group">
-      <div className="flex items-center gap-2.5">
-        {/* Indicator */}
-        <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
-          {isActive && isInProgress ? (
-            /* Progress ring for active section being read */
-            <svg className="h-4 w-4 -rotate-90" viewBox="0 0 16 16">
-              <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-default" />
-              <circle
-                cx="8" cy="8" r="6" fill="none" stroke="currentColor"
-                strokeWidth="1.5"
-                strokeDasharray={`${progress! * 37.7} 37.7`}
-                className="text-[#00A3A3] dark:text-[#00E0E0]"
-              />
-            </svg>
-          ) : isActive ? (
-            /* Solid teal dot for active at section start */
-            <div className="h-2 w-2 rounded-full bg-[#00A3A3] dark:bg-[#00E0E0] shadow-[0_0_6px_rgba(0,163,163,0.5)]" />
-          ) : isCompleted ? (
-            /* Checkmark for completed */
-            <div className="flex h-4 w-4 items-center justify-center rounded-full bg-[#00A3A3] dark:bg-[#00E0E0]">
-              <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 12 12" fill="none">
-                <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          ) : (
-            /* Gray dot for not reached */
-            <div className="h-2 w-2 rounded-full bg-neutral-300 dark:bg-neutral-600" />
-          )}
-        </div>
-        <a
-          href={`#${heading.id}`}
-          className={cn(
-            "block truncate transition-colors duration-100 flex-1 py-0.5",
-            isActive
-              ? "text-[#00A3A3] dark:text-[#00E0E0] font-semibold"
-              : isCompleted
-                ? "text-primary"
-                : "text-secondary hover:text-primary",
-            heading.level === 1 && "text-sm font-bold",
-            heading.level === 2 && "text-xs font-semibold",
-            heading.level >= 3 && "text-[11px]"
-          )}
-          onClick={(e) => {
-            e.preventDefault();
-            const el = document.getElementById(heading.id);
-            if (el) {
-              el.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
-          }}
-        >
-          {stripMarkdown(heading.text)}
-        </a>
-      </div>
-      {node.children.length > 0 && (
-        <ul className="space-y-0.5 pl-[7px] mt-0.5 border-l border-default ml-[3px]">
-          {node.children.map((child) => (
-            <TocContentNode
-              key={child.heading.id}
-              node={child}
-              activeId={activeId}
-              sectionProgress={sectionProgress}
-            />
-          ))}
-        </ul>
-      )}
-    </li>
-  );
-}
-
-function TableOfContents({
-  headings,
-  activeId,
-  sectionProgress,
-  overallProgress,
-}: {
+interface TableOfContentsProps {
   headings: Array<{ level: number; text: string; id: string }>;
   activeId?: string;
   sectionProgress: Map<string, number>;
   overallProgress: number;
-}) {
+}
+
+export function TableOfContents({
+  headings,
+  activeId,
+  sectionProgress,
+  overallProgress,
+}: TableOfContentsProps) {
   if (!headings.length) return null;
   const tree = buildTocTree(headings);
 
   return (
-    <nav className="sticky top-24 w-56 shrink-0 self-start hidden lg:block">
+    // FIX: Added max-h and overflow-y-auto to prevent layout clipping on long pages
+    <nav className="sticky top-24 w-56 shrink-0 self-start hidden lg:block max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 scrollbar-thin">
       <div className="rounded-lg border border-default bg-surface p-4">
         <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-secondary mb-4">
           <List className="h-3.5 w-3.5" />
@@ -439,15 +442,16 @@ function TableOfContents({
               {Math.round(overallProgress * 100)}%
             </span>
           </div>
-          <div className="h-1 w-full rounded-full bg-default overflow-hidden">
+          <div className="h-1 w-full rounded-full bg-zinc-200 dark:bg-zinc-800 bg-default overflow-hidden">
             <div
-              className="h-full rounded-full bg-[#00A3A3] dark:bg-[#00E0E0] transition-all duration-200"
+              className="h-full rounded-full bg-[#00A3A3] dark:bg-[#00E0E0] transition-all duration-150 ease-out"
               style={{ width: `${overallProgress * 100}%` }}
             />
           </div>
         </div>
 
-        <ul className="space-y-1">
+        {/* Headings List */}
+        <ul className="space-y-11 ml-1.5">
           {tree.map((node) => (
             <TocContentNode
               key={node.heading.id}
@@ -460,6 +464,90 @@ function TableOfContents({
       </div>
     </nav>
   );
+}
+
+// FIX: A clean, visually flawless node renderer that incorporates the section progress map
+function TocContentNode({
+  node,
+  activeId,
+  sectionProgress,
+}: {
+  node: TocNode;
+  activeId?: string;
+  sectionProgress: Map<string, number>;
+}) {
+  const { id, text, level } = node.heading;
+  const isActive = activeId === id;
+  const progress = sectionProgress.get(id) ?? 0;
+
+  // Indentation adjustments based on heading hierarchy level (assuming h1/h2 start at base)
+  const indentClass = 
+    level <= 2 ? "pl-3" : 
+    level === 3 ? "pl-6" : "pl-9";
+
+  return (
+    <li className="relative my-1">
+      {/* Visual Indicator Track on the Left Border */}
+      {/* {progress > 0 && (
+        <div 
+          className="absolute left-[-1px] top-0 w-[2px] bg-[#00A3A3] dark:bg-[#00E0E0] transition-all duration-150"
+          style={{ height: `${progress * 100}%` }}
+        />
+      )} */}
+
+      <a
+        href={`#${id}`}
+        className={`block text-xs py-1 transition-colors duration-150 truncate ${indentClass} ${
+          isActive
+            ? "text-[#00A3A3] dark:text-[#00E0E0] font-medium"
+            : progress === 1
+            ? "text-primary/90" // Read/Passed sections stay slightly darker than unread
+            : "text-secondary hover:text-primary"
+        }`}
+        title={text}
+      >
+        {text}
+      </a>
+
+      {/* Recursive Render for Nested Headings */}
+      {node.children.length > 0 && (
+        <ul className="space-y-1">
+          {node.children.map((child) => (
+            <TocContentNode
+              key={child.heading.id}
+              node={child}
+              activeId={activeId}
+              sectionProgress={sectionProgress}
+            />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+// Simple Tree Builder Helper to ensure standard structure
+function buildTocTree(headings: Array<{ level: number; text: string; id: string }>): TocNode[] {
+  const root: TocNode[] = [];
+  const stack: { node: TocNode; level: number }[] = [];
+
+  headings.forEach((heading) => {
+    const node: TocNode = { heading, children: [] };
+    
+    while (stack.length > 0 && stack[stack.length - 1].level >= heading.level) {
+      stack.pop();
+    }
+
+    if (stack.length === 0) {
+      root.push(node);
+    } else {
+      stack[stack.length - 1].node.children.push(node);
+    }
+
+    stack.push({ node, level: heading.level });
+  });
+
+  return root;
 }
 
 function TypeBadge({ type }: { type: NoteType }) {
@@ -1052,14 +1140,6 @@ export default function NoteDisplayClient({
   const [overallProgress, setOverallProgress] = useState(0);
   const scrollContainerRef = useRef<HTMLElement | Window>(null);
 
-  const handleBack = useCallback(() => {
-    if (window.history.length > 1) {
-      router.back();
-    } else {
-      router.push("/dashboard/notes");
-    }
-  }, [router]);
-
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
@@ -1077,15 +1157,8 @@ export default function NoteDisplayClient({
 
     scrollContainerRef.current = scrollParent;
 
-    // Cache heading positions to avoid recalculation
     let cachedHeadings: Array<{ id: string; top: number; level: number; end: number }> = [];
-    let lastScrollTop = -1;
-
-    const getScrollTop = () => {
-      return scrollParent === window
-        ? window.scrollY
-        : (scrollParent as HTMLElement).scrollTop;
-    };
+    let rafId: number | null = null; // Used to throttle scroll events
 
     const getDimensions = () => {
       const isWindow = scrollParent === window;
@@ -1103,6 +1176,7 @@ export default function NoteDisplayClient({
       };
     };
 
+    // Calculate heading positions ONLY on mount and resize, NEVER on scroll.
     const recalcHeadingPositions = () => {
       const { scrollTop, scrollHeight, containerTop } = getDimensions();
       const headingsElements = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
@@ -1113,16 +1187,17 @@ export default function NoteDisplayClient({
         if (!id) return;
         const level = parseInt(element.tagName.toLowerCase().charAt(1));
         const rect = element.getBoundingClientRect();
+        
+        // Convert viewport-relative rect.top to absolute scroll-container-relative position
         const top = scrollTop + (rect.top - containerTop);
         positions.push({ id, top, level, end: 0 });
       });
 
       positions.sort((a, b) => a.top - b.top);
 
-      // Calculate each heading's section end (next heading at same or higher level)
       for (let i = 0; i < positions.length; i++) {
         const current = positions[i];
-        let end = scrollHeight; // default: end of content
+        let end = scrollHeight; 
         for (let j = i + 1; j < positions.length; j++) {
           if (positions[j].level <= current.level) {
             end = positions[j].top;
@@ -1138,16 +1213,8 @@ export default function NoteDisplayClient({
     const updateScrollStates = () => {
       const { scrollTop, scrollHeight, clientHeight } = getDimensions();
 
-      // Only recalc heading positions on significant scroll or first run
-      if (lastScrollTop === -1 || Math.abs(scrollTop - lastScrollTop) > 50) {
-        recalcHeadingPositions();
-        lastScrollTop = scrollTop;
-      }
-
-      // Header compact state
       setIsHeaderCompact(scrollTop > 16);
 
-      // Overall reading progress
       const totalScrollable = scrollHeight - clientHeight;
       const overallProg = totalScrollable > 0 ? Math.min(scrollTop / totalScrollable, 1) : 0;
       setOverallProgress(overallProg);
@@ -1158,8 +1225,7 @@ export default function NoteDisplayClient({
         return;
       }
 
-      // Find active heading: the last heading whose top is at or above current scroll
-      const scrollTrigger = scrollTop + clientHeight * 0.3; // trigger at 30% from top of viewport
+      const scrollTrigger = scrollTop + clientHeight * 0.3; 
       let activeIdx = -1;
       for (let i = cachedHeadings.length - 1; i >= 0; i--) {
         if (scrollTrigger >= cachedHeadings[i].top) {
@@ -1169,7 +1235,6 @@ export default function NoteDisplayClient({
       }
 
       if (activeIdx < 0) {
-        // Before all headings
         setActiveHeadingId("note-title");
         setSectionProgress(new Map());
         return;
@@ -1178,7 +1243,6 @@ export default function NoteDisplayClient({
       const activeHeading = cachedHeadings[activeIdx];
       setActiveHeadingId(activeHeading.id);
 
-      // Calculate progress only for the active heading's section
       const sectionStart = activeHeading.top;
       const sectionEnd = activeHeading.end;
       const sectionHeight = sectionEnd - sectionStart;
@@ -1191,7 +1255,6 @@ export default function NoteDisplayClient({
         newSectionProgress.set(activeHeading.id, progress);
       }
 
-      // Mark all headings before active as completed
       for (let i = 0; i < activeIdx; i++) {
         newSectionProgress.set(cachedHeadings[i].id, 1);
       }
@@ -1199,21 +1262,51 @@ export default function NoteDisplayClient({
       setSectionProgress(newSectionProgress);
     };
 
-    updateScrollStates();
-    scrollParent.addEventListener("scroll", updateScrollStates, { passive: true });
+    // Throttle React state updates to 60fps to prevent render choking
+    const onScroll = () => {
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          updateScrollStates();
+          rafId = null;
+        });
+      }
+    };
 
-    // Also recalc on resize
+    // 1. Initial calculation
+    recalcHeadingPositions();
+    updateScrollStates();
+
+    // 2. Attach listeners
+    scrollParent.addEventListener("scroll", onScroll, { passive: true });
+
+    // 3. Observe BOTH the container (for layout shifts like images loading) and body (for window resize)
     const resizeObserver = new ResizeObserver(() => {
-      lastScrollTop = -1; // force recalc
+      recalcHeadingPositions();
       updateScrollStates();
     });
+    
     resizeObserver.observe(document.body);
+    if (rootRef.current) {
+      resizeObserver.observe(rootRef.current);
+    }
 
+    // 4. Cleanup
     return () => {
-      scrollParent.removeEventListener("scroll", updateScrollStates);
+      scrollParent.removeEventListener("scroll", onScroll);
       resizeObserver.disconnect();
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
     };
   }, []);
+
+  const handleBack = useCallback(() => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/dashboard/notes");
+    }
+  }, [router]);
 
   const handleToggleFavorite = async () => {
     if (isTogglingFavorite) return;
@@ -1274,18 +1367,11 @@ const renderContent = () => {
 
   const headings = useMemo(() => {
     const contentHeadings = extractHeadings(content);
-    return [{ level: 1, text: note.title, id: "note-title" }, ...contentHeadings];
-  }, [content, note.title]);
+    return [...contentHeadings];
+  }, [content]);
 
   return (
     <div ref={rootRef} className="w-full pt-4 pb-16 font-sans">
-      {/* Overall reading progress bar at top */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-default/50">
-        <div
-          className="h-full bg-gradient-to-r from-[#00A3A3] to-[#00E0E0] transition-all duration-150 ease-out"
-          style={{ width: `${overallProgress * 100}%` }}
-        />
-      </div>
 
       <StickyNoteHeader
         note={note}
