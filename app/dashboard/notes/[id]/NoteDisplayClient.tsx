@@ -319,7 +319,6 @@ const TocContentNode = memo(
     sectionProgress,
   }: TocContentNodeProps) {
     const { id, text, level } = node.heading;
-    const isActive = activeId === id;
     const progress = sectionProgress.get(id) ?? 0;
 
     const indentClass =
@@ -334,20 +333,23 @@ const TocContentNode = memo(
       }
     }, [id]);
 
+    const isActive = activeId === id;
+    const itemStyle = cn(
+      "block text-xs py-1 transition-colors duration-150 truncate",
+      indentClass,
+      isActive
+        ? "text-[#00A3A3] dark:text-[#00E0E0] font-medium"
+        : progress === 1
+          ? "text-primary/90"
+          : "text-secondary hover:text-primary"
+    );
+
     return (
       <li className="relative my-1">
         <a
           href={`#${id}`}
           onClick={handleClick}
-          className={cn(
-            "block text-xs py-1 transition-colors duration-150 truncate",
-            indentClass,
-            isActive
-              ? "text-[#00A3A3] dark:text-[#00E0E0] font-medium"
-              : progress === 1
-                ? "text-primary/90"
-                : "text-secondary hover:text-primary"
-          )}
+          className={itemStyle}
           title={text}
         >
           {text}
@@ -374,10 +376,6 @@ const TocContentNode = memo(
     const prevProgress = prev.sectionProgress.get(prev.node.heading.id) ?? 0;
     const nextProgress = next.sectionProgress.get(next.node.heading.id) ?? 0;
     if (Math.abs(prevProgress - nextProgress) > 0.01) return false;
-    if (prev.sectionProgress.size !== next.sectionProgress.size) return false;
-    for (const [key, value] of prev.sectionProgress) {
-      if (value !== next.sectionProgress.get(key)) return false;
-    }
     return true;
   }
 );
@@ -465,7 +463,7 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
 
       const totalScrollable = scrollHeight - clientHeight;
       const overallProg = totalScrollable > 0 ? Math.min(scrollTop / totalScrollable, 1) : 0;
-      setOverallProgress((prev) => (Math.abs(prev - overallProg) < 0.001 ? prev : overallProg));
+      setOverallProgress((prev) => (Math.abs(prev - overallProg) > 0.001 ? overallProg : prev));
 
       if (cachedHeadingsRef.current.length === 0) {
         setSectionProgress((prev) => (prev.size === 0 ? prev : new Map()));
@@ -482,14 +480,21 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
         }
       }
 
+      const positions = cachedHeadingsRef.current;
       if (activeIdx < 0) {
-        setActiveId((prev) => (prev === "note-title" ? prev : "note-title"));
-        setSectionProgress((prev) => (prev.size === 0 ? prev : new Map()));
+        if (activeId !== "note-title") {
+          setActiveId("note-title");
+        }
+        if (sectionProgress.size !== 0) {
+          setSectionProgress(new Map());
+        }
         return;
       }
 
-      const activeHeading = cachedHeadingsRef.current[activeIdx];
-      setActiveId((prev) => (prev === activeHeading.id ? prev : activeHeading.id));
+      const activeHeading = positions[activeIdx];
+      if (activeId !== activeHeading.id) {
+        setActiveId(activeHeading.id);
+      }
 
       const sectionStart = activeHeading.top;
       const sectionEnd = activeHeading.end;
@@ -508,7 +513,9 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
       }
 
       setSectionProgress((prev) => {
-        if (prev.size === newSectionProgress.size) {
+        const isNew = prev.size !== newSectionProgress.size || 
+          !Array.from(newSectionProgress.keys()).every(key => prev.has(key));
+        if (!isNew) {
           let same = true;
           for (const [k, v] of newSectionProgress) {
             if (Math.abs((prev.get(k) ?? 0) - v) > 0.01) {
@@ -516,7 +523,8 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
               break;
             }
           }
-          if (same) return prev;
+          if (!same) return newSectionProgress;
+          return prev;
         }
         return newSectionProgress;
       });
