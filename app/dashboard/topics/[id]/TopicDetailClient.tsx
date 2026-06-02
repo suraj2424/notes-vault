@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import {
   Archive,
   BookOpen,
-  Check,
   ChevronLeft,
   ChevronDown,
   ChevronUp,
@@ -137,30 +137,28 @@ export default function TopicDetailClient({
   notes: serverNotes,
   onRemoveNote,
   onReorder,
-  onToggleComplete,
-  completedNotes = new Set<string>(),
-  completedCount = 0,
-  totalCount = 0,
 }: {
   topic: Topic;
   notes: Note[];
   onRemoveNote: (noteId: string) => void;
   onReorder?: (noteId: string, direction: "up" | "down") => void;
-  onToggleComplete?: (noteId: string) => Promise<void>;
-  completedNotes?: Set<string>;
-  completedCount?: number;
-  totalCount?: number;
 }) {
+  const router = useRouter();
   const [notes, setNotes] = useState(serverNotes);
   const [searchQuery, setSearchQuery] = useState("");
   const [isReordering, setIsReordering] = useState<string | null>(null);
-  const [completingNotes, setCompletingNotes] = useState<Set<string>>(
-    new Set(),
-  );
-  const [completedNotesState, setCompletedNotesState] =
-    useState(completedNotes);
-  const [completedCountState, setCompletedCountState] =
-    useState(completedCount);
+
+  const reorderingRef = useRef<string | null>(null);
+  const notesRef = useRef<Note[]>(notes);
+  useEffect(() => {
+    notesRef.current = notes;
+  }, [notes]);
+
+  useEffect(() => {
+    if (!reorderingRef.current) {
+      setNotes(serverNotes);
+    }
+  }, [serverNotes]);
 
   const filteredNotes = useMemo(() => {
     if (!searchQuery.trim()) return notes;
@@ -178,88 +176,63 @@ export default function TopicDetailClient({
     );
   }, [filteredNotes]);
 
-  const displayCount = sorted.length;
-  const hasSequenced = sorted.some((n) => n.sequence != null);
-
-  const handleToggleComplete = useCallback(
-    async (noteId: string) => {
-      if (!onToggleComplete) return;
-      if (completingNotes.has(noteId)) return;
-
-      const isCurrentlyCompleted = completedNotesState.has(noteId);
-      setCompletedNotesState((prev) => {
-        const next = new Set(prev);
-        if (isCurrentlyCompleted) {
-          next.delete(noteId);
-        } else {
-          next.add(noteId);
-        }
-        return next;
-      });
-      setCompletedCountState((prev) =>
-        isCurrentlyCompleted ? prev - 1 : prev + 1,
-      );
-      setCompletingNotes((prev) => new Set(prev).add(noteId));
-
-      try {
-        await onToggleComplete(noteId);
-      } catch {
-        setCompletedNotesState((prev) => {
-          const next = new Set(prev);
-          if (isCurrentlyCompleted) {
-            next.add(noteId);
-          } else {
-            next.delete(noteId);
-          }
-          return next;
-        });
-        setCompletedCountState((prev) =>
-          isCurrentlyCompleted ? prev + 1 : prev - 1,
-        );
-      } finally {
-        setCompletingNotes((prev) => {
-          const next = new Set(prev);
-          next.delete(noteId);
-          return next;
-        });
-      }
-    },
-    [completedNotesState, completingNotes, onToggleComplete],
-  );
-
   const handleMove = useCallback(
     async (noteId: string, direction: "up" | "down") => {
       if (!onReorder) return;
+      if (reorderingRef.current) return;
 
-      const currentIndex = sorted.findIndex((n) => n.id === noteId);
+      const currentNotes = notesRef.current;
+      const sortedNow = [...currentNotes].sort(
+        (a, b) => (a.sequence ?? 9999) - (b.sequence ?? 9999),
+      );
+      const currentIndex = sortedNow.findIndex((n) => n.id === noteId);
       if (currentIndex < 0) return;
       const targetIndex =
         direction === "up" ? currentIndex - 1 : currentIndex + 1;
-      if (targetIndex < 0 || targetIndex >= sorted.length) return;
+      if (targetIndex < 0 || targetIndex >= sortedNow.length) return;
 
-      const next = sorted[targetIndex];
-      const curr = sorted[currentIndex];
-
+      const curr = sortedNow[currentIndex];
+      const next = sortedNow[targetIndex];
       const currSeq = curr.sequence ?? currentIndex;
       const nextSeq = next.sequence ?? targetIndex;
+      const swap = {
+        currId: curr.id,
+        nextId: next.id,
+        currSeq,
+        nextSeq,
+      };
+
+      reorderingRef.current = noteId;
+      setIsReordering(noteId);
       setNotes((prev) =>
         prev.map((n) =>
-          n.id === curr.id
-            ? { ...n, sequence: nextSeq }
-            : n.id === next.id
-              ? { ...n, sequence: currSeq }
+          n.id === swap.currId
+            ? { ...n, sequence: swap.nextSeq }
+            : n.id === swap.nextId
+              ? { ...n, sequence: swap.currSeq }
               : n,
         ),
       );
-      setIsReordering(noteId);
 
       try {
         await onReorder(noteId, direction);
+        router.refresh();
+      } catch {
+        setNotes((prev) =>
+          prev.map((n) =>
+            n.id === swap.currId
+              ? { ...n, sequence: swap.currSeq }
+              : n.id === swap.nextId
+                ? { ...n, sequence: swap.nextSeq }
+                : n,
+          ),
+        );
       } finally {
+        reorderingRef.current = null;
         setIsReordering(null);
       }
     },
-    [sorted, onReorder],
+    [onReorder, router],
   );
 
   return (
@@ -345,21 +318,6 @@ export default function TopicDetailClient({
           </div>
         </div>
       </div>
-      {totalCount > 0 && (
-            <div className="flex items-center gap-3">
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-bg-muted">
-                <div
-                  className="h-full rounded-full bg-[#00A3A3] transition-all duration-300"
-                  style={{
-                    width: `${totalCount > 0 ? (completedCountState / totalCount) * 100 : 0}%`,
-                  }}
-                />
-              </div>
-              <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-secondary">
-                {completedCountState} / {totalCount} completed
-              </span>
-            </div>
-          )}
         </div>
       </header>
 
@@ -390,34 +348,6 @@ export default function TopicDetailClient({
                       </div>
                     </Link>
                     <div className="flex shrink-0 items-center gap-1.5">
-                      {onToggleComplete && (
-                        <Tooltip
-                          text={
-                            completedNotesState.has(note.id)
-                              ? "Mark as incomplete"
-                              : "Mark as complete"
-                          }
-                        >
-                          <button
-                            type="button"
-                            onClick={() => handleToggleComplete(note.id)}
-                            disabled={completingNotes.has(note.id)}
-                            className={cn(
-                              "flex h-8 w-8 items-center justify-center rounded-lg border transition-colors duration-100 disabled:opacity-40 disabled:hover:bg-surface",
-                              completedNotesState.has(note.id)
-                                ? "border-[#00A3A3] bg-[#00A3A3]/10 text-[#00A3A3] dark:border-[#00E0E0] dark:bg-[#00E0E0]/10 dark:text-[#00E0E0]"
-                                : "border-default bg-surface text-secondary hover:bg-bg-muted hover:text-primary",
-                            )}
-                            aria-label={
-                              completedNotesState.has(note.id)
-                                ? "Mark as incomplete"
-                                : "Mark as complete"
-                            }
-                          >
-                            <Check className="h-3.5 w-3.5" />
-                          </button>
-                        </Tooltip>
-                      )}
                       <Tooltip text="Move up">
                         <button
                           type="button"

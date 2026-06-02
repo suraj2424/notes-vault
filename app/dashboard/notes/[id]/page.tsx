@@ -4,7 +4,6 @@ import NoteDisplayClient from "./NoteDisplayClient";
 import connectToDatabase from "@/lib/mongodb";
 import Note from "@/models/Note";
 import Topic from "@/models/Topic";
-import UserNoteProgress from "@/models/UserNoteProgress";
 import { syncTopicCounts } from "@/lib/topics";
 
 export const revalidate = 60;
@@ -34,7 +33,6 @@ export default async function NoteDetailPage({
     title: string;
     sequence?: number | null;
   }> = [];
-  let isInitiallyCompleted = false;
 
   if (note.topicId) {
     const topic = await Topic.findById(note.topicId).lean();
@@ -48,13 +46,6 @@ export default async function NoteDetailPage({
       title: n.title,
       sequence: n.sequence ?? null,
     }));
-
-    const progress = await UserNoteProgress.findOne({
-      userId,
-      noteId: id,
-      topicId: note.topicId,
-    }).lean();
-    isInitiallyCompleted = !!progress?.completed;
   }
 
   const formattedNote = {
@@ -110,7 +101,6 @@ export default async function NoteDetailPage({
       onEdit={handleEdit}
       onDelete={handleDelete}
       topicNotes={topicNotes}
-      isInitiallyCompleted={isInitiallyCompleted}
     />
   );
 }

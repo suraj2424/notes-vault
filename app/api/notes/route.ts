@@ -3,7 +3,6 @@ import { z } from 'zod';
 import connectToDatabase from '../../../lib/mongodb';
 import Note from '../../../models/Note';
 import Topic from '../../../models/Topic';
-import UserNoteProgress from '../../../models/UserNoteProgress';
 import { auth } from '@clerk/nextjs/server';
 import { syncTopicCounts } from '@/lib/topics';
 
@@ -176,20 +175,11 @@ const maxSeq = await Note.findOne({ topicId: noteData.topicId, sequence: { $ne: 
 sequence = maxSeq?.sequence !== undefined && maxSeq.sequence !== null ? maxSeq.sequence + 1 : 1; 
 } 
 
-const note = await Note.create({ 
-userId, 
-...noteData, 
-...(sequence !== undefined && { sequence }), 
-}); 
-
-if (noteData.topicId) { 
-await UserNoteProgress.create({ 
-userId, 
-noteId: note._id.toString(), 
-topicId: noteData.topicId, 
-completed: false, 
-}); 
-}
+const note = await Note.create({
+userId,
+...noteData,
+...(sequence !== undefined && { sequence }),
+});
 
 await syncTopicCounts([note.topicId]);
 

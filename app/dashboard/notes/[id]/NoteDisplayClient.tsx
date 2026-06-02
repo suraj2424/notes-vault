@@ -17,7 +17,6 @@ import { formatDistanceToNow } from "date-fns";
 import {
   type LucideIcon,
   BookOpen,
-  CheckCircle2,
   ChevronLeft,
   Clock,
   Code2,
@@ -41,7 +40,6 @@ interface NoteDisplayClientProps {
   onEdit: () => void | Promise<void>;
   onDelete: () => void | Promise<void>;
   topicNotes?: Array<{ id: string; title: string; sequence?: number | null }>;
-  isInitiallyCompleted?: boolean;
 }
 
 interface MarkdownRendererProps {
@@ -547,20 +545,53 @@ function TopicNav({
     .sort((a, b) => (a.sequence ?? 9999) - (b.sequence ?? 9999));
   if (sorted.length < 2) return null;
   const currentIndex = sorted.findIndex((n) => n.id === currentNoteId);
+  if (currentIndex < 0) return null;
+  const prev = currentIndex > 0 ? sorted[currentIndex - 1] : null;
   const next =
     currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
 
-  if (!next) return null;
+  if (!prev && !next) return null;
+
+  const linkClass =
+    "inline-flex items-center gap-2 rounded-lg border border-default bg-surface px-4 py-2 text-sm font-medium text-secondary transition-colors duration-100 hover:border-[#00A3A3]/35 hover:text-primary dark:hover:border-[#00E0E0]/30";
+  const titleClass = "truncate max-w-[40ch]";
 
   return (
-    <div className="mt-8 flex justify-end">
-      <Link
-        href={`/dashboard/notes/${next.id}`}
-        className="inline-flex items-center gap-2 rounded-lg border border-default bg-surface px-4 py-2 text-sm font-medium text-secondary transition-colors duration-100 hover:border-[#00A3A3]/35 hover:text-primary dark:hover:border-[#00E0E0]/30"
-      >
-        <span>Next: {next.title}</span>
-        <ChevronLeft className="h-4 w-4 rotate-180" />
-      </Link>
+    <div className="mt-8 flex items-center justify-between gap-3">
+      {prev ? (
+        <Link
+          href={`/dashboard/notes/${prev.id}`}
+          className={linkClass}
+          title={prev.title}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span className="flex flex-col leading-tight">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-secondary/70">
+              Previous
+            </span>
+            <span className={titleClass}>{prev.title}</span>
+          </span>
+        </Link>
+      ) : (
+        <span />
+      )}
+      {next ? (
+        <Link
+          href={`/dashboard/notes/${next.id}`}
+          className={linkClass}
+          title={next.title}
+        >
+          <span className="flex flex-col items-end leading-tight">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-secondary/70">
+              Next
+            </span>
+            <span className={titleClass}>{next.title}</span>
+          </span>
+          <ChevronLeft className="h-4 w-4 rotate-180" />
+        </Link>
+      ) : (
+        <span />
+      )}
     </div>
   );
 }
@@ -930,7 +961,6 @@ export default function NoteDisplayClient({
   onEdit,
   onDelete,
   topicNotes = [],
-  isInitiallyCompleted = false,
 }: NoteDisplayClientProps) {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
@@ -939,8 +969,6 @@ export default function NoteDisplayClient({
   const [isFavorite, setIsFavorite] = useState(note.isFavorite);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [isHeaderCompact, setIsHeaderCompact] = useState(false);
-  const [isCompleting, setIsCompleting] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(isInitiallyCompleted);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -951,23 +979,6 @@ export default function NoteDisplayClient({
       router.push("/dashboard/notes");
     }
   }, [router]);
-
-  const handleMarkComplete = async () => {
-    if (isCompleting) return;
-    setIsCompleting(true);
-    try {
-      const res = await fetch(`/api/notes/${note.id}/complete`, {
-        method: "POST",
-      });
-      if (res.ok) {
-        setIsCompleted(true);
-      }
-    } catch (error) {
-      console.error("Failed to mark complete:", error);
-    } finally {
-      setIsCompleting(false);
-    }
-  };
 
   useEffect(() => {
     const root = rootRef.current;
@@ -995,23 +1006,6 @@ export default function NoteDisplayClient({
     });
     return () => scrollParent.removeEventListener("scroll", updateCompactState);
   }, []);
-
-  const completionBadge = isCompleted ? (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-green-500/15 bg-green-500/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-green-700 dark:text-green-400">
-      <CheckCircle2 className="h-3.5 w-3.5" />
-      Completed
-    </span>
-  ) : (
-    <button
-      type="button"
-      disabled={isCompleting}
-      onClick={handleMarkComplete}
-      className="inline-flex items-center gap-1.5 rounded-full border border-default bg-surface px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary disabled:opacity-50"
-    >
-      <CheckCircle2 className="h-3.5 w-3.5" />
-      Mark as complete
-    </button>
-  );
 
   const handleToggleFavorite = async () => {
     if (isTogglingFavorite) return;
@@ -1120,14 +1114,6 @@ const renderContent = () => {
         <h1 id="note-title" className="hidden">{note.title}</h1>
         <div className="flex gap-8">
           <main className="flex-1 max-w-4xl">
-            {topicId && (
-              <div className="mb-5 flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-bold uppercase tracking-wide text-secondary">
-                  Progress{" "}
-                </span>
-                {completionBadge}
-              </div>
-            )}
             <div className="space-y-5">{renderContent()}</div>
             {topicId && topicNotes.length > 1 && (
               <TopicNav currentNoteId={note.id} topicNotes={topicNotes} />

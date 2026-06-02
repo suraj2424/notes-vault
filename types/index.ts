@@ -39,15 +39,6 @@ dsa?: DSAData;
 qa?: QAData;
 }
 
-export interface UserNoteProgress {
-id: string;
-userId: string;
-noteId: string;
-topicId: string;
-completed: boolean;
-completedAt?: string;
-}
-
 export interface Topic {
   id: string;
   userId: string;

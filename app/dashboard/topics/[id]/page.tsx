@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import connectToDatabase from "@/lib/mongodb";
 import TopicModel from "@/models/Topic";
 import NoteModel from "@/models/Note";
-import UserNoteProgress from "@/models/UserNoteProgress";
 import TopicDetailClient from "./TopicDetailClient";
 import { syncTopicCounts } from "@/lib/topics";
 
@@ -65,11 +64,6 @@ content: note.content,
 dsa: note.dsa as any,
 qa: note.qa as any,
 }));
-
-const completedEntries = await UserNoteProgress.find({ userId, topicId: id, completed: true }).lean();
-const completedNotes = new Set(completedEntries.map((e) => e.noteId));
-
-const completedCount = completedEntries.length;
 
 const sequencedNotes = noteDocs.filter((n) => n.sequence != null).sort((a, b) => a.sequence - b.sequence);
 
@@ -134,58 +128,12 @@ await NoteModel.updateOne({ _id: noteId, userId }, { $set: { sequence: targetSeq
 await syncTopicCounts([id]);
 };
 
-const onToggleComplete = async (noteId: string) => {
-"use server";
-
-await connectToDatabase();
-const { userId } = await auth();
-if (!userId) {
-  throw new Error('Unauthorized');
-}
-
-const note = await NoteModel.findOne({ _id: noteId, userId }).lean();
-if (!note) {
-  throw new Error("Note not found");
-}
-
-if (!note.topicId) {
-  throw new Error("Note is not in a topic");
-}
-
-const existing = await UserNoteProgress.findOne({ userId, noteId, topicId: note.topicId }).lean();
-if (existing) {
-  if (existing.completed) {
-    const result = await UserNoteProgress.deleteOne({ _id: existing._id });
-    if (result.deletedCount === 0) {
-      throw new Error("Failed to delete progress");
-    }
-  } else {
-    await UserNoteProgress.findOneAndUpdate(
-      { _id: existing._id },
-      { $set: { completed: true, completedAt: new Date() } }
-    );
-  }
-} else {
-  await UserNoteProgress.create({
-    userId,
-    noteId,
-    topicId: note.topicId,
-    completed: true,
-    completedAt: new Date(),
-  });
-}
-};
-
 return (
 <TopicDetailClient
 topic={topic}
 notes={notes}
 onRemoveNote={onRemoveNote}
 onReorder={onReorderNote}
-onToggleComplete={onToggleComplete}
-completedNotes={completedNotes}
-completedCount={completedCount}
-totalCount={sequencedNotes.length || noteDocs.length}
 />
 );
 }
