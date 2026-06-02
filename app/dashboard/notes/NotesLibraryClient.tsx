@@ -595,7 +595,7 @@ export function NotesLibraryClient({
   if (!user) return null;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-4 sm:px-5 sm:py-6 lg:px-8 font-sans">
+    <div className="mx-auto max-w-7xl px-4 sm:px-5 lg:px-8 font-sans">
       <header className="sticky top-0 z-30 -mx-4 border-b border-default bg-surface/95 backdrop-blur-sm px-4 sm:-mx-5 sm:px-5 lg:-mx-8 lg:px-8">
         <div className="flex flex-col gap-3 py-3 sm:gap-4 sm:py-4">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end sm:gap-4">
