@@ -8,6 +8,7 @@ import {
   useMemo,
   type ReactNode,
   useCallback,
+  Children,
 } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -83,23 +84,61 @@ const DIFFICULTY_STYLES = {
 const iconButtonClass =
   "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary disabled:cursor-wait disabled:opacity-50";
 
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/[`*_~]{1,3}([^`*_~]+)[`*_~]{1,3}/g, "$1")
+    .replace(/<[^>]*>/g, "")
+    .trim();
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w\-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function childrenToText(children: ReactNode): string {
+  return Children.toArray(children).reduce<string>((acc, child) => {
+    if (typeof child === "string" || typeof child === "number") return acc + child;
+    if (typeof child === "object" && child !== null && "props" in child) {
+      return acc + childrenToText((child as any).props.children);
+    }
+    return acc;
+  }, "");
+}
+
 export function extractHeadings(content: string): Array<{ level: number; text: string; id: string }> {
-  const headingRegex = /^(#{1,6})\s+(.+?)\s*$/gm;
   const headings: Array<{ level: number; text: string; id: string }> = [];
-  
-  let match;
-  while ((match = headingRegex.exec(content)) !== null) {
-    const level = match[1].length;
-    const text = match[2];
-    const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
-    headings.push({ level, text, id });
+  const lines = content.split("\n");
+  let inCodeBlock = false;
+
+  for (const line of lines) {
+    const trimmed = line.trimStart();
+    if (trimmed.startsWith("```")) {
+      inCodeBlock = !inCodeBlock;
+      continue;
+    }
+    if (inCodeBlock) continue;
+
+    const match = /^(#{1,6})\s+(.+?)\s*$/.exec(line);
+    if (match) {
+      const level = match[1].length;
+      const text = match[2];
+      const id = slugify(stripMarkdown(text));
+      headings.push({ level, text, id });
+    }
   }
-  
+
   return headings;
 }
 
 export const MarkdownRenderer = memo(
-  ({ content, resolvedTheme, onHeadingClick }: MarkdownRendererProps & { onHeadingClick?: (id: string) => void }) => {
+  ({ content, resolvedTheme }: MarkdownRendererProps) => {
     const headings = useMemo(() => extractHeadings(content), [content]);
 
     return (
@@ -117,59 +156,23 @@ export const MarkdownRenderer = memo(
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
-            h1({ node, children, ...props }) {
-              const text = String(children).replace(/<[^>]*>/g, "");
-              const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
-              return (
-                <h1 id={id} {...props}>
-                  {children}
-                </h1>
-              );
+            h1({ children, ...props }) {
+              return <h1 {...props} id={slugify(childrenToText(children))}>{children}</h1>;
             },
-            h2({ node, children, ...props }) {
-              const text = String(children).replace(/<[^>]*>/g, "");
-              const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
-              return (
-                <h2 id={id} {...props}>
-                  {children}
-                </h2>
-              );
+            h2({ children, ...props }) {
+              return <h2 {...props} id={slugify(childrenToText(children))}>{children}</h2>;
             },
-            h3({ node, children, ...props }) {
-              const text = String(children).replace(/<[^>]*>/g, "");
-              const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
-              return (
-                <h3 id={id} {...props}>
-                  {children}
-                </h3>
-              );
+            h3({ children, ...props }) {
+              return <h3 {...props} id={slugify(childrenToText(children))}>{children}</h3>;
             },
-            h4({ node, children, ...props }) {
-              const text = String(children).replace(/<[^>]*>/g, "");
-              const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
-              return (
-                <h4 id={id} {...props}>
-                  {children}
-                </h4>
-              );
+            h4({ children, ...props }) {
+              return <h4 {...props} id={slugify(childrenToText(children))}>{children}</h4>;
             },
-            h5({ node, children, ...props }) {
-              const text = String(children).replace(/<[^>]*>/g, "");
-              const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
-              return (
-                <h5 id={id} {...props}>
-                  {children}
-                </h5>
-              );
+            h5({ children, ...props }) {
+              return <h5 {...props} id={slugify(childrenToText(children))}>{children}</h5>;
             },
-            h6({ node, children, ...props }) {
-              const text = String(children).replace(/<[^>]*>/g, "");
-              const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
-              return (
-                <h6 id={id} {...props}>
-                  {children}
-                </h6>
-              );
+            h6({ children, ...props }) {
+              return <h6 {...props} id={slugify(childrenToText(children))}>{children}</h6>;
             },
             code({ className, children, ...props }) {
               const match = /language-(\w+)/.exec(className || "");
@@ -293,6 +296,11 @@ interface TocNode {
   children: TocNode[];
 }
 
+interface SectionProgress {
+  id: string;
+  progress: number; // 0 to 1
+}
+
 function buildTocTree(
   headings: Array<{ level: number; text: string; id: string }>
 ): TocNode[] {
@@ -316,43 +324,82 @@ function buildTocTree(
 function TocContentNode({
   node,
   activeId,
+  sectionProgress,
 }: {
   node: TocNode;
   activeId?: string;
+  sectionProgress: Map<string, number>;
 }) {
   const { heading } = node;
+  const progress = sectionProgress.get(heading.id);
+  const isActive = heading.id === activeId;
+  const isCompleted = progress === 1;
+  const isInProgress = progress !== undefined && progress > 0 && progress < 1;
 
   return (
-    <li>
-      <a
-        href={`#${heading.id}`}
-        className={cn(
-          "block truncate transition-colors duration-100",
-          heading.id === activeId
-            ? "text-[#00A3A3] dark:text-[#00E0E0]"
-            : "text-secondary hover:text-primary",
-          heading.level === 1 && "text-base font-bold",
-          heading.level === 2 && "text-sm font-semibold",
-          heading.level >= 3 && "text-xs"
-        )}
-onClick={(e) => {
-                e.preventDefault();
-                const element = document.getElementById(heading.id);
-                if (element) {
-                  const id = element.getAttribute("id");
-                  if (id) {
-                    window.location.hash = id;
-                  }
-                  element.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
-              }}
-      >
-        {heading.text}
-      </a>
+    <li className="group">
+      <div className="flex items-center gap-2.5">
+        {/* Indicator */}
+        <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
+          {isActive && isInProgress ? (
+            /* Progress ring for active section being read */
+            <svg className="h-4 w-4 -rotate-90" viewBox="0 0 16 16">
+              <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-default" />
+              <circle
+                cx="8" cy="8" r="6" fill="none" stroke="currentColor"
+                strokeWidth="1.5"
+                strokeDasharray={`${progress! * 37.7} 37.7`}
+                className="text-[#00A3A3] dark:text-[#00E0E0]"
+              />
+            </svg>
+          ) : isActive ? (
+            /* Solid teal dot for active at section start */
+            <div className="h-2 w-2 rounded-full bg-[#00A3A3] dark:bg-[#00E0E0] shadow-[0_0_6px_rgba(0,163,163,0.5)]" />
+          ) : isCompleted ? (
+            /* Checkmark for completed */
+            <div className="flex h-4 w-4 items-center justify-center rounded-full bg-[#00A3A3] dark:bg-[#00E0E0]">
+              <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 12 12" fill="none">
+                <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          ) : (
+            /* Gray dot for not reached */
+            <div className="h-2 w-2 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+          )}
+        </div>
+        <a
+          href={`#${heading.id}`}
+          className={cn(
+            "block truncate transition-colors duration-100 flex-1 py-0.5",
+            isActive
+              ? "text-[#00A3A3] dark:text-[#00E0E0] font-semibold"
+              : isCompleted
+                ? "text-primary"
+                : "text-secondary hover:text-primary",
+            heading.level === 1 && "text-sm font-bold",
+            heading.level === 2 && "text-xs font-semibold",
+            heading.level >= 3 && "text-[11px]"
+          )}
+          onClick={(e) => {
+            e.preventDefault();
+            const el = document.getElementById(heading.id);
+            if (el) {
+              el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          }}
+        >
+          {stripMarkdown(heading.text)}
+        </a>
+      </div>
       {node.children.length > 0 && (
-        <ul className="space-y-1 pl-1.5 border-l border-default mt-1 ml-2.5">
+        <ul className="space-y-0.5 pl-[7px] mt-0.5 border-l border-default ml-[3px]">
           {node.children.map((child) => (
-            <TocContentNode key={child.heading.id} node={child} activeId={activeId} />
+            <TocContentNode
+              key={child.heading.id}
+              node={child}
+              activeId={activeId}
+              sectionProgress={sectionProgress}
+            />
           ))}
         </ul>
       )}
@@ -360,21 +407,57 @@ onClick={(e) => {
   );
 }
 
-function TableOfContents({ headings, activeId }: { headings: Array<{ level: number; text: string; id: string }>; activeId?: string }) {
+function TableOfContents({
+  headings,
+  activeId,
+  sectionProgress,
+  overallProgress,
+}: {
+  headings: Array<{ level: number; text: string; id: string }>;
+  activeId?: string;
+  sectionProgress: Map<string, number>;
+  overallProgress: number;
+}) {
   if (!headings.length) return null;
   const tree = buildTocTree(headings);
 
   return (
-    <nav className="sticky top-24 w-64 shrink-0 self-start rounded-lg border border-default bg-surface p-4 hidden lg:block">
-      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-secondary mb-3">
-        <List className="h-4 w-4" />
-        Table of Contents
+    <nav className="sticky top-24 w-56 shrink-0 self-start hidden lg:block">
+      <div className="rounded-lg border border-default bg-surface p-4">
+        <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-secondary mb-4">
+          <List className="h-3.5 w-3.5" />
+          On this page
+        </div>
+
+        {/* Overall reading progress */}
+        <div className="mb-4 pb-4 border-b border-default">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-secondary">
+              Read
+            </span>
+            <span className="text-[11px] font-bold text-[#00A3A3] dark:text-[#00E0E0]">
+              {Math.round(overallProgress * 100)}%
+            </span>
+          </div>
+          <div className="h-1 w-full rounded-full bg-default overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[#00A3A3] dark:bg-[#00E0E0] transition-all duration-200"
+              style={{ width: `${overallProgress * 100}%` }}
+            />
+          </div>
+        </div>
+
+        <ul className="space-y-1">
+          {tree.map((node) => (
+            <TocContentNode
+              key={node.heading.id}
+              node={node}
+              activeId={activeId}
+              sectionProgress={sectionProgress}
+            />
+          ))}
+        </ul>
       </div>
-      <ul className="space-y-1">
-        {tree.map((node) => (
-          <TocContentNode key={node.heading.id} node={node} activeId={activeId} />
-        ))}
-      </ul>
     </nav>
   );
 }
@@ -633,85 +716,78 @@ function StickyNoteHeader({
       )}
     >
       <div className="mx-auto max-w-4xl px-5 py-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <button
-                  type="button"
-                  onClick={onBack}
-                  className={cn(iconButtonClass, "mt-0.5")}
-                  aria-label="Go back"
-                  title="Go back"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="">
-                <h1
-                  className={cn(
-                    "font-bold tracking-tight text-primary transition-all duration-150",
-                    isCompact ? "text-lg" : "text-2xl leading-tight",
-                  )}
-                >
-                  {note.title}
-                </h1>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <button
-                  type="button"
-                  onClick={onToggleFavorite}
-                  disabled={isTogglingFavorite}
-                  className={cn(
-                    iconButtonClass,
-                    isFavorite
-                      ? "border-amber-500/20 bg-amber-500/5 text-amber-500"
-                      : "text-secondary",
-                  )}
-                  aria-label={
-                    isFavorite ? "Remove from favorites" : "Add to favorites"
-                  }
-                  title={
-                    isFavorite ? "Remove from favorites" : "Add to favorites"
-                  }
-                >
-                  <Star
-                    className={cn("h-4 w-4", isFavorite && "fill-amber-500")}
-                  />
-                </button>
-                <button
-                  type="button"
-                  onClick={onEdit}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-default bg-surface px-3 text-xs font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary active:scale-[0.98]"
-                >
-                  <Edit2 className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Edit</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={onDeleteClick}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200/60 bg-surface px-3 text-xs font-bold text-red-600 transition-colors duration-100 hover:bg-red-50/70 active:scale-[0.98] dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Delete</span>
-                </button>
-              </div>
-            </div>
-
-            {!isCompact && (
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <TypeBadge type={note.type} />
-                <UpdatedAt updatedAt={note.updatedAt} />
-                <TopicChip
-                  topicId={topicId}
-                  topicTitle={topicTitle}
-                  fallback={qaTopic}
-                />
-                <TagList tags={note.tags} compact />
-              </div>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className={iconButtonClass}
+            aria-label="Go back"
+            title="Go back"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <h1
+            className={cn(
+              "min-w-0 flex-1 truncate font-bold tracking-tight text-primary transition-all duration-150",
+              isCompact ? "text-lg" : "text-2xl leading-tight",
             )}
+            title={note.title}
+          >
+            {note.title}
+          </h1>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={onToggleFavorite}
+              disabled={isTogglingFavorite}
+              className={cn(
+                iconButtonClass,
+                isFavorite
+                  ? "border-amber-500/20 bg-amber-500/5 text-amber-500"
+                  : "text-secondary",
+              )}
+              aria-label={
+                isFavorite ? "Remove from favorites" : "Add to favorites"
+              }
+              title={
+                isFavorite ? "Remove from favorites" : "Add to favorites"
+              }
+            >
+              <Star
+                className={cn("h-4 w-4", isFavorite && "fill-amber-500")}
+              />
+            </button>
+            <button
+              type="button"
+              onClick={onEdit}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-default bg-surface px-3 text-xs font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary active:scale-[0.98]"
+            >
+              <Edit2 className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Edit</span>
+            </button>
+            <button
+              type="button"
+              onClick={onDeleteClick}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200/60 bg-surface px-3 text-xs font-bold text-red-600 transition-colors duration-100 hover:bg-red-50/70 active:scale-[0.98] dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Delete</span>
+            </button>
           </div>
         </div>
+
+        {!isCompact && (
+          <div className="mt-3 flex flex-wrap items-center gap-2 pl-12">
+            <TypeBadge type={note.type} />
+            <UpdatedAt updatedAt={note.updatedAt} />
+            <TopicChip
+              topicId={topicId}
+              topicTitle={topicTitle}
+              fallback={qaTopic}
+            />
+            <TagList tags={note.tags} compact />
+          </div>
+        )}
       </div>
     </header>
   );
@@ -971,6 +1047,10 @@ export default function NoteDisplayClient({
   const [isHeaderCompact, setIsHeaderCompact] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [activeHeadingId, setActiveHeadingId] = useState<string>("");
+  const [sectionProgress, setSectionProgress] = useState<Map<string, number>>(new Map());
+  const [overallProgress, setOverallProgress] = useState(0);
+  const scrollContainerRef = useRef<HTMLElement | Window>(null);
 
   const handleBack = useCallback(() => {
     if (window.history.length > 1) {
@@ -983,6 +1063,7 @@ export default function NoteDisplayClient({
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+
     let scrollParent: HTMLElement | Window = window;
     let parent = root.parentElement;
     while (parent) {
@@ -993,18 +1074,145 @@ export default function NoteDisplayClient({
       }
       parent = parent.parentElement;
     }
-    const updateCompactState = () => {
-      const scrollTop =
-        scrollParent === window
-          ? window.scrollY
-          : (scrollParent as HTMLElement).scrollTop;
-      setIsHeaderCompact(scrollTop > 16);
+
+    scrollContainerRef.current = scrollParent;
+
+    // Cache heading positions to avoid recalculation
+    let cachedHeadings: Array<{ id: string; top: number; level: number; end: number }> = [];
+    let lastScrollTop = -1;
+
+    const getScrollTop = () => {
+      return scrollParent === window
+        ? window.scrollY
+        : (scrollParent as HTMLElement).scrollTop;
     };
-    updateCompactState();
-    scrollParent.addEventListener("scroll", updateCompactState, {
-      passive: true,
+
+    const getDimensions = () => {
+      const isWindow = scrollParent === window;
+      return {
+        scrollTop: isWindow ? window.scrollY : (scrollParent as HTMLElement).scrollTop,
+        scrollHeight: isWindow
+          ? document.documentElement.scrollHeight
+          : (scrollParent as HTMLElement).scrollHeight,
+        clientHeight: isWindow
+          ? window.innerHeight
+          : (scrollParent as HTMLElement).clientHeight,
+        containerTop: isWindow
+          ? 0
+          : (scrollParent as HTMLElement).getBoundingClientRect().top,
+      };
+    };
+
+    const recalcHeadingPositions = () => {
+      const { scrollTop, scrollHeight, containerTop } = getDimensions();
+      const headingsElements = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+      const positions: Array<{ id: string; top: number; level: number; end: number }> = [];
+
+      headingsElements.forEach((element) => {
+        const id = element.getAttribute("id");
+        if (!id) return;
+        const level = parseInt(element.tagName.toLowerCase().charAt(1));
+        const rect = element.getBoundingClientRect();
+        const top = scrollTop + (rect.top - containerTop);
+        positions.push({ id, top, level, end: 0 });
+      });
+
+      positions.sort((a, b) => a.top - b.top);
+
+      // Calculate each heading's section end (next heading at same or higher level)
+      for (let i = 0; i < positions.length; i++) {
+        const current = positions[i];
+        let end = scrollHeight; // default: end of content
+        for (let j = i + 1; j < positions.length; j++) {
+          if (positions[j].level <= current.level) {
+            end = positions[j].top;
+            break;
+          }
+        }
+        current.end = end;
+      }
+
+      cachedHeadings = positions;
+    };
+
+    const updateScrollStates = () => {
+      const { scrollTop, scrollHeight, clientHeight } = getDimensions();
+
+      // Only recalc heading positions on significant scroll or first run
+      if (lastScrollTop === -1 || Math.abs(scrollTop - lastScrollTop) > 50) {
+        recalcHeadingPositions();
+        lastScrollTop = scrollTop;
+      }
+
+      // Header compact state
+      setIsHeaderCompact(scrollTop > 16);
+
+      // Overall reading progress
+      const totalScrollable = scrollHeight - clientHeight;
+      const overallProg = totalScrollable > 0 ? Math.min(scrollTop / totalScrollable, 1) : 0;
+      setOverallProgress(overallProg);
+
+      if (cachedHeadings.length === 0) {
+        setSectionProgress(new Map());
+        setActiveHeadingId("note-title");
+        return;
+      }
+
+      // Find active heading: the last heading whose top is at or above current scroll
+      const scrollTrigger = scrollTop + clientHeight * 0.3; // trigger at 30% from top of viewport
+      let activeIdx = -1;
+      for (let i = cachedHeadings.length - 1; i >= 0; i--) {
+        if (scrollTrigger >= cachedHeadings[i].top) {
+          activeIdx = i;
+          break;
+        }
+      }
+
+      if (activeIdx < 0) {
+        // Before all headings
+        setActiveHeadingId("note-title");
+        setSectionProgress(new Map());
+        return;
+      }
+
+      const activeHeading = cachedHeadings[activeIdx];
+      setActiveHeadingId(activeHeading.id);
+
+      // Calculate progress only for the active heading's section
+      const sectionStart = activeHeading.top;
+      const sectionEnd = activeHeading.end;
+      const sectionHeight = sectionEnd - sectionStart;
+
+      const newSectionProgress = new Map<string, number>();
+
+      if (sectionHeight > 0) {
+        const scrolledInSection = scrollTop - sectionStart;
+        const progress = Math.max(0, Math.min(1, scrolledInSection / sectionHeight));
+        newSectionProgress.set(activeHeading.id, progress);
+      }
+
+      // Mark all headings before active as completed
+      for (let i = 0; i < activeIdx; i++) {
+        newSectionProgress.set(cachedHeadings[i].id, 1);
+      }
+
+      setSectionProgress(newSectionProgress);
+    };
+
+    updateScrollStates();
+    scrollParent.addEventListener("scroll", updateScrollStates, { passive: true });
+
+    // Also recalc on resize
+    const resizeObserver = new ResizeObserver(() => {
+      lastScrollTop = -1; // force recalc
+      updateScrollStates();
     });
-    return () => scrollParent.removeEventListener("scroll", updateCompactState);
+    resizeObserver.observe(document.body);
+
+    return () => {
+      scrollParent.removeEventListener("scroll", updateScrollStates);
+      resizeObserver.disconnect();
+    };
   }, []);
 
   const handleToggleFavorite = async () => {
@@ -1060,7 +1268,7 @@ const renderContent = () => {
   const content = useMemo(() => {
     if (note.type === "general") return note.content || "";
     if (note.type === "qa") return note.qa?.content || "";
-    if (note.type === "dsa") return note.dsa?.problemStatement || note.dsa?.notes || "";
+    if (note.type === "dsa") return [note.dsa?.problemStatement, note.dsa?.notes].filter(Boolean).join("\n\n");
     return "";
   }, [note]);
 
@@ -1068,33 +1276,17 @@ const renderContent = () => {
     const contentHeadings = extractHeadings(content);
     return [{ level: 1, text: note.title, id: "note-title" }, ...contentHeadings];
   }, [content, note.title]);
-  const [activeHeadingId, setActiveHeadingId] = useState<string>("");
-
-  const handleScroll = useCallback(() => {
-    const headingsElements = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
-    const scrollPosition = window.scrollY + 100;
-
-    let currentId = "";
-    headingsElements.forEach((element) => {
-      const id = element.getAttribute("id");
-      if (!id) return;
-
-      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-      if (scrollPosition >= elementPosition - 20) {
-        currentId = id;
-      }
-    });
-
-    setActiveHeadingId(currentId || "note-title");
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
 
   return (
     <div ref={rootRef} className="w-full pt-4 pb-16 font-sans">
+      {/* Overall reading progress bar at top */}
+      <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-default/50">
+        <div
+          className="h-full bg-gradient-to-r from-[#00A3A3] to-[#00E0E0] transition-all duration-150 ease-out"
+          style={{ width: `${overallProgress * 100}%` }}
+        />
+      </div>
+
       <StickyNoteHeader
         note={note}
         topicTitle={topicTitle}
@@ -1120,7 +1312,12 @@ const renderContent = () => {
             )}
           </main>
           {headings.length > 0 && (
-            <TableOfContents headings={headings} activeId={activeHeadingId} />
+            <TableOfContents
+              headings={headings}
+              activeId={activeHeadingId}
+              sectionProgress={sectionProgress}
+              overallProgress={overallProgress}
+            />
           )}
         </div>
       </div>
