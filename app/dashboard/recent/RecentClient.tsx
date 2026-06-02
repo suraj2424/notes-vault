@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Clock, Code2, BookOpen, FileText, Star } from 'lucide-react';
+import { Clock, Star } from 'lucide-react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { NoteType } from '@/types';
+import { NOTE_TYPE_META } from '@/lib/note-styles';
 
 interface Note {
   id: string;
@@ -21,26 +22,7 @@ interface RecentClientProps {
   initialNotes: Note[];
 }
 
-const NOTE_TYPE_STYLES = {
-  dsa: {
-    label: 'DSA',
-    icon: Code2,
-    iconWrap: 'border-[#00A3A3]/15 bg-[#00A3A3]/5 text-[#00A3A3] dark:border-[#00E0E0]/15 dark:bg-[#00E0E0]/5 dark:text-[#00E0E0]',
-    typeBadge: 'border-[#00A3A3]/20 bg-[#00A3A3]/5 text-[#00A3A3] dark:border-[#00E0E0]/20 dark:bg-[#00E0E0]/5 dark:text-[#00E0E0]',
-  },
-  qa: {
-    label: 'Q&A',
-    icon: BookOpen,
-    iconWrap: 'border-amber-500/15 bg-amber-500/5 text-amber-600 dark:border-amber-500/15 dark:bg-amber-500/5 dark:text-amber-400',
-    typeBadge: 'border-amber-500/20 bg-amber-500/5 text-amber-600 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400',
-  },
-  general: {
-    label: 'General',
-    icon: FileText,
-    iconWrap: 'border-default bg-bg-muted text-secondary dark:bg-[#A0A0A0]/5',
-    typeBadge: 'border-default bg-bg-muted text-secondary dark:bg-[#A0A0A0]/10',
-  },
-};
+const NOTE_TYPE_STYLES = NOTE_TYPE_META;
 
 export default function RecentClient({ userName, initialNotes }: RecentClientProps) {
   const [notes, setNotes] = useState<Note[]>(initialNotes);
@@ -69,8 +51,8 @@ export default function RecentClient({ userName, initialNotes }: RecentClientPro
   const firstName = (userName || '').split(' ')[0];
 
   return (
-    <div className="mx-auto max-w-7xl px-8 py-6 font-sans">
-      <header className="sticky top-0 z-30 -mx-5 border-b border-default bg-[#FFFFFF] dark:bg-[#1A1A1A] px-5">
+    <div className="mx-auto max-w-7xl px-5 lg:px-8 py-6 font-sans">
+      <header className="sticky top-0 z-30 -mx-5 lg:-mx-8 border-b border-default bg-surface px-5 lg:px-8">
         <div className="flex flex-col gap-4 py-4">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div className="min-w-0">

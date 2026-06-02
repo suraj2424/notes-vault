@@ -1,7 +1,8 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import { Search, Plus, X, Loader2, Code2, BookOpen, FileText } from 'lucide-react';
+import { Search, Plus, X, Loader2, Code2, BookOpen, FileText, Menu } from 'lucide-react';
+import { useMobileMenu } from './DashboardShell';
 import Link from 'next/link';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Note } from '@/types';
@@ -12,6 +13,7 @@ export function Navbar() {
   const { user } = useUser();
   const router = useRouter();
   const pathname = usePathname();
+  const { toggleMobileMenu } = useMobileMenu();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Note[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -75,14 +77,6 @@ const breadcrumbs = useMemo(() => {
       const segment = segments[i];
       const href = '/' + segments.slice(0, i + 1).join('/');
       let label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
-      if (i >= segments.length - 1 && segments[i - 1] === 'notes') {
-        const match = pathname.match(/^\/dashboard\/notes\/([^/]+)/);
-        if (match) {
-          const id = match[1];
-          const safe = id.replace(/[^a-zA-Z0-9]/g, '');
-          label = safe.length > 9 ? `${safe.slice(0, 8)}...` : safe || 'Note';
-        }
-      }
       crumbs.push({ label, href });
     }
   }
@@ -90,16 +84,57 @@ const breadcrumbs = useMemo(() => {
   return crumbs;
 }, [pathname]);
 
+const [noteTitleCache, setNoteTitleCache] = useState<Record<string, string>>({});
+
+useEffect(() => {
+  const match = pathname.match(/^\/dashboard\/notes\/([a-fA-F0-9]{24})/);
+  if (!match) return;
+  const noteId = match[1];
+  if (noteTitleCache[noteId]) return;
+
+  fetch(`/api/notes/${noteId}`)
+    .then((r) => r.ok ? r.json() : null)
+    .then((data) => {
+      if (data?.title) {
+        setNoteTitleCache((prev) => ({ ...prev, [noteId]: data.title }));
+      }
+    })
+    .catch(() => {});
+}, [pathname, noteTitleCache]);
+
+const resolvedBreadcrumbs = useMemo(() => {
+  const match = pathname.match(/^\/dashboard\/notes\/([a-fA-F0-9]{24})/);
+  if (!match) return breadcrumbs;
+
+  const noteId = match[1];
+  const title = noteTitleCache[noteId];
+  if (!title) return breadcrumbs;
+
+  return breadcrumbs.map((crumb, i) => {
+    if (i === breadcrumbs.length - 1 && crumb.href.includes(noteId)) {
+      return { ...crumb, label: title.length > 30 ? `${title.slice(0, 28)}...` : title };
+    }
+    return crumb;
+  });
+}, [breadcrumbs, pathname, noteTitleCache]);
+
   return (
     <nav className="sticky top-0 z-50 border-b border-default bg-surface font-sans">
       <div className="flex h-14 items-center justify-between gap-4 px-5">
 
-        {/* Left: Breadcrumbs */}
+        {/* Left: Hamburger (mobile) + Breadcrumbs */}
+        <button
+          onClick={toggleMobileMenu}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary lg:hidden"
+          aria-label="Open menu"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
         <nav className="hidden min-w-0 items-center gap-2 text-[12px] text-secondary sm:flex">
-          {breadcrumbs.map((crumb, index) => (
+          {resolvedBreadcrumbs.map((crumb, index) => (
             <div key={crumb.href} className="flex items-center gap-2">
               {index > 0 && <span className="select-none text-[11px] text-muted">/</span>}
-              {index === breadcrumbs.length - 1 ? (
+              {index === resolvedBreadcrumbs.length - 1 ? (
                 <span className="truncate text-[12.5px] font-bold tracking-tight text-primary">
                   {crumb.label}
                 </span>

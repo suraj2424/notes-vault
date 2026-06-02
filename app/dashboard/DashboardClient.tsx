@@ -63,7 +63,7 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
   const initials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <div className="w-full px-5 pb-16 font-sans text-primary antialiased">
+    <div className="w-full px-5 lg:px-8 pb-16 font-sans text-primary antialiased">
       {/* Header */}
       <header className="flex flex-col justify-between gap-4 border-b border-default  py-5  sm:flex-row sm:items-end">
         <div className="flex items-center gap-4">
@@ -90,6 +90,15 @@ export default function DashboardClient({ userName, recentNotes, stats }: Dashbo
           New Note
         </Link>
       </header>
+
+      {/* Mobile FAB */}
+      <Link
+        href="/dashboard/notes/new"
+        className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#1A1D1E] text-white shadow-lg transition-colors duration-100 hover:bg-[#00A3A3] dark:bg-[#E4E6EB] dark:text-[#111111] dark:hover:bg-[#00E0E0] sm:hidden"
+        aria-label="New Note"
+      >
+        <Plus className="h-5 w-5 stroke-[2.5]" />
+      </Link>
 
       {/* Stats Grid */}
       <div className="my-5 grid grid-cols-2 gap-3 lg:grid-cols-4">

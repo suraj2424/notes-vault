@@ -3,7 +3,7 @@
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import type { CSSProperties } from 'react';
 import { Copy, Check } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 const CODE_FONT_SIZE = '13.5px';
@@ -144,14 +144,8 @@ interface CodeBlockProps {
 
 export function CodeBlock({ language = 'text', children, theme = 'dark', minimal = false }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const codeString = String(children).replace(/\n$/, '');
   const lang = (language || 'text').toLowerCase();
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- required for client-only render
-    setMounted(true);
-  }, []);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(codeString);
@@ -182,19 +176,6 @@ export function CodeBlock({ language = 'text', children, theme = 'dark', minimal
     </SyntaxHighlighter>
   );
 
-  const renderPlain = () => (
-    <pre
-      className="!m-0 !bg-transparent !p-0 font-mono antialiased whitespace-pre"
-      style={{
-        fontSize: CODE_FONT_SIZE,
-        lineHeight: CODE_LINE_HEIGHT,
-        fontFamily: CODE_FONT_FAMILY,
-      }}
-    >
-      <code>{codeString}</code>
-    </pre>
-  );
-
   if (minimal) {
     return (
       <div className="relative group rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-[#151515] text-neutral-900 dark:text-neutral-100">
@@ -211,7 +192,7 @@ export function CodeBlock({ language = 'text', children, theme = 'dark', minimal
           {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
         </button>
         <div className="overflow-x-auto p-4">
-          {mounted ? renderHighlighted() : renderPlain()}
+          {renderHighlighted()}
         </div>
       </div>
     );
@@ -241,7 +222,7 @@ export function CodeBlock({ language = 'text', children, theme = 'dark', minimal
 
       {/* Code Content Area */}
       <div className="overflow-x-auto p-4 selection:bg-neutral-200/60 dark:selection:bg-neutral-800/60">
-        {mounted ? renderHighlighted() : renderPlain()}
+        {renderHighlighted()}
       </div>
     </div>
   );

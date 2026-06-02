@@ -61,6 +61,9 @@
 
   .font-sans { font-family: var(--font-dm-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif; }
   .font-serif { font-family: var(--font-dm-serif), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif; }
+
+  .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
 }
 
 /* Dark mode overrides - direct child of :root to preserve specificity hierarchy */

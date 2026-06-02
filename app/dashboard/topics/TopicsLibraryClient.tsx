@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Archive, ChevronRight, FolderOpen, Plus, Search, X } from "lucide-react";
+import { Archive, ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, FolderOpen, Plus, Search, X } from "lucide-react";
 import { Topic } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -188,8 +188,8 @@ export function TopicsLibraryClient({
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-8 py-6 font-sans">
-      <header className="sticky top-0 z-30 -mx-5 border-b border-default px-5">
+    <div className="mx-auto max-w-7xl px-5 lg:px-8 py-6 font-sans">
+      <header className="sticky top-0 z-30 -mx-5 lg:-mx-8 border-b border-default bg-surface px-5 lg:px-8">
         <div className="flex flex-col gap-4 py-4">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div className="min-w-0">
@@ -287,25 +287,63 @@ export function TopicsLibraryClient({
 
         {totalPagesState > 1 && (
           <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-            {Array.from({ length: totalPagesState }, (_, index) => index + 1).map((pageNumber) => (
-              <button
-                key={pageNumber}
-                type="button"
-                disabled={isPending}
-                onClick={() => {
-                  setPage(pageNumber);
-                  startTransition(() => updateUrl(pageNumber, search, showArchived));
-                }}
-                className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-lg border text-xs font-bold transition-colors duration-100 disabled:opacity-40",
-                  page === pageNumber
-                    ? "border-[#1A1D1E] bg-[#1A1D1E] text-white dark:border-[#E4E6EB] dark:bg-[#E4E6EB] dark:text-[#111111]"
-                    : "border-default bg-surface text-secondary hover:bg-bg-muted hover:text-primary"
-                )}
-              >
-                {pageNumber}
-              </button>
-            ))}
+            <button
+              type="button"
+              onClick={() => {
+                const newPage = page - 1;
+                setPage(newPage);
+                startTransition(() => updateUrl(newPage, search, showArchived));
+              }}
+              disabled={page === 1 || isPending}
+              className="flex h-9 items-center gap-1 rounded-lg border border-default bg-surface px-3 text-xs font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary disabled:opacity-30"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              Prev
+            </button>
+
+            <div className="flex items-center gap-1.5">
+              {Array.from({ length: Math.min(5, totalPagesState) }, (_, i) => {
+                let pageNum;
+                if (totalPagesState <= 5) pageNum = i + 1;
+                else if (page <= 3) pageNum = i + 1;
+                else if (page >= totalPagesState - 2) pageNum = totalPagesState - 4 + i;
+                else pageNum = page - 2 + i;
+
+                return (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    disabled={isPending}
+                    onClick={() => {
+                      setPage(pageNum);
+                      startTransition(() => updateUrl(pageNum, search, showArchived));
+                    }}
+                    className={cn(
+                      "flex h-9 w-9 items-center justify-center rounded-lg border text-xs font-bold transition-colors duration-100 disabled:opacity-40",
+                      page === pageNum
+                        ? "border-[#1A1D1E] bg-[#1A1D1E] text-white dark:border-[#E4E6EB] dark:bg-[#E4E6EB] dark:text-[#111111]"
+                        : "border-default bg-surface text-secondary hover:bg-bg-muted hover:text-primary"
+                    )}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const newPage = page + 1;
+                setPage(newPage);
+                startTransition(() => updateUrl(newPage, search, showArchived));
+              }}
+              disabled={page === totalPagesState || isPending}
+              className="flex h-9 items-center gap-1 rounded-lg border border-default bg-surface px-3 text-xs font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary disabled:opacity-30"
+            >
+              Next
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
           </div>
         )}
       </main>

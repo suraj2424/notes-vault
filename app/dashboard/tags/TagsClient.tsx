@@ -18,7 +18,7 @@ export default function TagsClient({ initialTags }: TagsClientProps) {
 
 if (tags.length === 0) {
   return (
-    <div className="mx-auto max-w-7xl font-sans p-6">
+    <div className="mx-auto max-w-7xl px-5 lg:px-8 py-6 font-sans">
       <header className="pb-6">
         <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-secondary">
           Organize
@@ -43,7 +43,7 @@ if (tags.length === 0) {
 }
 
 return (
-  <div className="mx-auto max-w-7xl font-sans p-6">
+  <div className="mx-auto max-w-7xl px-5 lg:px-8 py-6 font-sans">
     <header className="pb-6">
       <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-secondary">
         Organize
@@ -60,7 +60,7 @@ return (
       {tags.map((tag) => (
         <Link
           key={tag.name}
-          href={`/dashboard/notes?search=${encodeURIComponent(tag.name)}`}
+          href={`/dashboard/notes?tag=${encodeURIComponent(tag.name)}`}
           className="group rounded-lg border border-default bg-surface p-4 transition-colors duration-100 hover:bg-bg-muted"
         >
           <div className="flex items-center justify-between gap-4">

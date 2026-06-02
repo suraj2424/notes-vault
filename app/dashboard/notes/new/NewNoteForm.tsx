@@ -16,21 +16,6 @@ import { GeneralWorkspace } from "./components/GeneralWorkspace";
 import { DSAWorkspace } from "./components/DSAWorkspace";
 import { QAWorkspace } from "./components/QAWorkspace";
 
-const TYPE_PILL_STYLES = {
-  general: {
-    active: "bg-[#FFFFFF] text-[#1A1D1E] border-[#687076]/30 shadow-sm dark:bg-[#1A1A1A] dark:text-[#E4E6EB] dark:border-[#A0A0A0]/30",
-    inactive: "bg-transparent text-[#687076] hover:text-[#1A1D1E] border-transparent dark:text-[#A0A0A0] dark:hover:text-[#E4E6EB]",
-  },
-  dsa: {
-    active: "bg-[#FFFFFF] text-[#00A3A3] border-[#00A3A3]/30 shadow-sm dark:bg-[#1A1A1A] dark:text-[#00E0E0] dark:border-[#00E0E0]/30",
-    inactive: "bg-transparent text-[#687076] hover:text-[#1A1D1E] border-transparent dark:text-[#A0A0A0] dark:hover:text-[#E4E6EB]",
-  },
-  qa: {
-    active: "bg-[#FFFFFF] text-amber-600 border-amber-500/30 shadow-sm dark:bg-[#1A1A1A] dark:text-amber-400 dark:border-amber-500/30",
-    inactive: "bg-transparent text-[#687076] hover:text-[#1A1D1E] border-transparent dark:text-[#A0A0A0] dark:hover:text-[#E4E6EB]",
-  },
-} as const;
-
 const initialDsa: DSAData = {
   platform: "",
   difficulty: "Medium",
@@ -132,7 +117,14 @@ const handleCreateTopic = useCallback(async (newTitle: string) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(noteData),
       });
-        if (res.ok) router.back();
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.id) {
+            router.push(`/dashboard/notes/${data.id}`);
+          } else {
+            router.push("/dashboard/notes");
+          }
+        }
     } catch (err) {
       alert("Failed to save note.");
     } finally {
@@ -143,8 +135,8 @@ const handleCreateTopic = useCallback(async (newTitle: string) => {
   if (loading || !user) return null;
 
   return (
-    <div className="mx-6 lg:mx-10 font-sans text-[#1A1D1E] dark:text-[#E4E6EB]">
-      <div className="sticky top-0 z-30 -mx-6 lg:-mx-10 px-6 lg:px-10 bg-[#FFFFFF]/95 dark:bg-[#1A1A1A]/95 border-b border-[#E6E8EB] dark:border-[#2D2D2D]">
+    <div className="mx-auto max-w-7xl px-5 lg:px-8 py-6 font-sans text-[#1A1D1E] dark:text-[#E4E6EB]">
+      <div className="sticky top-0 z-30 -mx-5 lg:-mx-8 px-5 lg:px-8 bg-[#FFFFFF]/95 dark:bg-[#1A1A1A]/95 border-b border-[#E6E8EB] dark:border-[#2D2D2D]">
         <div className="py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
         <button
