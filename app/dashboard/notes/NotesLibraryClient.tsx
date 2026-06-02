@@ -371,14 +371,17 @@ export function NotesLibraryClient({
     sortBy,
     tagFilter,
   });
-  filtersRef.current = {
-    page,
-    debouncedSearchQuery,
-    typeFilter,
-    showFavoritesOnly,
-    sortBy,
-    tagFilter,
-  };
+
+  useEffect(() => {
+    filtersRef.current = {
+      page,
+      debouncedSearchQuery,
+      typeFilter,
+      showFavoritesOnly,
+      sortBy,
+      tagFilter,
+    };
+  });
 
   useEffect(() => {
     const search = searchParams.get("search") || "";
@@ -597,10 +600,6 @@ export function NotesLibraryClient({
         <div className="flex flex-col gap-3 py-3 sm:gap-4 sm:py-4">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end sm:gap-4">
             <div className="min-w-0">
-              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-secondary">
-                <FileText className="h-3.5 w-3.5" />
-                Notes Workspace
-              </div>
               <h1 className="mt-1 text-xl font-bold leading-tight tracking-tight text-primary sm:text-2xl lg:text-3xl">
                 Notes Library
               </h1>

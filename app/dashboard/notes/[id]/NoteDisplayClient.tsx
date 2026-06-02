@@ -580,7 +580,7 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
         cancelAnimationFrame(rafIdRef.current);
       }
     };
-  }, [contentRef, headings]);
+  }, [contentRef, headings, scrollState.activeId]);
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();

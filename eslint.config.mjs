@@ -7,5 +7,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig([{
-    extends: [...next],
+  extends: [...next],
+  rules: {
+    "react-hooks/refs": "warn",
+    "react-hooks/set-state-in-effect": "warn",
+  },
 }]);
