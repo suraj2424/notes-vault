@@ -12,7 +12,7 @@ import {
 } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -112,6 +112,167 @@ export function extractHeadings(
 
 export const MarkdownRenderer = memo(
   ({ content, resolvedTheme }: MarkdownRendererProps) => {
+    const themeRef = useRef(resolvedTheme);
+    // eslint-disable-next-line react-hooks/refs
+    themeRef.current = resolvedTheme;
+
+    const components = useMemo<Components>(
+      () => ({
+        h1({ children, ...props }) {
+          return (
+            <h1 {...props} id={slugify(childrenToText(children))}>
+              {children}
+            </h1>
+          );
+        },
+        h2({ children, ...props }) {
+          return (
+            <h2 {...props} id={slugify(childrenToText(children))}>
+              {children}
+            </h2>
+          );
+        },
+        h3({ children, ...props }) {
+          return (
+            <h3 {...props} id={slugify(childrenToText(children))}>
+              {children}
+            </h3>
+          );
+        },
+        h4({ children, ...props }) {
+          return (
+            <h4 {...props} id={slugify(childrenToText(children))}>
+              {children}
+            </h4>
+          );
+        },
+        h5({ children, ...props }) {
+          return (
+            <h5 {...props} id={slugify(childrenToText(children))}>
+              {children}
+            </h5>
+          );
+        },
+        h6({ children, ...props }) {
+          return (
+            <h6 {...props} id={slugify(childrenToText(children))}>
+              {children}
+            </h6>
+          );
+        },
+        code({ className, children, ...props }) {
+          const match = /language-(\w+)/.exec(className || "");
+          const language = match ? match[1] : "";
+          const isInline = !match && !String(children).includes("\n");
+          const theme = themeRef.current === "dark" ? "dark" : "light";
+
+          if (isInline) {
+            return (
+              <code className={className} {...props}>
+                {children}
+              </code>
+            );
+          }
+          return (
+            <div className="not-prose my-5 w-full max-w-none overflow-x-auto rounded-lg">
+              <CodeBlock
+                language={language || "text"}
+                theme={theme}
+              >
+                {String(children).replace(/\n$/, "")}
+              </CodeBlock>
+            </div>
+          );
+        },
+        ul({ children }) {
+          return (
+            <ul className="my-5 list-none space-y-2 pl-0">{children}</ul>
+          );
+        },
+        ol({ children }) {
+          return (
+            <ol className="my-5 list-decimal space-y-2 pl-6 text-primary">
+              {children}
+            </ol>
+          );
+        },
+        li({ children, ...props }) {
+          const isOrdered = props.className?.includes("ordered") || false;
+
+          if (isOrdered) {
+            return (
+              <li className="text-base text-primary pl-1 marker:font-medium marker:text-neutral-500">
+                {children}
+              </li>
+            );
+          }
+
+          return (
+            <li className="flex items-start gap-2 text-base text-primary">
+              <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-400 dark:bg-neutral-600" />
+              <span className="flex-1">{children}</span>
+            </li>
+          );
+        },
+        table({ children }) {
+          return (
+            <div className="not-prose my-6 w-full overflow-x-auto rounded-lg border border-default">
+              <table className="min-w-full border-collapse bg-surface">
+                {children}
+              </table>
+            </div>
+          );
+        },
+        th({ children }) {
+          return (
+            <th className="border-b border-r border-default bg-bg-muted px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-secondary last:border-r-0">
+              {children}
+            </th>
+          );
+        },
+        td({ children }) {
+          return (
+            <td className="border-b border-r border-default px-4 py-3 text-sm text-primary last:border-r-0">
+              {children}
+            </td>
+          );
+        },
+        tr({ children }) {
+          return (
+            <tr className="even:bg-neutral-100/50 hover:bg-neutral-50 dark:even:bg-neutral-900/40 dark:hover:bg-neutral-900/80 transition-colors">
+              {children}
+            </tr>
+          );
+        },
+        a({ children, href }) {
+          return (
+            <a
+              href={href}
+              className="font-medium text-primary underline-offset-2 hover:underline"
+            >
+              {children}
+            </a>
+          );
+        },
+        img({ src, alt }) {
+          return (
+            <span className="not-prose my-6 block w-full overflow-hidden rounded-lg border border-default bg-surface p-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={src}
+                alt={alt || ""}
+                loading="lazy"
+                decoding="async"
+                className="mx-auto h-auto max-h-[480px] max-w-full rounded-md object-contain"
+                style={{ minHeight: "200px" }}
+              />
+            </span>
+          );
+        },
+      }),
+      []
+    );
+
     return (
       <div
         className={cn(
@@ -124,161 +285,7 @@ export const MarkdownRenderer = memo(
           "prose-hr:border-default prose-img:m-0"
         )}
       >
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            h1({ children, ...props }) {
-              return (
-                <h1 {...props} id={slugify(childrenToText(children))}>
-                  {children}
-                </h1>
-              );
-            },
-            h2({ children, ...props }) {
-              return (
-                <h2 {...props} id={slugify(childrenToText(children))}>
-                  {children}
-                </h2>
-              );
-            },
-            h3({ children, ...props }) {
-              return (
-                <h3 {...props} id={slugify(childrenToText(children))}>
-                  {children}
-                </h3>
-              );
-            },
-            h4({ children, ...props }) {
-              return (
-                <h4 {...props} id={slugify(childrenToText(children))}>
-                  {children}
-                </h4>
-              );
-            },
-            h5({ children, ...props }) {
-              return (
-                <h5 {...props} id={slugify(childrenToText(children))}>
-                  {children}
-                </h5>
-              );
-            },
-            h6({ children, ...props }) {
-              return (
-                <h6 {...props} id={slugify(childrenToText(children))}>
-                  {children}
-                </h6>
-              );
-            },
-            code({ className, children, ...props }) {
-              const match = /language-(\w+)/.exec(className || "");
-              const language = match ? match[1] : "";
-              const isInline = !match && !String(children).includes("\n");
-
-              if (isInline) {
-                return (
-                  <code className={className} {...props}>
-                    {children}
-                  </code>
-                );
-              }
-              return (
-                <div className="not-prose my-5 w-full max-w-none overflow-x-auto rounded-lg">
-                  <CodeBlock
-                    language={language || "text"}
-                    theme={resolvedTheme === "dark" ? "dark" : "light"}
-                  >
-                    {String(children).replace(/\n$/, "")}
-                  </CodeBlock>
-                </div>
-              );
-            },
-            ul({ children }) {
-              return (
-                <ul className="my-5 list-none space-y-2 pl-0">{children}</ul>
-              );
-            },
-            ol({ children }) {
-              return (
-                <ol className="my-5 list-decimal space-y-2 pl-6 text-primary">
-                  {children}
-                </ol>
-              );
-            },
-            li({ children, ...props }) {
-              const isOrdered = props.className?.includes("ordered") || false;
-
-              if (isOrdered) {
-                return (
-                  <li className="text-base text-primary pl-1 marker:font-medium marker:text-neutral-500">
-                    {children}
-                  </li>
-                );
-              }
-
-              return (
-                <li className="flex items-start gap-2 text-base text-primary">
-                  <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-400 dark:bg-neutral-600" />
-                  <span className="flex-1">{children}</span>
-                </li>
-              );
-            },
-            table({ children }) {
-              return (
-                <div className="not-prose my-6 w-full overflow-x-auto rounded-lg border border-default">
-                  <table className="min-w-full border-collapse bg-surface">
-                    {children}
-                  </table>
-                </div>
-              );
-            },
-            th({ children }) {
-              return (
-                <th className="border-b border-r border-default bg-bg-muted px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wide text-secondary last:border-r-0">
-                  {children}
-                </th>
-              );
-            },
-            td({ children }) {
-              return (
-                <td className="border-b border-r border-default px-4 py-3 text-sm text-primary last:border-r-0">
-                  {children}
-                </td>
-              );
-            },
-            tr({ children }) {
-              return (
-                <tr className="even:bg-neutral-100/50 hover:bg-neutral-50 dark:even:bg-neutral-900/40 dark:hover:bg-neutral-900/80 transition-colors">
-                  {children}
-                </tr>
-              );
-            },
-            a({ children, href }) {
-              return (
-                <a
-                  href={href}
-                  className="font-medium text-primary underline-offset-2 hover:underline"
-                >
-                  {children}
-                </a>
-              );
-            },
-            img({ src, alt }) {
-              return (
-                <span className="not-prose my-6 block w-full overflow-hidden rounded-lg border border-default bg-surface p-1">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={src}
-                    alt={alt || ""}
-                    loading="lazy"
-                    decoding="async"
-                    className="mx-auto h-auto max-h-[480px] max-w-full rounded-md object-contain"
-                    style={{ minHeight: "200px" }}
-                  />
-                </span>
-              );
-            },
-          }}
-        >
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
           {content}
         </ReactMarkdown>
       </div>
@@ -318,55 +325,67 @@ function buildTocTree(
   return root;
 }
 
-const TocContentNode = memo(function TocContentNode({
-  node,
-  activeId,
-  sectionProgress,
-}: {
-  node: TocNode;
-  activeId?: string;
-  sectionProgress: Map<string, number>;
-}) {
-  const { id, text, level } = node.heading;
-  const isActive = activeId === id;
-  const progress = sectionProgress.get(id) ?? 0;
+const TocContentNode = memo(
+  function TocContentNode({
+    node,
+    activeId,
+    sectionProgress,
+  }: {
+    node: TocNode;
+    activeId?: string;
+    sectionProgress: Map<string, number>;
+  }) {
+    const { id, text, level } = node.heading;
+    const isActive = activeId === id;
+    const progress = sectionProgress.get(id) ?? 0;
 
-  const indentClass =
-    level <= 2 ? "pl-3" : level === 3 ? "pl-6" : "pl-9";
+    const indentClass =
+      level <= 2 ? "pl-3" : level === 3 ? "pl-6" : "pl-9";
 
-  return (
-    <li className="relative my-1">
-      <a
-        href={`#${id}`}
-        className={cn(
-          "block text-xs py-1 transition-colors duration-150 truncate",
-          indentClass,
-          isActive
-            ? "text-[#00A3A3] dark:text-[#00E0E0] font-medium"
-            : progress === 1
-              ? "text-primary/90"
-              : "text-secondary hover:text-primary"
+    return (
+      <li className="relative my-1">
+        <a
+          href={`#${id}`}
+          className={cn(
+            "block text-xs py-1 transition-colors duration-150 truncate",
+            indentClass,
+            isActive
+              ? "text-[#00A3A3] dark:text-[#00E0E0] font-medium"
+              : progress === 1
+                ? "text-primary/90"
+                : "text-secondary hover:text-primary"
+          )}
+          title={text}
+        >
+          {text}
+        </a>
+
+        {node.children.length > 0 && (
+          <ul className="space-y-1">
+            {node.children.map((child) => (
+              <TocContentNode
+                key={child.heading.id}
+                node={child}
+                activeId={activeId}
+                sectionProgress={sectionProgress}
+              />
+            ))}
+          </ul>
         )}
-        title={text}
-      >
-        {text}
-      </a>
-
-      {node.children.length > 0 && (
-        <ul className="space-y-1">
-          {node.children.map((child) => (
-            <TocContentNode
-              key={child.heading.id}
-              node={child}
-              activeId={activeId}
-              sectionProgress={sectionProgress}
-            />
-          ))}
-        </ul>
-      )}
-    </li>
-  );
-});
+      </li>
+    );
+  },
+  (prev, next) => {
+    if (prev.node !== next.node) return false;
+    const prevActive = prev.activeId === prev.node.heading.id;
+    const nextActive = next.activeId === next.node.heading.id;
+    if (prevActive !== nextActive) return false;
+    const prevProgress = prev.sectionProgress.get(prev.node.heading.id) ?? 0;
+    const nextProgress = next.sectionProgress.get(next.node.heading.id) ?? 0;
+    if (prevProgress !== nextProgress) return false;
+    return true;
+  }
+);
 
 interface TableOfContentsProps {
   headings: Array<{ level: number; text: string; id: string }>;
@@ -375,14 +394,15 @@ interface TableOfContentsProps {
   overallProgress: number;
 }
 
-export function TableOfContents({
+export const TableOfContents = memo(function TableOfContents({
   headings,
   activeId,
   sectionProgress,
   overallProgress,
 }: TableOfContentsProps) {
+  const tree = useMemo(() => buildTocTree(headings), [headings]);
+
   if (!headings.length) return null;
-  const tree = buildTocTree(headings);
 
   return (
     <nav className="sticky top-24 w-56 shrink-0 self-start hidden lg:block max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 scrollbar-thin">
@@ -422,7 +442,7 @@ export function TableOfContents({
       </div>
     </nav>
   );
-}
+});
 
 function TypeBadge({ type }: { type: NoteType }) {
   const meta = NOTE_TYPE_META[type];
@@ -645,7 +665,7 @@ function TopicNav({
   );
 }
 
-function StickyNoteHeader({
+const StickyNoteHeader = memo(function StickyNoteHeader({
   note,
   topicTitle,
   topicId,
@@ -770,7 +790,7 @@ function StickyNoteHeader({
       </div>
     </header>
   );
-}
+});
 
 function GeneralContent({
   note,
@@ -1090,9 +1110,8 @@ export default function NoteDisplayClient({
 
     const recalcHeadingPositions = () => {
       const { scrollTop, scrollHeight, containerTop } = getDimensions();
-      const headingsElements = document.querySelectorAll(
-        "h1, h2, h3, h4, h5, h6"
-      );
+      const headingsElements =
+        rootRef.current?.querySelectorAll("h1, h2, h3, h4, h5, h6") ?? [];
       const positions: Array<{
         id: string;
         top: number;
@@ -1258,6 +1277,8 @@ export default function NoteDisplayClient({
     }
   }, [onDelete]);
 
+  const handleDeleteClick = useCallback(() => setShowDeleteModal(true), []);
+
   const renderContent = useCallback(() => {
     switch (note.type) {
       case "general":
@@ -1311,7 +1332,7 @@ export default function NoteDisplayClient({
         onEdit={onEdit}
         onDelete={onDelete}
         onBack={handleBack}
-        onDeleteClick={() => setShowDeleteModal(true)}
+        onDeleteClick={handleDeleteClick}
       />
 
       <div className="mx-auto mt-4 max-w-7xl px-4 sm:mt-6 sm:px-5">
