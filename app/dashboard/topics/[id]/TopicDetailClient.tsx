@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Note, Topic } from "@/types";
 import { cn } from "@/lib/utils";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 function notePreview(note: Note) {
   const content =
@@ -51,55 +52,6 @@ function NoteTypeBadge({ type }: { type: Note["type"] }) {
     >
       {type === "qa" ? "Q&A" : type}
     </span>
-  );
-}
-
-function Tooltip({
-  text,
-  children,
-}: {
-  text: string;
-  children: React.ReactNode;
-}) {
-  const [visible, setVisible] = useState(false);
-  const [overflowing, setOverflowing] = useState(false);
-  const triggerRef = useRef<HTMLDivElement>(null);
-  const tipRef = useRef<HTMLDivElement>(null);
-
-  useLayoutEffect(() => {
-    if (!visible || !triggerRef.current || !tipRef.current) return;
-    const triggerRect = triggerRef.current.getBoundingClientRect();
-    const tipRect = tipRef.current.getBoundingClientRect();
-    setOverflowing(triggerRect.right + tipRect.width > window.innerWidth);
-  }, [visible, text]);
-
-  return (
-    <div
-      className="relative inline-flex items-center justify-center"
-      onMouseEnter={() => setVisible(true)}
-      onMouseLeave={() => setVisible(false)}
-      ref={triggerRef}
-    >
-      {children}
-      {visible && (
-        <div
-          ref={tipRef}
-          className={`pointer-events-none absolute bottom-full mb-2 z-[100] whitespace-nowrap rounded-md px-3 py-1.5 bg-[#1A1D1E] text-[#FFFFFF] text-xs font-medium shadow-md dark:bg-[#E4E6EB] dark:text-[#111111] border border-[#E6E8EB]/10 dark:border-[#2D2D2D]/10 ${
-            overflowing ? "right-0" : "left-1/2 -translate-x-1/2"
-          }`}
-        >
-          <span
-            className="absolute h-1.5 w-1.5 rotate-45 bg-[#1A1D1E] dark:bg-[#E4E6EB]"
-            style={
-              overflowing
-                ? { right: 12, bottom: -3 }
-                : { left: "50%", bottom: -3, marginLeft: -3 }
-            }
-          />
-          {text}
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -223,7 +175,7 @@ export default function TopicDetailClient({
             n.id === swap.currId
               ? { ...n, sequence: swap.currSeq }
               : n.id === swap.nextId
-                ? { ...n, sequence: swap.nextSeq }
+                ? { ...n, sequence: swap.currSeq }
                 : n,
           ),
         );
@@ -236,9 +188,9 @@ export default function TopicDetailClient({
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-5 p-8 font-sans">
+    <div className="mx-auto max-w-7xl px-5 lg:px-8 font-sans">
       <header className="sticky top-0 z-30 -mx-5 border-b border-default bg-[#FFFFFF] dark:bg-[#1A1A1A] px-5 pb-2">
-        <div className="flex flex-col gap-4 py-4">
+        <div className="flex flex-col gap-4">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div className="flex min-w-0 items-start gap-3">
               <Link
@@ -276,54 +228,54 @@ export default function TopicDetailClient({
                     })}
                   </span>
                 </div>
-          </div>
-        </div>
+              </div>
+            </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="group relative min-w-0 flex-1 sm:w-80">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-secondary/60 transition-colors group-focus-within:text-primary" />
-            <input
-              type="text"
-              placeholder="Search notes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-10 w-full rounded-lg border border-default bg-surface pl-9 pr-9 text-sm font-medium text-primary outline-none transition-colors duration-100 placeholder:text-secondary/50 focus:bg-[#FFFFFF] dark:focus:bg-[#1A1A1A]"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
-                aria-label="Clear search"
-                title="Clear search"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="group relative min-w-0 flex-1 sm:w-80">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-secondary/60 transition-colors group-focus-within:text-primary" />
+                <input
+                  type="text"
+                  placeholder="Search notes..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-10 w-full rounded-lg border border-default bg-surface pl-9 pr-9 text-sm font-medium text-primary outline-none transition-colors duration-100 placeholder:text-secondary/50 focus:bg-[#FFFFFF] dark:focus:bg-[#1A1A1A]"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
+                    aria-label="Clear search"
+                    title="Clear search"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href={`/dashboard/notes/new?topicId=${topic.id}`}
+                  className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#1A1D1E] px-4 text-xs font-bold text-white transition-colors duration-100 hover:bg-[#00A3A3] dark:bg-[#E4E6EB] dark:text-[#111111] dark:hover:bg-[#00E0E0]"
+                >
+                  <Plus className="h-4 w-4" />
+                  New Note
+                </Link>
+                <Link
+                  href={`/dashboard/topics/${topic.id}/edit`}
+                  className="inline-flex h-10 items-center rounded-lg border border-default bg-surface px-4 text-xs font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
+                >
+                  Edit Topic
+                </Link>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={`/dashboard/notes/new?topicId=${topic.id}`}
-              className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#1A1D1E] px-4 text-xs font-bold text-white transition-colors duration-100 hover:bg-[#00A3A3] dark:bg-[#E4E6EB] dark:text-[#111111] dark:hover:bg-[#00E0E0]"
-            >
-              <Plus className="h-4 w-4" />
-              New Note
-            </Link>
-            <Link
-              href={`/dashboard/topics/${topic.id}/edit`}
-              className="inline-flex h-10 items-center rounded-lg border border-default bg-surface px-4 text-xs font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
-            >
-              Edit Topic
-            </Link>
-          </div>
-        </div>
-      </div>
         </div>
       </header>
 
       <main className="mt-5">
         {sorted.length > 0 ? (
-          <div className="space-y-3 ">
+          <div className="space-y-3">
             {sorted.map((note, index) => (
               <div key={note.id} className="relative flex items-center gap-4">
                 {(index > 0 || sorted.length > 1) && (
@@ -348,7 +300,7 @@ export default function TopicDetailClient({
                       </div>
                     </Link>
                     <div className="flex shrink-0 items-center gap-1.5">
-                      <Tooltip text="Move up">
+                      <Tooltip placement="top" text="Move up">
                         <button
                           type="button"
                           disabled={index === 0 || isReordering === note.id}
@@ -359,7 +311,7 @@ export default function TopicDetailClient({
                           <ChevronUp className="h-3.5 w-3.5" />
                         </button>
                       </Tooltip>
-                      <Tooltip text="Move down">
+                      <Tooltip placement="top" text="Move down">
                         <button
                           type="button"
                           disabled={
@@ -373,7 +325,7 @@ export default function TopicDetailClient({
                           <ChevronDown className="h-3.5 w-3.5" />
                         </button>
                       </Tooltip>
-                      <Tooltip text="Open note">
+                      <Tooltip placement="top" text="Open note">
                         <Link
                           href={`/dashboard/notes/${note.id}`}
                           className="flex h-8 w-8 items-center justify-center rounded-lg border border-default bg-surface text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
@@ -382,7 +334,7 @@ export default function TopicDetailClient({
                           <FileText className="h-3.5 w-3.5" />
                         </Link>
                       </Tooltip>
-                      <Tooltip text="Remove note from topic">
+                      <Tooltip placement="top" text="Remove note from topic">
                         <button
                           type="button"
                           onClick={() => onRemoveNote(note.id)}
@@ -418,9 +370,9 @@ export default function TopicDetailClient({
               No notes in this topic yet
             </h2>
             <p className="mt-1 max-w-sm text-sm font-medium text-secondary">
-            {searchQuery
-              ? "No notes match your search. Try a different term."
-              : "Start the collection by creating a note directly inside this topic."}
+              {searchQuery
+                ? "No notes match your search. Try a different term."
+                : "Start the collection by creating a note directly inside this topic."}
             </p>
             <Link
               href={`/dashboard/notes/new?topicId=${topic.id}`}

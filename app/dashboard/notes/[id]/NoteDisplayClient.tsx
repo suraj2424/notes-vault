@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { CodeBlock } from "@/components/markdown/CodeBlock";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { cn } from "@/lib/utils";
 import { Note, NoteType } from "@/types";
 import { NOTE_TYPE_META, DIFFICULTY_STYLES } from "@/lib/note-styles";
@@ -53,7 +54,7 @@ interface MarkdownRendererProps {
 }
 
 const iconButtonClass =
-  "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-default bg-surface text-secondary transition-all duration-150 hover:bg-bg-muted hover:text-primary disabled:cursor-wait disabled:opacity-50";
+"inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-default bg-surface text-secondary transition-all duration-150 hover:bg-bg-muted hover:text-primary disabled:cursor-wait disabled:opacity-50";
 
 function stripMarkdown(text: string): string {
   return text
@@ -174,7 +175,7 @@ li({ children, ...props }) {
 
           if (isOrdered) {
             return (
-              <li className="text-base text-primary pl-1 marker:font-medium marker:text-neutral-500">
+              <li className="text-sm text-primary pl-1 marker:font-medium marker:text-neutral-500">
                 {children}
               </li>
             );
@@ -257,12 +258,12 @@ li({ children, ...props }) {
     return (
       <div
         className={cn(
-          "prose prose-neutral prose-base dark:prose-invert max-w-4xl font-sans sm:prose-lg",
+          "prose prose-neutral prose-sm dark:prose-invert max-w-4xl font-sans",
           "prose-headings:text-balance prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-primary",
-          "prose-h1:mt-0 prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h3:font-semibold",
+          "prose-h1:mt-0 prose-h1:text-2xl prose-h2:text-xl prose-h3:text-base prose-h3:font-semibold",
           "prose-p:leading-7 prose-a:font-medium prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-2",
           "prose-pre:bg-transparent prose-pre:p-0 prose-pre:shadow-none",
-          "prose-code:before:content-none prose-code:after:content-none prose-code:rounded prose-code:border prose-code:border-default prose-code:bg-bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[12px] prose-code:font-medium prose-code:text-primary dark:prose-code:text-primary",
+          "prose-code:before:content-none prose-code:after:content-none prose-code:rounded prose-code:border prose-code:border-default prose-code:bg-bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[11px] prose-code:font-medium prose-code:text-primary dark:prose-code:text-primary",
           "prose-hr:border-default prose-img:m-0"
         )}
       >
@@ -594,7 +595,7 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
   if (!headings.length) return null;
 
   return (
-    <nav className="sticky top-24 w-56 shrink-0 self-start hidden lg:block max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent">
+    <nav className="sticky top-22 w-56 shrink-0 self-start hidden lg:block max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent">
       <div className="rounded-lg border border-default bg-surface p-4">
         <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-secondary mb-4">
           <List className="h-3.5 w-3.5" />
@@ -618,7 +619,7 @@ function TableOfContentsWithScroll({ headings, contentRef }: TableOfContentsProp
           </div>
         </div>
 
-        <ul className="space-y-11 ml-1.5">
+        <ul className="space-y-11">
           {tree.map((node) => (
             <TocContentNode
               key={node.heading.id}
@@ -639,11 +640,11 @@ function TypeBadge({ type }: { type: NoteType }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide",
+        "inline-flex h-6 items-center gap-1.5 whitespace-nowrap rounded-full border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide",
         meta.badge
       )}
     >
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="h-3 w-3" />
       {meta.label}
     </span>
   );
@@ -659,12 +660,12 @@ function TagList({
   if (!tags?.length) return null;
   const visibleTags = compact ? tags.slice(0, 5) : tags;
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <div className="flex !flex-nowrap items-center gap-1 overflow-hidden">
       {visibleTags.map((tag) => (
         <Link
           key={tag}
           href={`/dashboard/notes?tag=${encodeURIComponent(tag)}`}
-          className="rounded border border-default bg-surface px-2 py-0.5 text-[10px] font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
+          className="shrink-0 rounded border border-default bg-surface px-1.5 py-0.5 text-[9px] font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
         >
           #{tag}
         </Link>
@@ -672,7 +673,7 @@ function TagList({
       {compact && tags.length > visibleTags.length && (
         <Link
           href="/dashboard/tags"
-          className="rounded border border-default bg-bg-muted px-1.5 py-0.5 text-[10px] font-bold text-secondary transition-colors duration-100 hover:text-primary"
+          className="shrink-0 rounded border border-default bg-bg-muted px-1 py-0 text-[9px] font-bold text-secondary transition-colors duration-100 hover:text-primary"
         >
           +{tags.length - visibleTags.length}
         </Link>
@@ -687,8 +688,8 @@ function UpdatedAt({ updatedAt }: { updatedAt: string }) {
     [updatedAt]
   );
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-secondary">
-      <Clock className="h-3.5 w-3.5" />
+    <span className="inline-flex items-center gap-1 text-[9px] font-medium text-secondary whitespace-nowrap">
+      <Clock className="h-3 w-3" />
       Updated {formatted}
     </span>
   );
@@ -706,7 +707,7 @@ function TopicChip({
   const label = topicTitle || fallback;
   if (!label) return null;
   const className =
-    "inline-flex items-center gap-1.5 rounded border border-default bg-bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-secondary transition-colors duration-100 hover:text-primary";
+    "inline-flex h-6 items-center gap-1 whitespace-nowrap rounded border border-default bg-bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-secondary transition-colors duration-100 hover:text-primary";
   if (topicId && topicTitle) {
     return (
       <Link href={`/dashboard/topics/${topicId}`} className={className}>
@@ -887,100 +888,101 @@ const StickyNoteHeader = memo(function StickyNoteHeader({
   onBack?: () => void;
   onDeleteClick?: () => void;
 }) {
-  const metadata = (
-    <div className="mt-2.5 flex flex-wrap items-center gap-1.5 pl-0 sm:mt-3 sm:gap-2 sm:pl-12">
-      <TypeBadge type={note.type} />
-      <UpdatedAt updatedAt={note.updatedAt} />
-      <TopicChip
-        topicId={topicId}
-        topicTitle={topicTitle}
-        fallback={qaTopic}
-      />
-      <TagList tags={note.tags} compact />
-    </div>
-  );
-
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 w-full border-b will-change-transform",
-        isCompact
-          ? "border-default shadow-sm bg-surface/95 backdrop-blur-sm"
-          : "border-transparent bg-surface"
+        "sticky top-0 z-30 w-full border-b will-change-transform border-border bg-surface/95",
+        
       )}
     >
-      <div className="mx-auto max-w-4xl px-4 py-3 sm:px-5 sm:py-4">
+      <div className="mx-auto px-4 py-3 sm:px-5 sm:py-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className={cn(
-              iconButtonClass,
-              "will-change-transform"
-            )}
-            aria-label="Go back"
-            title="Go back"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <h1
-            className={cn(
-              "min-w-0 flex-1 truncate font-bold tracking-tight text-primary will-change-transform",
-              isCompact ? "text-base sm:text-lg" : "text-xl leading-tight sm:text-2xl"
-            )}
-            title={note.title}
-          >
-            {note.title}
-          </h1>
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <Tooltip placement="bottom" text="Go back">
             <button
               type="button"
-              onClick={onToggleFavorite}
-              disabled={isTogglingFavorite}
+              onClick={onBack}
               className={cn(
                 iconButtonClass,
-                "will-change-transform",
-                isFavorite
-                  ? "border-amber-500/20 bg-amber-500/5 text-amber-500"
-                  : "text-secondary"
+                "will-change-transform"
               )}
-              aria-label={
-                isFavorite ? "Remove from favorites" : "Add to favorites"
-              }
-              title={
-                isFavorite ? "Remove from favorites" : "Add to favorites"
-              }
+              aria-label="Go back"
+              title="Go back"
             >
-              <Star
-                className={cn("h-4 w-4", isFavorite && "fill-amber-500")}
-              />
+              <ChevronLeft className="h-4 w-4" />
             </button>
-            <button
-              type="button"
-              onClick={onEdit}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-default bg-surface px-2.5 text-xs font-bold text-secondary transition-all duration-150 hover:bg-bg-muted hover:text-primary active:scale-[0.98] sm:px-3 will-change-transform"
+          </Tooltip>
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+            <h1
+              className={cn(
+                "min-w-0 flex-1 truncate font-bold tracking-tight text-primary will-change-transform",
+                isCompact ? "text-base sm:text-lg" : "text-xl leading-tight sm:text-2xl"
+              )}
+              title={note.title}
             >
-              <Edit2 className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Edit</span>
-            </button>
-            <button
-              type="button"
-              onClick={onDeleteClick}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200/60 bg-surface px-2.5 text-xs font-bold text-red-600 transition-all duration-150 hover:bg-red-50/70 active:scale-[0.98] dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20 sm:px-3 will-change-transform"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Delete</span>
-            </button>
+              {note.title}
+            </h1>
+            {!isCompact && (
+              <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 overflow-hidden">
+                <UpdatedAt updatedAt={note.updatedAt} />
+                <TypeBadge type={note.type} />
+                <TopicChip
+                  topicId={topicId}
+                  topicTitle={topicTitle}
+                  fallback={qaTopic}
+                />
+                <div className="flex !flex-nowrap items-center overflow-hidden">
+                  <TagList tags={note.tags} compact />
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <Tooltip placement="bottom" text={isFavorite ? "Remove from favorites" : "Add to favorites"}>
+              <button
+                type="button"
+                onClick={onToggleFavorite}
+                disabled={isTogglingFavorite}
+                className={cn(
+                  iconButtonClass,
+                  "will-change-transform",
+                  isFavorite
+                    ? "border-amber-500/20 bg-amber-500/5 text-amber-500"
+                    : "text-secondary"
+                )}
+                aria-label={
+                  isFavorite ? "Remove from favorites" : "Add to favorites"
+                }
+                title={
+                  isFavorite ? "Remove from favorites" : "Add to favorites"
+                }
+              >
+                <Star
+                  className={cn("h-4 w-4", isFavorite && "fill-amber-500")}
+                />
+              </button>
+            </Tooltip>
+            <Tooltip placement="bottom" text="Edit note">
+              <button
+                type="button"
+                onClick={onEdit}
+                className="inline-flex h-7 items-center gap-1 rounded-lg border border-default bg-surface px-2 text-[11px] font-bold text-secondary transition-all duration-150 hover:bg-bg-muted hover:text-primary active:scale-[0.98] sm:px-2.5 will-change-transform"
+              >
+                <Edit2 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Edit</span>
+              </button>
+            </Tooltip>
+            <Tooltip placement="bottom" text="Delete note">
+              <button
+                type="button"
+                onClick={onDeleteClick}
+                className="inline-flex h-7 items-center gap-1 rounded-lg border border-red-200/60 bg-surface px-2 text-[11px] font-bold text-red-600 transition-all duration-150 hover:bg-red-50/70 active:scale-[0.98] dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20 sm:px-2.5 will-change-transform"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Delete</span>
+              </button>
+            </Tooltip>
           </div>
         </div>
-
-        {isCompact ? (
-          <div className="h-0 overflow-hidden" aria-hidden="true">
-            {metadata}
-          </div>
-        ) : (
-          metadata
-        )}
       </div>
     </header>
   );
@@ -1353,7 +1355,7 @@ export default function NoteDisplayClient({
   const headings = useMemo(() => extractHeadings(content), [content]);
 
   return (
-    <div ref={rootRef} className="w-full pt-4 pb-16 font-sans">
+    <div ref={rootRef} className="w-full pb-16 font-sans">
       <StickyNoteHeader
         note={note}
         topicTitle={topicTitle}

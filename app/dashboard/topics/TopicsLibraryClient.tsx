@@ -1,10 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Archive, ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, FolderOpen, Plus, Search, X } from "lucide-react";
+import {
+  Archive,
+  ChevronLeft,
+  ChevronRight,
+  FolderOpen,
+  Plus,
+  Search,
+  X,
+} from "lucide-react";
 import { Topic } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +45,8 @@ function TopicCard({
               {topic.title}
             </h3>
             <p className="mt-2 line-clamp-2 min-h-12 text-xs font-medium leading-6 text-secondary">
-              {topic.description || "A curated collection of notes grouped under one topic."}
+              {topic.description ||
+                "A curated collection of notes grouped under one topic."}
             </p>
           </div>
 
@@ -52,7 +61,7 @@ function TopicCard({
               "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors duration-100",
               topic.isArchived
                 ? "border-amber-500/20 bg-amber-500/5 text-amber-600 dark:text-amber-400"
-                : "border-default bg-surface text-secondary hover:bg-bg-muted hover:text-primary"
+                : "border-default bg-surface text-secondary hover:bg-bg-muted hover:text-primary",
             )}
             aria-label={topic.isArchived ? "Unarchive topic" : "Archive topic"}
             title={topic.isArchived ? "Unarchive topic" : "Archive topic"}
@@ -67,7 +76,9 @@ function TopicCard({
               <span className="shrink-0">{topic.noteCount} notes</span>
               <span>/</span>
               <span className="truncate">
-                {formatDistanceToNow(new Date(topic.updatedAt), { addSuffix: true })}
+                {formatDistanceToNow(new Date(topic.updatedAt), {
+                  addSuffix: true,
+                })}
               </span>
             </div>
             <ChevronRight className="h-4 w-4 shrink-0 text-secondary transition-colors duration-100 group-hover:text-primary" />
@@ -97,13 +108,26 @@ export function TopicsLibraryClient({
   currentPage,
 }: TopicsLibraryClientProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
+  const [search, setSearch] = useState(() => {
+    if (typeof window === "undefined") return ""; // Prevents crash during SSR/Next.js builds
+    const params = new URLSearchParams(window.location.search);
+    return params.get("search") || "";
+  });
+  const [showArchived, setShowArchived] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get("includeArchived") === "true";
+  });
+  const [page, setPage] = useState(() => {
+    if (typeof window === "undefined") return 1;
+    const params = new URLSearchParams(window.location.search);
+    return Number(params.get("page")) || 1;
+  });
   const [topics, setTopics] = useState<Topic[]>(initialTopics);
-  const [search, setSearch] = useState(searchParams.get("search") || "");
-  const [showArchived, setShowArchived] = useState(searchParams.get("includeArchived") === "true");
-  const [page, setPage] = useState(currentPage);
   const [totalPagesState, setTotalPagesState] = useState(totalPages);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   const updateUrl = useCallback(
     (nextPage: number, nextSearch: string, nextShowArchived: boolean) => {
@@ -115,11 +139,14 @@ export function TopicsLibraryClient({
       const query = params.toString();
       router.push(query ? `/dashboard/topics?${query}` : "/dashboard/topics");
     },
-    [router]
+    [router],
   );
 
   const fetchTopics = useCallback(
     async (nextPage: number, nextSearch: string, nextShowArchived: boolean) => {
+      // 1. Defer the state update out of the synchronous execution thread
+      setTimeout(() => setIsLoading(true), 0);
+
       const params = new URLSearchParams({
         page: String(nextPage),
         pageSize: "18",
@@ -135,32 +162,44 @@ export function TopicsLibraryClient({
         setTotalPagesState(data.pagination?.totalPages || 1);
       } catch (error) {
         console.error("Error fetching topics:", error);
+      } finally {
+        setIsLoading(false);
+        setInitialLoadComplete(true);
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchTopics(page, search, showArchived);
-  }, [fetchTopics, page, search, showArchived]);
+    // Directly syncs your external API with the current state of the UI
+    const loadData = async () => {
+      await fetchTopics(page, search, showArchived);
+    };
+    // Execute the block immediately
+    loadData();
+  }, [page, search, showArchived, fetchTopics]);
 
   useEffect(() => {
+    if (!initialLoadComplete) return;
+
     const timeoutId = window.setTimeout(() => {
       startTransition(() => {
         setPage(1);
         updateUrl(1, search, showArchived);
+        fetchTopics(1, search, showArchived);
       });
     }, 350);
 
     return () => window.clearTimeout(timeoutId);
-  }, [search, showArchived, updateUrl]);
+  }, [search, showArchived, initialLoadComplete, updateUrl, fetchTopics]);
 
   const handleToggleArchive = async (topic: Topic) => {
     const nextArchived = !topic.isArchived;
 
     setTopics((current) =>
-      current.map((item) => (item.id === topic.id ? { ...item, isArchived: nextArchived } : item))
+      current.map((item) =>
+        item.id === topic.id ? { ...item, isArchived: nextArchived } : item,
+      ),
     );
 
     try {
@@ -177,26 +216,33 @@ export function TopicsLibraryClient({
       }
     } catch (error) {
       console.error("Error updating topic:", error);
-      fetchTopics(page, search, showArchived);
+      setTopics((current) =>
+        current.map((item) =>
+          item.id === topic.id ? { ...item, isArchived: !nextArchived } : item,
+        ),
+      );
     }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    startTransition(() => {
+      setPage(newPage);
+      updateUrl(newPage, search, showArchived);
+      fetchTopics(newPage, search, showArchived);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   };
 
   const clearSearch = () => {
     setSearch("");
-    setPage(1);
-    updateUrl(1, "", showArchived);
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-5 lg:px-8 py-6 font-sans">
+    <div className="mx-auto max-w-7xl px-4 sm:px-5 lg:px-8 font-sans">
       <header className="sticky top-0 z-30 -mx-5 lg:-mx-8 border-b border-default bg-surface px-5 lg:px-8">
         <div className="flex flex-col gap-4 py-4">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div className="min-w-0">
-              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-secondary">
-                <FolderOpen className="h-3.5 w-3.5" />
-                Topic Workspace
-              </div>
               <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight text-primary sm:text-3xl">
                 Topics Library
               </h1>
@@ -239,15 +285,13 @@ export function TopicsLibraryClient({
             <button
               type="button"
               onClick={() => {
-                const next = !showArchived;
-                setShowArchived(next);
-                setPage(1);
+                setShowArchived((prev) => !prev);
               }}
               className={cn(
                 "flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3 text-[10px] font-bold uppercase tracking-wide transition-colors duration-100",
                 showArchived
                   ? "border-amber-500/25 bg-amber-500/5 text-amber-600 dark:text-amber-400"
-                  : "border-default bg-surface text-secondary hover:bg-bg-muted hover:text-primary"
+                  : "border-default bg-surface text-secondary hover:bg-bg-muted hover:text-primary",
               )}
             >
               <Archive className="h-3.5 w-3.5" />
@@ -258,12 +302,18 @@ export function TopicsLibraryClient({
       </header>
 
       <main className="mt-5">
-        {isPending ? (
+        {(isLoading || isPending) &&
+        topics.length === 0 &&
+        !initialLoadComplete ? (
           <SkeletonGrid />
         ) : topics.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {topics.map((topic) => (
-              <TopicCard key={topic.id} topic={topic} onToggleArchive={handleToggleArchive} />
+              <TopicCard
+                key={topic.id}
+                topic={topic}
+                onToggleArchive={handleToggleArchive}
+              />
             ))}
           </div>
         ) : (
@@ -273,7 +323,8 @@ export function TopicsLibraryClient({
             </div>
             <h2 className="text-base font-bold text-primary">No topics yet</h2>
             <p className="mt-1 max-w-sm text-sm font-medium text-secondary">
-              Create a topic to organize clusters of notes under one shared theme.
+              Create a topic to organize clusters of notes under one shared
+              theme.
             </p>
             <Link
               href="/dashboard/topics/new"
@@ -291,8 +342,7 @@ export function TopicsLibraryClient({
               type="button"
               onClick={() => {
                 const newPage = page - 1;
-                setPage(newPage);
-                startTransition(() => updateUrl(newPage, search, showArchived));
+                handlePageChange(newPage);
               }}
               disabled={page === 1 || isPending}
               className="flex h-9 items-center gap-1 rounded-lg border border-default bg-surface px-3 text-xs font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary disabled:opacity-30"
@@ -306,7 +356,8 @@ export function TopicsLibraryClient({
                 let pageNum;
                 if (totalPagesState <= 5) pageNum = i + 1;
                 else if (page <= 3) pageNum = i + 1;
-                else if (page >= totalPagesState - 2) pageNum = totalPagesState - 4 + i;
+                else if (page >= totalPagesState - 2)
+                  pageNum = totalPagesState - 4 + i;
                 else pageNum = page - 2 + i;
 
                 return (
@@ -315,14 +366,13 @@ export function TopicsLibraryClient({
                     type="button"
                     disabled={isPending}
                     onClick={() => {
-                      setPage(pageNum);
-                      startTransition(() => updateUrl(pageNum, search, showArchived));
+                      handlePageChange(pageNum);
                     }}
                     className={cn(
                       "flex h-9 w-9 items-center justify-center rounded-lg border text-xs font-bold transition-colors duration-100 disabled:opacity-40",
                       page === pageNum
                         ? "border-[#1A1D1E] bg-[#1A1D1E] text-white dark:border-[#E4E6EB] dark:bg-[#E4E6EB] dark:text-[#111111]"
-                        : "border-default bg-surface text-secondary hover:bg-bg-muted hover:text-primary"
+                        : "border-default bg-surface text-secondary hover:bg-bg-muted hover:text-primary",
                     )}
                   >
                     {pageNum}
@@ -335,8 +385,7 @@ export function TopicsLibraryClient({
               type="button"
               onClick={() => {
                 const newPage = page + 1;
-                setPage(newPage);
-                startTransition(() => updateUrl(newPage, search, showArchived));
+                handlePageChange(newPage);
               }}
               disabled={page === totalPagesState || isPending}
               className="flex h-9 items-center gap-1 rounded-lg border border-default bg-surface px-3 text-xs font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary disabled:opacity-30"

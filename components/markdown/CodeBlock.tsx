@@ -1,10 +1,16 @@
 'use client';
 
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import dynamic from 'next/dynamic';
 import type { CSSProperties } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+
+// Dynamically import to avoid SSR hydration mismatch
+const SyntaxHighlighter = dynamic(
+  () => import('react-syntax-highlighter').then((mod) => mod.Prism),
+  { ssr: false }
+);
 
 const CODE_FONT_SIZE = '13.5px';
 const CODE_LINE_HEIGHT = '1.7';
@@ -40,37 +46,37 @@ const lightTheme: Record<string, CSSProperties> = {
     tabSize: 2,
     hyphens: 'none',
   },
-  'comment': { color: '#6a737d' },
-  'prolog': { color: '#6a737d' },
-  'doctype': { color: '#6a737d' },
-  'cdata': { color: '#6a737d' },
-  'punctuation': { color: '#24292e' },
-  'property': { color: '#005cc5' },
-  'tag': { color: '#22863a' },
-  'boolean': { color: '#d73a49' },
-  'number': { color: '#d73a49' },
-  'constant': { color: '#005cc5' },
-  'symbol': { color: '#005cc5' },
-  'deleted': { color: '#d73a49' },
-  'selector': { color: '#22863a' },
+  comment: { color: '#6a737d' },
+  prolog: { color: '#6a737d' },
+  doctype: { color: '#6a737d' },
+  cdata: { color: '#6a737d' },
+  punctuation: { color: '#24292e' },
+  property: { color: '#005cc5' },
+  tag: { color: '#22863a' },
+  boolean: { color: '#d73a49' },
+  number: { color: '#d73a49' },
+  constant: { color: '#005cc5' },
+  symbol: { color: '#005cc5' },
+  deleted: { color: '#d73a49' },
+  selector: { color: '#22863a' },
   'attr-name': { color: '#6f42c1' },
-  'string': { color: '#032f62' },
-  'char': { color: '#032f62' },
-  'builtin': { color: '#005cc5' },
-  'inserted': { color: '#22863a' },
-  'operator': { color: '#d73a49' },
-  'entity': { color: '#e36209' },
-  'url': { color: '#032f62' },
-  'atrule': { color: '#d73a49' },
+  string: { color: '#032f62' },
+  char: { color: '#032f62' },
+  builtin: { color: '#005cc5' },
+  inserted: { color: '#22863a' },
+  operator: { color: '#d73a49' },
+  entity: { color: '#e36209' },
+  url: { color: '#032f62' },
+  atrule: { color: '#d73a49' },
   'attr-value': { color: '#032f62' },
-  'keyword': { color: '#d73a49' },
-  'function': { color: '#6f42c1' },
+  keyword: { color: '#d73a49' },
+  function: { color: '#6f42c1' },
   'class-name': { color: '#6f42c1' },
-  'regex': { color: '#032f62' },
-  'important': { color: '#e36209' },
-  'variable': { color: '#005cc5' },
-  'bold': { fontWeight: 'bold' },
-  'italic': { fontStyle: 'italic' },
+  regex: { color: '#032f62' },
+  important: { color: '#e36209' },
+  variable: { color: '#005cc5' },
+  bold: { fontWeight: 'bold' },
+  italic: { fontStyle: 'italic' },
 };
 
 const darkTheme: Record<string, CSSProperties> = {
@@ -102,37 +108,37 @@ const darkTheme: Record<string, CSSProperties> = {
     tabSize: 2,
     hyphens: 'none',
   },
-  'comment': { color: '#8b949e' },
-  'prolog': { color: '#8b949e' },
-  'doctype': { color: '#8b949e' },
-  'cdata': { color: '#8b949e' },
-  'punctuation': { color: '#c9d1d9' },
-  'property': { color: '#f87171' },
-  'tag': { color: '#7ee787' },
-  'boolean': { color: '#f87171' },
-  'number': { color: '#f87171' },
-  'constant': { color: '#79c0ff' },
-  'symbol': { color: '#79c0ff' },
-  'deleted': { color: '#f87171' },
-  'selector': { color: '#7ee787' },
+  comment: { color: '#8b949e' },
+  prolog: { color: '#8b949e' },
+  doctype: { color: '#8b949e' },
+  cdata: { color: '#8b949e' },
+  punctuation: { color: '#c9d1d9' },
+  property: { color: '#f87171' },
+  tag: { color: '#7ee787' },
+  boolean: { color: '#f87171' },
+  number: { color: '#f87171' },
+  constant: { color: '#79c0ff' },
+  symbol: { color: '#79c0ff' },
+  deleted: { color: '#f87171' },
+  selector: { color: '#7ee787' },
   'attr-name': { color: '#d2a8ff' },
-  'string': { color: '#a5d6ff' },
-  'char': { color: '#a5d6ff' },
-  'builtin': { color: '#79c0ff' },
-  'inserted': { color: '#7ee787' },
-  'operator': { color: '#ffa657' },
-  'entity': { color: '#ffa657' },
-  'url': { color: '#a5d6ff' },
-  'atrule': { color: '#ff7b72' },
+  string: { color: '#a5d6ff' },
+  char: { color: '#a5d6ff' },
+  builtin: { color: '#79c0ff' },
+  inserted: { color: '#7ee787' },
+  operator: { color: '#ffa657' },
+  entity: { color: '#ffa657' },
+  url: { color: '#a5d6ff' },
+  atrule: { color: '#ff7b72' },
   'attr-value': { color: '#a5d6ff' },
-  'keyword': { color: '#ff7b72' },
-  'function': { color: '#d2a8ff' },
+  keyword: { color: '#ff7b72' },
+  function: { color: '#d2a8ff' },
   'class-name': { color: '#d2a8ff' },
-  'regex': { color: '#7ee787' },
-  'important': { color: '#ffa657' },
-  'variable': { color: '#79c0ff' },
-  'bold': { fontWeight: 'bold' },
-  'italic': { fontStyle: 'italic' },
+  regex: { color: '#7ee787' },
+  important: { color: '#ffa657' },
+  variable: { color: '#79c0ff' },
+  bold: { fontWeight: 'bold' },
+  italic: { fontStyle: 'italic' },
 };
 
 interface CodeBlockProps {
@@ -142,7 +148,39 @@ interface CodeBlockProps {
   minimal?: boolean;
 }
 
-export function CodeBlock({ language = 'text', children, theme = 'dark', minimal = false }: CodeBlockProps) {
+// Shared plain-text fallback shown while SyntaxHighlighter loads
+function CodeFallback({
+  code,
+  theme,
+}: {
+  code: string;
+  theme: 'light' | 'dark';
+}) {
+  return (
+    <pre
+      style={{
+        fontFamily: CODE_FONT_FAMILY,
+        fontSize: CODE_FONT_SIZE,
+        lineHeight: CODE_LINE_HEIGHT,
+        background: 'transparent',
+        margin: 0,
+        padding: 0,
+        color: theme === 'light' ? '#24292e' : '#e6edf3',
+        whiteSpace: 'pre',
+        overflowX: 'auto',
+      }}
+    >
+      <code>{code}</code>
+    </pre>
+  );
+}
+
+export function CodeBlock({
+  language = 'text',
+  children,
+  theme = 'dark',
+  minimal = false,
+}: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
   const codeString = String(children).replace(/\n$/, '');
   const lang = (language || 'text').toLowerCase();
@@ -171,6 +209,8 @@ export function CodeBlock({ language = 'text', children, theme = 'dark', minimal
         WebkitFontSmoothing: 'antialiased',
         MozOsxFontSmoothing: 'grayscale',
       }}
+      // Fallback rendered while the dynamic bundle loads
+      fallback={<CodeFallback code={codeString} theme={theme} />}
     >
       {codeString}
     </SyntaxHighlighter>
@@ -189,11 +229,13 @@ export function CodeBlock({ language = 'text', children, theme = 'dark', minimal
           )}
           title="Copy code"
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? (
+            <Check className="h-3.5 w-3.5 text-emerald-500" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
         </button>
-        <div className="overflow-x-auto p-4">
-          {renderHighlighted()}
-        </div>
+        <div className="overflow-x-auto p-4">{renderHighlighted()}</div>
       </div>
     );
   }
@@ -208,14 +250,18 @@ export function CodeBlock({ language = 'text', children, theme = 'dark', minimal
         <button
           onClick={copyToClipboard}
           className={cn(
-            "flex items-center gap-1.5 text-[11px] font-medium transition-colors duration-150 py-0.5 px-1.5 rounded-md",
+            'flex items-center gap-1.5 text-[11px] font-medium transition-colors duration-150 py-0.5 px-1.5 rounded-md',
             copied
-              ? "text-emerald-600 dark:text-emerald-400"
-              : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+              ? 'text-emerald-600 dark:text-emerald-400'
+              : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100',
           )}
-          title={copied ? "Copied" : "Copy code"}
+          title={copied ? 'Copied' : 'Copy code'}
         >
-          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? (
+            <Check className="h-3.5 w-3.5" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
           <span>{copied ? 'Copied!' : 'Copy'}</span>
         </button>
       </div>

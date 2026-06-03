@@ -343,22 +343,23 @@ export function NotesLibraryClient({
   const [isPending, startTransition] = useTransition();
 
   const [notes, setNotes] = useState<Note[]>(initialNotes);
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get("search") || ""
-  );
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(
-    searchParams.get("search") || ""
-  );
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>(
-    (searchParams.get("type") as TypeFilter) || "all"
-  );
+  const [searchQuery, setSearchQuery] = useState(() => {
+  return searchParams.get("search") || "";
+});
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(() => {
+  return searchParams.get("search") || "";
+});
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>(() => {
+  const type = searchParams.get("type");
+  return type && ["dsa", "qa", "general"].includes(type) ? (type as TypeFilter) : "all";
+});
   const [sortBy, setSortBy] = useState<SortValue>("recent");
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(
-    searchParams.get("filter") === "favorites"
-  );
-  const [tagFilter, setTagFilter] = useState(
-    searchParams.get("tag") || initialTag || ""
-  );
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(() => {
+  return searchParams.get("filter") === "favorites";
+});
+  const [tagFilter, setTagFilter] = useState(() => {
+  return searchParams.get("tag") || "";
+});
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [page, setPage] = useState(currentPage);
   const [totalPagesState, setTotalPages] = useState(totalPages);
@@ -383,20 +384,20 @@ export function NotesLibraryClient({
     };
   });
 
-  useEffect(() => {
-    const search = searchParams.get("search") || "";
-    const type = searchParams.get("type") as NoteType | null;
-    const filter = searchParams.get("filter");
-    const tag = searchParams.get("tag") || "";
+  // useEffect(() => {
+  //   const search = searchParams.get("search") || "";
+  //   const type = searchParams.get("type") as NoteType | null;
+  //   const filter = searchParams.get("filter");
+  //   const tag = searchParams.get("tag") || "";
 
-    setSearchQuery(search);
-    setDebouncedSearchQuery(search);
-    setTypeFilter(
-      type && ["dsa", "qa", "general"].includes(type) ? type : "all"
-    );
-    setShowFavoritesOnly(filter === "favorites");
-    setTagFilter(tag);
-  }, [searchParams]);
+  //   setSearchQuery(search);
+  //   setDebouncedSearchQuery(search);
+  //   setTypeFilter(
+  //     type && ["dsa", "qa", "general"].includes(type) ? type : "all"
+  //   );
+  //   setShowFavoritesOnly(filter === "favorites");
+  //   setTagFilter(tag);
+  // }, [searchParams]);
 
   const updateURL = useCallback(
     (
@@ -569,7 +570,7 @@ export function NotesLibraryClient({
         );
       });
     }
-  }, [debouncedSearchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [debouncedSearchQuery, searchParams, showFavoritesOnly, tagFilter, typeFilter, updateURL]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -596,7 +597,7 @@ export function NotesLibraryClient({
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-5 lg:px-8 font-sans">
-      <header className="sticky top-0 z-30 -mx-4 border-b border-default bg-surface/95 backdrop-blur-sm px-4 sm:-mx-5 sm:px-5 lg:-mx-8 lg:px-8">
+      <header className="sticky top-0 z-30 -mx-4 border-b border-default bg-surface/95 dark:bg-[#1A1A1A] px-4 sm:-mx-5 sm:px-5 lg:-mx-8 lg:px-8">
         <div className="flex flex-col gap-3 py-3 sm:gap-4 sm:py-4">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end sm:gap-4">
             <div className="min-w-0">
