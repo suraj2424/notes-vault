@@ -222,7 +222,7 @@ export function CodeBlock({
         <button
           onClick={copyToClipboard}
           className={cn(
-            'absolute right-3 top-3 z-10 rounded-md border p-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100 backdrop-blur-sm',
+            'absolute right-3 top-3 z-10 rounded-md border p-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100',
             theme === 'light'
               ? 'border-neutral-300 bg-white/90 text-neutral-600 shadow-sm hover:text-neutral-900 hover:bg-white'
               : 'border-neutral-700 bg-neutral-900 text-neutral-300 hover:text-neutral-100 hover:bg-neutral-800',

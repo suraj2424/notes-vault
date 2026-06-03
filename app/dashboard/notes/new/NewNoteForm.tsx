@@ -127,7 +127,7 @@ export function NewNoteForm() {
 
   return (
     <div className="mx-auto max-w-7xl px-5 lg:px-8 py-6 font-sans text-[#1A1D1E] dark:text-[#E4E6EB]">
-      <div className="sticky top-0 z-30 -mx-5 lg:-mx-8 px-5 lg:px-8 bg-[#FFFFFF]/95 dark:bg-[#1A1A1A]/95 border-b border-[#E6E8EB] dark:border-[#2D2D2D] backdrop-blur-sm">
+      <div className="sticky top-0 z-30 -mx-5 lg:-mx-8 px-5 lg:px-8 bg-[#FFFFFF]/95 dark:bg-[#1A1A1A]/95 border-b border-[#E6E8EB] dark:border-[#2D2D2D]">
         <div className="py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <button
