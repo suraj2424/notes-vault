@@ -239,7 +239,7 @@ export function TopicsLibraryClient({
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-5 lg:px-8 font-sans">
-      <header className="sticky top-0 z-30 -mx-5 lg:-mx-8 border-b border-default bg-surface px-5 lg:px-8">
+      <header className="sticky top-0 z-30 -mx-5 lg:-mx-8 border-b border-default bg-surface/95 dark:bg-[#1A1A1A] px-5 lg:px-8">
         <div className="flex flex-col gap-4 py-4">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div className="min-w-0">
