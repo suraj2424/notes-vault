@@ -665,7 +665,7 @@ function TagList({
         <Link
           key={tag}
           href={`/dashboard/notes?tag=${encodeURIComponent(tag)}`}
-          className="shrink-0 rounded border border-default bg-surface px-1.5 py-0.5 text-[9px] font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
+          className="shrink-0 rounded-full border border-default bg-surface px-1.5 py-0.5 text-[9px] font-bold text-secondary transition-colors duration-100 hover:bg-bg-muted hover:text-primary"
         >
           #{tag}
         </Link>
@@ -673,7 +673,7 @@ function TagList({
       {compact && tags.length > visibleTags.length && (
         <Link
           href="/dashboard/tags"
-          className="shrink-0 rounded border border-default bg-bg-muted px-1 py-0 text-[9px] font-bold text-secondary transition-colors duration-100 hover:text-primary"
+          className="shrink-0 rounded-full border border-default bg-bg-muted px-1 py-0 text-[9px] font-bold text-secondary transition-colors duration-100 hover:text-primary"
         >
           +{tags.length - visibleTags.length}
         </Link>
@@ -688,7 +688,7 @@ function UpdatedAt({ updatedAt }: { updatedAt: string }) {
     [updatedAt]
   );
   return (
-    <span className="inline-flex items-center gap-1 text-[9px] font-medium text-secondary whitespace-nowrap">
+    <span className="inline-flex underline items-center gap-1 text-[9px] font-medium text-secondary whitespace-nowrap">
       <Clock className="h-3 w-3" />
       Updated {formatted}
     </span>
@@ -707,7 +707,7 @@ function TopicChip({
   const label = topicTitle || fallback;
   if (!label) return null;
   const className =
-    "inline-flex h-6 items-center gap-1 whitespace-nowrap rounded border border-default bg-bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-secondary transition-colors duration-100 hover:text-primary";
+    "inline-flex items-center gap-1 whitespace-nowrap rounded-full border-t border-cyan-400 dark:border-cyan-600 bg-cyan-200 dark:bg-cyan-800 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-secondary transition-colors duration-100 hover:text-primary";
   if (topicId && topicTitle) {
     return (
       <Link href={`/dashboard/topics/${topicId}`} className={className}>
@@ -905,8 +905,6 @@ const StickyNoteHeader = memo(function StickyNoteHeader({
                 iconButtonClass,
                 "will-change-transform"
               )}
-              aria-label="Go back"
-              title="Go back"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -949,12 +947,6 @@ const StickyNoteHeader = memo(function StickyNoteHeader({
                     ? "border-amber-500/20 bg-amber-500/5 text-amber-500"
                     : "text-secondary"
                 )}
-                aria-label={
-                  isFavorite ? "Remove from favorites" : "Add to favorites"
-                }
-                title={
-                  isFavorite ? "Remove from favorites" : "Add to favorites"
-                }
               >
                 <Star
                   className={cn("h-4 w-4", isFavorite && "fill-amber-500")}
@@ -965,20 +957,18 @@ const StickyNoteHeader = memo(function StickyNoteHeader({
               <button
                 type="button"
                 onClick={onEdit}
-                className="inline-flex h-7 items-center gap-1 rounded-lg border border-default bg-surface px-2 text-[11px] font-bold text-secondary transition-all duration-150 hover:bg-bg-muted hover:text-primary active:scale-[0.98] sm:px-2.5 will-change-transform"
+                className="inline-flex h-7 items-center gap-1 rounded-full border border-default bg-surface p-1 text-[11px] font-bold text-secondary transition-all duration-150 hover:bg-bg-muted hover:text-primary active:scale-[0.98] sm:px-2.5 will-change-transform"
               >
                 <Edit2 className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Edit</span>
               </button>
             </Tooltip>
             <Tooltip placement="bottom" text="Delete note">
               <button
                 type="button"
                 onClick={onDeleteClick}
-                className="inline-flex h-7 items-center gap-1 rounded-lg border border-red-200/60 bg-surface px-2 text-[11px] font-bold text-red-600 transition-all duration-150 hover:bg-red-50/70 active:scale-[0.98] dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20 sm:px-2.5 will-change-transform"
+                className="inline-flex h-7 items-center gap-1 rounded-full border border-red-200/60 bg-surface p-1 text-[11px] font-bold text-red-600 transition-all duration-150 hover:bg-red-50/70 active:scale-[0.98] dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20 sm:px-2.5 will-change-transform"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Delete</span>
               </button>
             </Tooltip>
           </div>
@@ -1375,7 +1365,7 @@ export default function NoteDisplayClient({
         <h1 id="note-title" className="hidden">
           {note.title}
         </h1>
-        <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
+        <div className="flex flex-col gap-6 lg:flex-row justify-center lg:gap-8">
           <main className="min-w-0 flex-1 max-w-4xl">
             <div className="space-y-5">{renderContent()}</div>
             {topicId && topicNotes.length > 1 && (

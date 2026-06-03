@@ -55,8 +55,8 @@ function Tooltip({
             style={
               placement === "bottom"
                 ? overflowing
-                  ? { right: 12, top: -3 }
-                  : { left: "50%", top: -3, marginLeft: -3 }
+                  ? { right: 12, top: 0 }
+                  : { left: "50%", top: 0, marginLeft: -3 }
                 : overflowing
                   ? { right: 12, bottom: -3 }
                   : { left: "50%", bottom: -3, marginLeft: -3 }
