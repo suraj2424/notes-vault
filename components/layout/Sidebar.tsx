@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useUser, UserButton } from '@clerk/nextjs';
 import {
   LayoutDashboard,
@@ -66,7 +66,7 @@ const NavLink = ({ item, isActive, isCollapsed }: NavLinkProps) => {
             : 'text-secondary hover:bg-surface-hover hover:text-primary'
         )}
       >
-        <item.icon className="h-5 w-5 shrink-0" />
+        <item.icon className={cn("shrink-0", isCollapsed ? "h-4 w-4" : "h-5 w-5")} />
         {!isCollapsed && (
           <span className="tracking-tight truncate" >
             {item.name}
@@ -84,6 +84,7 @@ export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useUser();
   const { isMobileMenuOpen, closeMobileMenu } = useMobileMenu();
 
@@ -93,41 +94,42 @@ export function Sidebar() {
   }, [pathname, closeMobileMenu]);
 
   const sidebarContent = (
-    <div className={cn('relative flex h-full flex-col py-4 font-sans', isCollapsed ? 'px-0' : 'px-3')}>
+    <div className={cn('relative flex h-full flex-col py-4 font-sans transition-[padding] duration-200', isCollapsed ? 'px-0' : 'px-3')}>
       {/* LOGO SECTION */}
       <div className={cn("mb-6 flex items-center", isCollapsed ? "justify-center" : "justify-between px-1")}>
-        <div className="flex items-center gap-2.5">
-          <button 
-            onClick={() => isCollapsed && setIsCollapsed(false)}
-            onMouseEnter={() => setIsLogoHovered(true)}
-            onMouseLeave={() => setIsLogoHovered(false)}
-            className={cn(
-              "relative w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-100 group",
-              isCollapsed 
-                ? "bg-[#F4F7F6] dark:bg-[#111111] hover:bg-[#00A3A3]/10 dark:hover:bg-[#00E0E0]/10" 
-                : "bg-[#00A3A3]/10 dark:bg-[#00E0E0]/10 cursor-default"
-            )}
-          >
+        <button 
+          onClick={() => {
+            router.push('/dashboard');
+            if (isCollapsed) setIsCollapsed(false);
+          }}
+          onMouseEnter={() => setIsLogoHovered(true)}
+          onMouseLeave={() => setIsLogoHovered(false)}
+          className="flex items-center gap-2.5 cursor-pointer"
+        >
+          <div className={cn(
+            "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-100",
+            isCollapsed 
+              ? "bg-[#F4F7F6] dark:bg-[#111111] hover:bg-[#00A3A3]/10 dark:hover:bg-[#00E0E0]/10" 
+              : "bg-[#00A3A3]/10 dark:bg-[#00E0E0]/10"
+          )}>
             {isCollapsed && isLogoHovered ? (
-              <PanelLeftOpen className="h-5 w-5 text-[#00A3A3] dark:text-[#00E0E0]" />
+              <PanelLeftOpen className="h-4 w-4 text-[#00A3A3] dark:text-[#00E0E0]" />
             ) : (
-              <div className="flex items-center justify-center">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <rect x="2" y="2" width="4" height="4" rx="1" className={isCollapsed ? "fill-[#687076] dark:fill-[#A0A0A0]" : "fill-[#00A3A3] dark:fill-[#00E0E0]"} />
-                  <rect x="8" y="2" width="4" height="4" rx="1" fillOpacity="0.5" className={isCollapsed ? "fill-[#687076] dark:fill-[#A0A0A0]" : "fill-[#00A3A3] dark:fill-[#00E0E0]"} />
-                  <rect x="2" y="8" width="4" height="4" rx="1" fillOpacity="0.5" className={isCollapsed ? "fill-[#687076] dark:fill-[#A0A0A0]" : "fill-[#00A3A3] dark:fill-[#00E0E0]"} />
-                  <rect x="8" y="8" width="4" height="4" rx="1" fillOpacity="0.3" className={isCollapsed ? "fill-[#687076] dark:fill-[#A0A0A0]" : "fill-[#00A3A3] dark:fill-[#00E0E0]"} />
-                </svg>
-              </div>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="2" y="2" width="4" height="4" rx="1" className={isCollapsed ? "fill-[#687076] dark:fill-[#A0A0A0]" : "fill-[#00A3A3] dark:fill-[#00E0E0]"} />
+                <rect x="8" y="2" width="4" height="4" rx="1" fillOpacity="0.5" className={isCollapsed ? "fill-[#687076] dark:fill-[#A0A0A0]" : "fill-[#00A3A3] dark:fill-[#00E0E0]"} />
+                <rect x="2" y="8" width="4" height="4" rx="1" fillOpacity="0.5" className={isCollapsed ? "fill-[#687076] dark:fill-[#A0A0A0]" : "fill-[#00A3A3] dark:fill-[#00E0E0]"} />
+                <rect x="8" y="8" width="4" height="4" rx="1" fillOpacity="0.3" className={isCollapsed ? "fill-[#687076] dark:fill-[#A0A0A0]" : "fill-[#00A3A3] dark:fill-[#00E0E0]"} />
+              </svg>
             )}
-          </button>
+          </div>
           
           {!isCollapsed && (
             <span className="text-sm font-bold tracking-tight text-primary">
               NoteVault
             </span>
           )}
-        </div>
+        </button>
 
         {!isCollapsed && (
             <button 
@@ -204,7 +206,7 @@ export function Sidebar() {
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          "sticky top-0 z-40 hidden h-screen flex-col border-r border-default bg-surface lg:flex transition-all duration-100",
+          "sticky top-0 z-40 hidden h-screen flex-col border-r border-default bg-surface lg:flex transition-all duration-200",
           isCollapsed ? "w-16" : "w-60"
         )}
       >
@@ -232,15 +234,17 @@ export function Sidebar() {
           {/* Mobile close button */}
           <div className="flex items-center justify-between px-4 py-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#00A3A3]/10 dark:bg-[#00E0E0]/10">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <rect x="2" y="2" width="4" height="4" rx="1" className="fill-[#00A3A3] dark:fill-[#00E0E0]" />
-                  <rect x="8" y="2" width="4" height="4" rx="1" fillOpacity="0.5" className="fill-[#00A3A3] dark:fill-[#00E0E0]" />
-                  <rect x="2" y="8" width="4" height="4" rx="1" fillOpacity="0.5" className="fill-[#00A3A3] dark:fill-[#00E0E0]" />
-                  <rect x="8" y="8" width="4" height="4" rx="1" fillOpacity="0.3" className="fill-[#00A3A3] dark:fill-[#00E0E0]" />
-                </svg>
-              </div>
-              <span className="text-sm font-bold tracking-tight text-primary">NoteVault</span>
+              <button onClick={() => { router.push('/dashboard'); closeMobileMenu(); }} className="flex items-center gap-2.5 cursor-pointer">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#00A3A3]/10 dark:bg-[#00E0E0]/10">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <rect x="2" y="2" width="4" height="4" rx="1" className="fill-[#00A3A3] dark:fill-[#00E0E0]" />
+                    <rect x="8" y="2" width="4" height="4" rx="1" fillOpacity="0.5" className="fill-[#00A3A3] dark:fill-[#00E0E0]" />
+                    <rect x="2" y="8" width="4" height="4" rx="1" fillOpacity="0.5" className="fill-[#00A3A3] dark:fill-[#00E0E0]" />
+                    <rect x="8" y="8" width="4" height="4" rx="1" fillOpacity="0.3" className="fill-[#00A3A3] dark:fill-[#00E0E0]" />
+                  </svg>
+                </div>
+                <span className="text-sm font-bold tracking-tight text-primary">NoteVault</span>
+              </button>
             </div>
             <button
               onClick={closeMobileMenu}
